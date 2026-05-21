@@ -1,0 +1,40 @@
+# ── Edge node image ──────────────────────────────────────────────────────────
+# Runs: VAE inference (torch), DP-SGD training (opacus), FL client (flwr)
+# torch==2.3.1 and torchvision==0.18.1 are installed separately in the
+# Dockerfile via the CPU-only wheel index — same version, no CUDA libs.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Core ML (torch installed via Dockerfile CPU index — see edge.Dockerfile)
+numpy==1.26.4
+opacus==1.4.1
+scikit-learn==1.5.1
+scipy==1.13.1
+
+# Data
+pandas==2.2.2
+pyarrow==15.0.2
+
+# Federated Learning
+flwr==1.9.0
+typer==0.9.4
+
+# Messaging
+nats-py==2.8.0
+kafka-python==2.0.6
+six>=1.16.0
+
+# Security
+python-jose==3.3.0
+cryptography==42.0.8
+
+# Database
+psycopg2-binary==2.9.9
+
+# Observability
+opentelemetry-api==1.25.0
+opentelemetry-sdk==1.25.0
+
+# Utilities
+python-dotenv==1.0.1
+loguru==0.7.2
+rich==13.7.1

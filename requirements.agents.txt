@@ -1,0 +1,42 @@
+# ── Agent mesh image ──────────────────────────────────────────────────────────
+# Runs: LangGraph state machine, Phi-4 via Ollama HTTP, Qdrant RAG
+# NO torch — agents call Ollama over HTTP, never load a model locally.
+# Removing torch saves ~5–6 GB from this image.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# LLM / Agents
+langchain==0.2.11
+langchain-core==0.2.24
+langgraph==0.1.19
+langchain-community==0.2.10
+sentence-transformers==3.0.1
+transformers==4.42.4
+huggingface-hub==0.23.5
+qdrant-client==1.10.1
+
+# Data (needed by langchain internals)
+numpy==1.26.4
+pandas==2.2.2
+pyarrow==15.0.2
+
+# Evaluation
+ragas==0.1.14
+
+# Messaging
+nats-py==2.8.0
+
+# Security
+python-jose==3.3.0
+cryptography==42.0.8
+
+# Database
+psycopg2-binary==2.9.9
+
+# Observability
+opentelemetry-api==1.25.0
+opentelemetry-sdk==1.25.0
+
+# Utilities
+python-dotenv==1.0.1
+loguru==0.7.2
+rich==13.7.1

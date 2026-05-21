@@ -1,0 +1,36 @@
+# .dockerignore — prevent bloating build context sent to Docker daemon
+# Without this, Docker sends your entire project (including data/) to the daemon
+
+# Data directories — never needed in images
+data/
+mlruns/
+*.dvc
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Dev / IDE
+.git/
+.github/
+.vscode/
+.idea/
+notebooks/
+docs/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+
+# Secrets — should never be in an image
+.env
+infra/certs/
+
+# OS
+.DS_Store
+Thumbs.db
