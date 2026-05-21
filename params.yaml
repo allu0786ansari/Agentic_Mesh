@@ -1,0 +1,38 @@
+# Privacy
+epsilon: 2.0
+delta: 1.0e-5
+max_grad_norm: 1.0
+
+# Federated Learning
+fedprox_mu: 0.01
+fl_rounds: 50
+min_fit_clients: 3
+convergence_delta: 0.001
+
+# VAE (nodes 01-03, timeseries)
+vae_latent_dim: 32
+vae_hidden_dim: 128
+window_size: 60
+window_stride: 10
+vae_epochs: 30
+vae_batch_size: 64
+vae_lr: 1.0e-3
+
+# IsoForest (nodes 04-05, tabular)
+iso_n_estimators: 200
+iso_contamination: 0.05
+iso_max_samples: auto
+
+# Embeddings
+embedding_dim: 128
+
+# Agents
+llm_model: phi4
+llm_context_window: 4096
+max_investigation_hops: 3
+agent_latency_budget_s: 3.0
+
+# Evaluation targets
+target_auroc: 0.92
+target_f1: 0.88
+target_ragas_faithfulness: 0.85

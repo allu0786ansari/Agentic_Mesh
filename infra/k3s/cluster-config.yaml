@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agmesh
+  labels:
+    app.kubernetes.io/part-of: agentic-mesh
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: agmesh-quota
+  namespace: agmesh
+spec:
+  hard:
+    requests.cpu: "6"
+    requests.memory: "12Gi"
+    limits.cpu: "8"
+    limits.memory: "16Gi"
+    pods: "30"
+
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: agmesh-limits
+  namespace: agmesh
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
