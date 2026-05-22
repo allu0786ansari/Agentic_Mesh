@@ -1,4 +1,4 @@
-"""
+r"""
 scripts/init_db.py
 Day 4 — PostgreSQL schema migration.
 Creates three tables: node_registry, alert_records, fl_rounds.
@@ -10,7 +10,6 @@ Expected output: "Schema created successfully — 3 tables"
 from __future__ import annotations
 import os
 import sys
-from pathlib import Path
 
 import psycopg2
 from dotenv import load_dotenv
@@ -20,10 +19,13 @@ load_dotenv()
 
 DSN = os.environ.get(
     "POSTGRES_DSN",
-    "postgresql://agmesh:agmesh_dev@localhost:5432/agmesh"
+    "postgresql://agmesh:agmesh_dev@127.0.0.1:15432/agmesh"
 )
 
 SCHEMA_SQL = """
+-- Enable UUID generation for alert_records.alert_id
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- Enable pgvector for 128-dim alert embeddings
 CREATE EXTENSION IF NOT EXISTS vector;
 
@@ -34,8 +36,8 @@ CREATE TABLE IF NOT EXISTS node_registry (
     data_type        VARCHAR(16)  NOT NULL,          -- timeseries | tabular
     model_type       VARCHAR(32)  NOT NULL,          -- vae | isolation_forest
     feature_count    INT          NOT NULL,
-    epsilon_budget   FLOAT        NOT NULL DEFAULT 10.0,
-    epsilon_consumed FLOAT        NOT NULL DEFAULT 0.0,
+    epsilon_budget   DOUBLE PRECISION NOT NULL DEFAULT 10.0,
+    epsilon_consumed DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     status           VARCHAR(16)  NOT NULL DEFAULT 'inactive',
     last_seen        TIMESTAMP    WITH TIME ZONE,
     created_at       TIMESTAMP    WITH TIME ZONE DEFAULT NOW()
@@ -48,7 +50,7 @@ CREATE TABLE IF NOT EXISTS alert_records (
     alert_id             UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     node_id              VARCHAR(16)  REFERENCES node_registry(node_id),
     timestamp            TIMESTAMP    WITH TIME ZONE NOT NULL,
-    severity             FLOAT        NOT NULL,           -- reconstruction error / anomaly score
+    severity             DOUBLE PRECISION NOT NULL,       -- reconstruction error / anomaly score
     embedding            vector(128),                     -- 128-dim Insight Embedding
     investigation_status VARCHAR(32)  NOT NULL DEFAULT 'pending',
     mitre_technique      VARCHAR(16),                     -- e.g. T0855
@@ -64,9 +66,9 @@ CREATE TABLE IF NOT EXISTS fl_rounds (
     started_at            TIMESTAMP    WITH TIME ZONE NOT NULL,
     completed_at          TIMESTAMP    WITH TIME ZONE,
     participating_nodes   INT,
-    global_loss           FLOAT,
-    global_auroc          FLOAT,
-    epsilon_total         FLOAT,                          -- sum across all nodes
+    global_loss           DOUBLE PRECISION,
+    global_auroc          DOUBLE PRECISION,
+    epsilon_total         DOUBLE PRECISION,               -- sum across all nodes
     model_version         VARCHAR(64),
     created_at            TIMESTAMP    WITH TIME ZONE DEFAULT NOW()
 );
@@ -104,13 +106,22 @@ def run() -> None:
             logger.error(f"Migration failed — missing tables: {missing}")
             sys.exit(1)
 
-        logger.success(f"Schema created successfully — {len(tables)} tables: {', '.join(sorted(tables))}")
+        logger.success(
+            "Schema created successfully - required tables present: {}",
+            ", ".join(sorted(expected)),
+        )
         cur.close()
         conn.close()
 
     except psycopg2.OperationalError as exc:
         logger.error(f"Cannot connect to PostgreSQL: {exc}")
         logger.error("Is the port-forward running? Run: Start-Job {{ kubectl port-forward svc/postgres-postgresql 5432:5432 -n agmesh }}")
+        sys.exit(1)
+    except psycopg2.Error as exc:
+        logger.error(f"PostgreSQL migration failed: {exc}")
+        logger.error(
+            "Check that the database user can create extensions and that the PostgreSQL image includes pgvector."
+        )
         sys.exit(1)
 
 

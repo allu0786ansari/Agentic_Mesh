@@ -1,4 +1,4 @@
-"""
+r"""
 tests/unit/test_week2_data.py
 Week 2 gate — 12 tests confirming datasets are processed, partitioned correctly,
 and the PostgreSQL schema is populated.
@@ -11,10 +11,12 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PART_DIR     = PROJECT_ROOT / "data" / "partitions"
 PROC_DIR     = PROJECT_ROOT / "data" / "processed"
+load_dotenv(PROJECT_ROOT / ".env")
 
 
 # ── Processed files exist ────────────────────────────────────────────────────
@@ -54,6 +56,18 @@ def test_vae_nodes_meta_correct():
         assert meta["model_type"]  == "vae",        f"{node}: expected model_type=vae"
         assert meta["data_type"]   == "timeseries", f"{node}: expected data_type=timeseries"
         assert meta["feature_count"] > 0,           f"{node}: feature_count must be > 0"
+
+def test_hai_subsystem_prefixes_are_not_mixed():
+    """HAI VAE nodes must map to physical subsystem prefixes."""
+    expected = {
+        "node_01": {"p1"},
+        "node_02": {"p2"},
+        "node_03": {"p3", "p4"},
+    }
+    for node, prefixes in expected.items():
+        meta = json.loads((PART_DIR / node / "meta.json").read_text())
+        actual = {col.split("_")[0] for col in meta["sensor_columns"]}
+        assert actual == prefixes, f"{node}: expected {prefixes}, got {actual}"
 
 def test_isoforest_nodes_meta_correct():
     """Nodes 04-05 must declare isolation_forest model type and tabular data."""
