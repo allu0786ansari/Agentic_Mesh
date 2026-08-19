@@ -77,7 +77,7 @@ agentic-mesh/
 │   ├── raw/                          # downloaded HAI and CIC Modbus 2023
 │   ├── processed/                    # cleaned, windowed feature files (.parquet)
 │   └── partitions/                   # per-node Non-IID splits
-│       ├── node_01/ ... node_05/
+│       ├── node_01/ ... node_06/
 │
 ├── edge/                             # code that runs on each simulated node
 │   ├── __init__.py
@@ -101,7 +101,7 @@ agentic-mesh/
 │   ├── secagg.py
 │   ├── convergence.py
 │   ├── client.py
-│   ├── simulate.py                   # Flower simulation entrypoint (5 clients)
+│   ├── simulate.py                   # Flower simulation entrypoint (6 clients)
 │   └── mlflow_callback.py
 │
 ├── agents/                           # LangGraph agentic mesh
@@ -233,7 +233,7 @@ dvc pull   # if a remote DVC store is configured
 | DATA_TYPE | timeseries | Model selector: timeseries or tabular |
 | EPSILON | 2.0 | DP-SGD per-round privacy budget |
 | DELTA | 1e-5 | DP-SGD delta parameter |
-| FLOWER_NUM_CLIENTS | 5 | Flower simulation client count |
+| FLOWER_NUM_CLIENTS | 6 | Flower simulation client count |
 | **QDRANT_PATH** | **./qdrant_data** | **Embedded Qdrant local storage path (replaces QDRANT_HOST/PORT)** |
 | **SQLITE_PATH** | **./agmesh.db** | **SQLite database file (replaces POSTGRES_DSN)** |
 | MLFLOW_TRACKING_URI | http://localhost:5000 | MLflow experiment server |
@@ -255,17 +255,17 @@ Phase 1 builds the skeleton every later phase depends on and establishes the exe
 
 **Week 1 — Repository scaffold, Flower simulation environment, asyncio messaging**
 
-**Objective:** Git repository initialised with the full directory structure; Python 3.12 environment installs cleanly with no dependency conflicts; the Flower simulation environment runs with five stub coroutine clients; the asyncio-based telemetry replay generator and internal message bus are verified end-to-end.
+**Objective:** Git repository initialised with the full directory structure; Python 3.12 environment installs cleanly with no dependency conflicts; the Flower simulation environment runs with six stub coroutine clients; the asyncio-based telemetry replay generator and internal message bus are verified end-to-end.
 
 **Key Tasks:**
 - Initialise git, create the full directory tree from Section 2, add `__init__.py` to every package, create `pyproject.toml`, `requirements.txt`, `requirements-dev.txt`, `.env.example`, `README.md`.
 - Create and activate the Python 3.12 virtual environment; install all packages; verify critical imports (`torch`, `opacus`, `flwr`, `langgraph`, `qdrant_client`) and pin versions; run `pip check`.
 - Write `edge/telemetry_replay.py` — an `asyncio` generator that reads a Parquet partition row-by-row and yields it at a configurable simulated rate, standing in for a live Kafka producer.
 - Write `edge/bus.py` — a thin wrapper around `asyncio.Queue` providing `publish(topic, message)` / `subscribe(topic)` semantics used for all inter-agent and node-to-mesh messaging, standing in for NATS JetStream.
-- Write `federated/simulate.py` scaffold using `flwr.simulation.start_simulation()` with five stub `client_fn` clients that do nothing yet but confirm the simulation runtime boots.
+- Write `federated/simulate.py` scaffold using `flwr.simulation.start_simulation()` with six stub `client_fn` clients that do nothing yet but confirm the simulation runtime boots.
 - Write `scripts/verify_messaging.py` — sends 10 test messages through `edge/bus.py`, reads them back, asserts round-trip success.
 
-**Deliverables:** Full repo scaffold committed; verified `.venv` with pinned dependencies; working `telemetry_replay.py` and `bus.py`; Flower simulation boots with 5 stub clients.
+**Deliverables:** Full repo scaffold committed; verified `.venv` with pinned dependencies; working `telemetry_replay.py` and `bus.py`; Flower simulation boots with 6 stub clients.
 
 **Validation Checkpoint:**
 
@@ -273,29 +273,29 @@ Phase 1 builds the skeleton every later phase depends on and establishes the exe
 |---|---|---|
 | Package install clean | `pip check` | No broken requirements |
 | Messaging round-trip | `python scripts/verify_messaging.py` | "All messaging checks passed" |
-| Flower simulation boots | `python federated/simulate.py --rounds 1 --stub` | 5/5 stub clients respond |
+| Flower simulation boots | `python federated/simulate.py --rounds 1 --stub` | 6/6 stub clients respond |
 
 ---
 
 **Week 2 — Dataset acquisition, Non-IID partitioning, SQLite node registry**
 
-**Objective:** HAI and CIC Modbus 2023 datasets are downloaded, cleaned, and partitioned into five Non-IID node allocations as Parquet files. SQLite is initialised with the node metadata registry populated.
+**Objective:** HAI and CIC Modbus 2023 datasets are downloaded, cleaned, and partitioned into six Non-IID node allocations as Parquet files. SQLite is initialised with the node metadata registry populated.
 
 **Key Tasks:**
 - Apply for/download HAI (open access) and CIC Modbus Dataset 2023 (citation-only download from UNB); run checksum verification via `scripts/download_datasets.sh --verify-only`; document dataset sizes and class distributions in `notebooks/01_data_exploration.ipynb`.
 - Build the cleaning pipeline in `scripts/partition_data.py`: for HAI, parse timestamps, forward-fill sparse missing sensor values, min-max normalise fitted on the normal partition only, apply a sliding window (60s window, stride 10) for VAE input; for CIC Modbus, load and concatenate pcap-derived feature CSVs, drop high-NaN columns, clip outliers, normalise, and **derive attack-window labels from the accompanying attack logs/scenario documentation** since the dataset does not ship a per-packet label column.
-- Partition into five simulated nodes: Node 01–03 assigned distinct HAI process/sensor subsystems (time-series, VAE); Node 04–05 assigned distinct CIC Modbus attack-scenario subsets (tabular/network flow, Isolation Forest). Write each node's `train.parquet`, `test.parquet`, `meta.json` to `data/partitions/node_0X/`.
+- Partition into six simulated nodes: Node 01–03 assigned distinct HAI process/sensor subsystems (time-series, VAE); Node 04 assigned CIC Modbus IED1A traffic; Node 05 assigned CIC Modbus IED1B traffic; Node 06 assigned CIC Modbus SCADA HMI traffic (tabular/network flow, Isolation Forest). Write each node's `train.parquet`, `test.parquet`, `meta.json` to `data/partitions/node_0X/`.
 - Implement `storage/sqlite_schema.py`: creates `node_registry`, `alert_records`, and `fl_rounds` tables (same schema as the original PostgreSQL design, translated to SQLite types — `TEXT` for VARCHAR/UUID, `REAL` for FLOAT, no native `VECTOR` type since embeddings live in Qdrant, not SQLite).
 - Write `scripts/seed_registry.py` to populate `node_registry` from each partition's `meta.json`. Initialise DVC and track `data/raw/`, `data/processed/`, `data/partitions/`. Create `params.yaml` with all hyperparameters.
 
-**Deliverables:** Five partitioned node datasets with metadata; SQLite schema created and seeded; DVC tracking active; `params.yaml` committed.
+**Deliverables:** Six partitioned node datasets with metadata; SQLite schema created and seeded; DVC tracking active; `params.yaml` committed.
 
 **Validation Checkpoint:**
 
 | Check | Command | Expected Result |
 |---|---|---|
 | Partitions exist | `ls data/partitions/node_0*/` | train/test/meta per node |
-| Node registry populated | `sqlite3 agmesh.db "SELECT node_id, model_type FROM node_registry"` | 5 rows returned |
+| Node registry populated | `sqlite3 agmesh.db "SELECT node_id, model_type FROM node_registry"` | 6 rows returned |
 | DVC tracking active | `dvc status` | No untracked data changes |
 | Parquet readable | quick pandas read of `node_01/train.parquet` | Shape printed without error |
 
@@ -358,15 +358,15 @@ Phase 2 builds the ML core on each simulated edge node and corresponds to Module
 
 **Week 5 — Isolation Forest, model selector, embedded Qdrant integration**
 
-**Objective:** Isolation Forest is implemented for the CIC Modbus nodes (04–05); the model selector routes each node to the correct model type from SQLite metadata; embedded Qdrant is wired into the edge layer for embedding storage.
+**Objective:** Isolation Forest is implemented for the CIC Modbus nodes (04–06); the model selector routes each node to the correct model type from SQLite metadata; embedded Qdrant is wired into the edge layer for embedding storage.
 
 **Key Tasks:**
 - Implement `edge/models/isolation_forest.py` wrapping `sklearn.ensemble.IsolationForest`, fit on normal-only data, with input-level differential privacy (Gaussian noise scaled to sensitivity/epsilon applied to feature columns before fitting, since IsoForest has no gradients to clip via Opacus).
 - Implement `edge/models/model_selector.py`: queries SQLite `node_registry` for `data_type`, returns the correct instantiated model and trainer — this remains the single decision point all other code calls into.
-- Build the tabular data loader for CIC Modbus features in `edge/data_loader.py`; run Isolation Forest training for nodes 04–05; verify attack-row anomaly scores are shifted higher than normal-row scores.
+- Build the tabular data loader for CIC Modbus features in `edge/data_loader.py`; run Isolation Forest training for nodes 04–06; verify attack-row anomaly scores are shifted higher than normal-row scores.
 - Implement `edge/embedding/insight_embedding.py`'s `QdrantEmbeddingStore` class against the **embedded** Qdrant client (`store()` / `search()` methods, same interface as the original server-based design).
 
-**Deliverables:** Isolation Forest module with unit tests, model selector with unit tests, embedded Qdrant embedding store, trained checkpoints for nodes 04–05.
+**Deliverables:** Isolation Forest module with unit tests, model selector with unit tests, embedded Qdrant embedding store, trained checkpoints for nodes 04–06.
 
 **Validation Checkpoint:**
 
@@ -375,13 +375,13 @@ Phase 2 builds the ML core on each simulated edge node and corresponds to Module
 | IsoForest unit test | `pytest tests/unit/test_isolation_forest.py -v` | Pass |
 | Model selector unit test | `pytest tests/unit/test_model_selector.py -v` | Pass |
 | Qdrant store unit test | `pytest tests/unit/test_qdrant_store.py -v` | Pass |
-| Node 04 training completes | `NODE_ID=node_04 python edge/main.py --mode train` | Model saved, scores logged |
+| Modbus node training completes | `NODE_ID=node_04 python edge/main.py --mode train`, repeated for `node_05` and `node_06` | All three models saved, scores logged |
 
 ---
 
 **Week 6 — Insight Embedding pipeline, asyncio bus publisher, local evaluation harness**
 
-**Objective:** All five nodes produce Insight Embeddings from local model inference, publish them via the asyncio message bus, store them in embedded Qdrant, and pass a local evaluation harness measuring AUROC/F1 against labeled test data.
+**Objective:** All six nodes produce Insight Embeddings from local model inference, publish them via the asyncio message bus, store them in embedded Qdrant, and pass a local evaluation harness measuring AUROC/F1 against labeled test data.
 
 **Key Tasks:**
 - Finalise `InsightEmbeddingGenerator`: fixed 128-dim, L2-normalised embeddings for both VAE (concatenated mu/log_var projected via a trained linear head) and IsoForest (anomaly score + top-128 PCA components) nodes, so embeddings from different node types remain directly comparable.
@@ -407,13 +407,13 @@ This phase implements Module 2 of the research architecture: privacy-preserving 
 
 **Module alignment:** Module 2 — FedProx, DP-SGD, SecAgg, convergence analysis, privacy accounting
 
-Phase 3 wires all five simulated nodes into a federated training loop via Flower's simulation runtime. By end of Week 9, the global model outperforms any individual local model, FedProx is demonstrably superior to FedAvg on the Non-IID partition, and every round is logged and reproducible.
+Phase 3 wires all six simulated nodes into a federated training loop via Flower's simulation runtime. By end of Week 9, the global model outperforms any individual local model, FedProx is demonstrably superior to FedAvg on the Non-IID partition, and every round is logged and reproducible.
 
 ---
 
 **Week 7 — Flower simulation client, FedProx strategy, Secure Aggregation**
 
-**Objective:** The Flower simulation runs FedProx with all five simulated clients participating, and Secure Aggregation ensures the server only observes the summed gradients.
+**Objective:** The Flower simulation runs FedProx with all six simulated clients participating, and Secure Aggregation ensures the server only observes the summed gradients.
 
 **Key Tasks:**
 - Implement `federated/client.py`'s `FlowerClient(fl.client.NumPyClient)`: `get_parameters`, `fit` (runs `dp_trainer.train()` for `local_epochs`), `evaluate` — each simulated client runs its own DP-SGD independently within the shared simulation process.
@@ -422,7 +422,7 @@ Phase 3 wires all five simulated nodes into a federated training loop via Flower
 - Implement `federated/simulate.py` using `fl.simulation.start_simulation()` with a `client_fn` returning a `FlowerClient` per simulated node — this **is** the production entrypoint for this build, not just a test harness.
 - Run a 5-round simulation; verify global loss decreases, MLflow logs each round, and SecAgg aggregation is confirmed active in logs; write a unit test for `FlowerClient.get_parameters()`.
 
-**Deliverables:** Working FedProx + SecAgg simulation across 5 clients; MLflow logging per-round metrics.
+**Deliverables:** Working FedProx + SecAgg simulation across 6 clients; MLflow logging per-round metrics.
 
 **Validation Checkpoint:**
 
@@ -443,7 +443,7 @@ Phase 3 wires all five simulated nodes into a federated training loop via Flower
 - Implement `federated/convergence.py`'s `ConvergenceChecker` (patience-based stopping on rolling validation loss delta); integrate into the `aggregate_fit` hook to terminate the simulation on convergence or `max_rounds`, whichever comes first.
 - Configure straggler handling via `min_fit_clients` and a per-round timeout in `ServerConfig`; log missing-node events; mark a node `degraded` in SQLite `node_registry` after 3 consecutive missed rounds. Write an integration test simulating one client timing out.
 - Upgrade `federated/mlflow_callback.py` for full experiment logging: one run per training session, per-round metrics as steps, final hyperparameters/weights/AUROC/F1 as summary artifacts, per-node epsilon totals as metrics.
-- Implement the server-side `evaluate_fn` in `federated/server.py`: evaluates the global VAE model against the combined HAI test partition. Document clearly that the Isolation Forest nodes (04–05) contribute only Insight Embeddings to shared Qdrant memory rather than gradients, since federated gradient aggregation applies to the VAE nodes only — their improvement path is Qdrant-based knowledge sharing in Phase 4.
+- Implement the server-side `evaluate_fn` in `federated/server.py`: evaluates the global VAE model against the combined HAI test partition. Document clearly that the Isolation Forest nodes (04–06) contribute only Insight Embeddings to shared Qdrant memory rather than gradients, since federated gradient aggregation applies to the VAE nodes only — their improvement path is Qdrant-based knowledge sharing in Phase 4.
 - Run a full 50-round simulation; plot the convergence curve in `notebooks/03_fl_convergence_analysis.ipynb`.
 
 **Deliverables:** Convergence checker, straggler handling with SQLite status updates, full MLflow experiment logging, 50-round simulation results.
@@ -453,7 +453,7 @@ Phase 3 wires all five simulated nodes into a federated training loop via Flower
 | Check | Command | Expected Result |
 |---|---|---|
 | Convergence unit test | `pytest tests/unit/test_convergence.py -v` | Pass |
-| Straggler integration test | `pytest tests/integration/test_straggler.py -v` | Pass — round completes with 4/5 clients |
+| Straggler integration test | `pytest tests/integration/test_straggler.py -v` | Pass — round completes with 5/6 clients |
 | Full 50-round simulation | `python federated/simulate.py --rounds 50` | Convergence triggered, all metrics in MLflow |
 | Global AUROC | MLflow run summary | >= 0.88 (target 0.92 after Week 9 tuning) |
 
@@ -672,7 +672,7 @@ Phase 5 proves the system works. By end of Week 16, every metric in the proposal
 | Flower simulation environment boots with 5 stub clients | 1 | 1 |
 | Asyncio telemetry replay + message bus verified | 1 | 1 |
 | HAI and CIC Modbus 2023 downloaded and checksummed | 1 | 2 |
-| Five Non-IID node partitions as Parquet files | 1 | 2 |
+| Six Non-IID node partitions as Parquet files | 1 | 2 |
 | SQLite node_registry populated with 5 nodes | 1 | 2 |
 | DVC tracking initialised for data and models | 1 | 2 |
 | Embedded Qdrant, Phoenix, MLflow, structured logging all running | 1 | 3 |

@@ -80,7 +80,7 @@ Modern industrial environments — spanning manufacturing, financial services, e
 
 This proposal describes the design, architecture, and implementation plan for a Decentralized Agentic Mesh: a distributed AI system that performs privacy-preserving anomaly detection and autonomous root-cause analysis across a network of private edge nodes. The system combines three advanced disciplines — Federated Learning for privacy-safe model training, Differential Privacy for mathematical privacy guarantees, and a Multi-Agent Reasoning Layer for autonomous investigation — into a single integrated platform.
 
-The result is a system that detects complex distributed threats without ever accessing raw data, satisfies GDPR and HIPAA compliance requirements by design, operates at the edge for sub-second response times, and continuously learns from new operational patterns without manual retraining. This version of the proposal implements the full architecture as a **single-process simulation** — five federated clients, four reasoning agents, and all shared services run within one Python environment on an 8GB RAM development machine — with a clearly documented path to multi-node/containerized deployment as future work.
+The result is a system that detects complex distributed threats without ever accessing raw data, satisfies GDPR and HIPAA compliance requirements by design, operates at the edge for sub-second response times, and continuously learns from new operational patterns without manual retraining. This version of the proposal implements the full architecture as a **single-process simulation** — six federated clients, four reasoning agents, and all shared services run within one Python environment on an 8GB RAM development machine — with a clearly documented path to multi-node/containerized deployment as future work.
 
 # 1. Problem Statement
 
@@ -116,7 +116,9 @@ This three-module structure also provides the foundation for a stronger research
 
 ## 2.1 Module 1 — Federated Edge Detection
 
-Five simulated edge nodes are instantiated as **Flower simulation clients** — lightweight virtual participants running as Python coroutines within a single process, rather than as separate Docker containers under a Kubernetes cluster. This is the standard approach used in federated learning research to benchmark algorithms like FedProx without provisioning real multi-node infrastructure; it produces algorithmically identical results to a true multi-machine deployment while fitting comfortably within 8GB RAM. Each simulated node operates an independent local anomaly detection model trained exclusively on that node's data partition. No raw data ever leaves the node's logical boundary within the simulation.
+Six simulated edge nodes are instantiated as **Flower simulation clients** — lightweight virtual participants running as Python coroutines within a single process, rather than as separate Docker containers under a Kubernetes cluster. This is the standard approach used in federated learning research to benchmark algorithms like FedProx without provisioning real multi-node infrastructure; it produces algorithmically identical results to a true multi-machine deployment while fitting comfortably within 8GB RAM. Each simulated node operates an independent local anomaly detection model trained exclusively on that node's data partition. No raw data ever leaves the node's logical boundary within the simulation.
+
+The node allocation deliberately preserves both physical-process heterogeneity and network-device heterogeneity: Nodes 01–03 represent distinct HAI process/sensor partitions and use VAEs; Node 04 represents IED1A traffic; Node 05 represents IED1B traffic; and Node 06 represents SCADA HMI traffic. Nodes 04–06 use Isolation Forest over extracted Modbus network-flow windows. This six-way allocation avoids combining unrelated device distributions and provides a cleaner non-IID experimental design.
 
 Two model types are deployed based on the nature of each node's data:
 
@@ -225,7 +227,7 @@ The following tables define the complete set of technologies to be used in this 
 
 | **Tool** | **Role** | **Justification** |
 |---|---|---|
-| **Flower simulation runtime** | **Client/node orchestration for edge nodes** | **Replaces Docker + K3s for this project's scope. Five virtual clients run as coroutines within one Python process, which is algorithmically equivalent to five containerised nodes for the purpose of evaluating FedProx and DP-SGD, without the ~1.5–3GB of container/orchestration overhead a real K3s cluster would add on top of everything else running locally.** |
+| **Flower simulation runtime** | **Client/node orchestration for edge nodes** | **Replaces Docker + K3s for this project's local simulation. Six virtual clients run as coroutines within one Python process, which is algorithmically equivalent to six containerised nodes for the purpose of evaluating FedProx and DP-SGD, without the ~1.5–3GB of container/orchestration overhead a real K3s cluster would add on top of everything else running locally.** |
 | **Docker + Docker Compose** | **Executable, portable research runtime** | **Used for the reproducibility layer, not as the scientific contribution itself. Containerises the Flower server, Qdrant, MLflow, Phoenix, and API agents for consistent execution across machines. The local simulation remains available for rapid prototyping, but the final pipeline is meant to be run in containers for review and benchmarking.** |
 | mTLS (via cert-manager) | Transport security between agents | Mutual TLS with automatically rotated certificates ensures all inter-agent and node-to-FL-server communication is encrypted and mutually authenticated. Implemented at the library/code level for this build rather than via a cluster-managed certificate authority. |
 | JWT (via python-jose) | Agent request authorisation | Short-TTL JWT tokens issued per investigation session prevent replay attacks and unauthorised node queries. |
@@ -311,7 +313,7 @@ The following architectural decisions have been made specifically to satisfy pri
 
 ## Phase 1 — Foundation (Weeks 1 to 3)
 
-- Set up the Flower simulation environment with five virtual edge-node clients as Python coroutines.
+- Set up the Flower simulation environment with six virtual edge-node clients as Python coroutines: three HAI process clients and three Modbus device clients.
 
 - Implement the asyncio-based telemetry replay generator and the internal asyncio.Queue message bus for inter-service communication.
 
@@ -351,7 +353,7 @@ The following architectural decisions have been made specifically to satisfy pri
 
 - Integrate DVC for dataset versioning and model checkpoint management.
 
-- Run baseline Non-IID convergence comparison: FedAvg vs FedProx across five simulated node configurations.
+- Run baseline Non-IID convergence comparison: FedAvg vs FedProx across six simulated node configurations.
 
 ## Phase 4 — Agentic Mesh (Weeks 10 to 13)
 
@@ -365,7 +367,7 @@ The following architectural decisions have been made specifically to satisfy pri
 
 - Integrate Arize Phoenix tracing into all agent tool calls and LLM completions.
 
-- Run end-to-end integration test across all five layers with a single simulated attack scenario.
+- Run end-to-end integration test across all five layers and six simulated nodes with a single simulated attack scenario.
 
 ## Phase 5 — Evaluation and Documentation (Weeks 14 to 16)
 
@@ -373,7 +375,7 @@ The following architectural decisions have been made specifically to satisfy pri
 
 - Execute custom evaluation harness: measure detection rate, false positive rate, root-cause attribution accuracy, mean time to investigation completion, and epsilon budget efficiency.
 
-- Run FedProx convergence analysis across five Non-IID simulated node configurations.
+- Run FedProx convergence analysis across six Non-IID simulated node configurations.
 
 - Conduct chaos testing: simulate node termination mid-investigation and verify circuit breaker and investigation completion behaviour.
 
