@@ -1,24 +1,19 @@
-[build-system]
-requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
-
 [project]
 name = "agentic-mesh"
 version = "0.1.0"
 description = "Decentralized Agentic Mesh for Privacy-Preserving Industrial Analytics"
-requires-python = ">=3.12"
 authors = [{ name = "Allaudin Ansari" }]
+requires-python = ">=3.12"
+readme = "README.md"
 
-[tool.setuptools.packages.find]
-include = ["edge*", "federated*", "agents*", "api*", "evaluation*"]
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-testpaths   = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
+testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "-v --tb=short"
+python_files = ["test_*.py"]
 
 [tool.black]
 line-length = 100
@@ -27,9 +22,3 @@ target-version = ["py312"]
 [tool.isort]
 profile = "black"
 line_length = 100
-known_first_party = ["edge", "federated", "agents", "api", "evaluation"]
-
-[tool.mypy]
-python_version = "3.12"
-strict = false
-ignore_missing_imports = true
