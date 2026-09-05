@@ -1,0 +1,70 @@
+stages:
+  partition_data:
+    cmd: >-
+      python scripts/partition_data.py
+      --input data/raw/hai/hai-21.03
+      --output data/partitions
+      --nodes 3
+      --seed 42
+      --source-name hai_21.03
+      --model-type vae
+      --data-type timeseries
+    deps:
+      - scripts/partition_data.py
+      - data/raw/hai/hai-21.03
+    outs:
+      - data/partitions
+
+  train_local_models:
+    cmd: >-
+      python scripts/train_hai.py
+      --partitions-root data/partitions
+      --checkpoint-root checkpoints/dvc_local
+      --nodes node_01 node_02 node_03
+    deps:
+      - scripts/train_hai.py
+      - edge/data_loader.py
+      - edge/models/vae.py
+      - edge/training
+      - data/partitions
+      - params.yaml
+    outs:
+      - checkpoints/dvc_local
+
+  federated_train:
+    cmd: >-
+      python -m federated.simulate
+      --strategy fedprox
+      --rounds 50
+      --clients 3
+      --nodes node_01 node_02 node_03
+      --partitions-root data/partitions
+      --results-root results/week9_federated
+      --local-epochs 5
+      --max-windows 256
+      --patience 5
+      --min-delta 0.0001
+      --round-timeout 300
+      --database agmesh.db
+      --proximal-mu 0.1
+    deps:
+      - federated
+      - data/partitions
+      - params.yaml
+    outs:
+      - results/week9_federated
+
+  evaluate:
+    cmd: >-
+      python scripts/evaluate_hai.py
+      --partitions-root data/partitions
+      --checkpoint-root checkpoints/dvc_local
+      --results-root results/evaluation_dvc
+      --nodes node_01 node_02 node_03
+    deps:
+      - scripts/evaluate_hai.py
+      - evaluation
+      - data/partitions
+      - checkpoints/dvc_local
+    outs:
+      - results/evaluation_dvc

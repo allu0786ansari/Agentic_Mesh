@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from scripts.prepare_week2_data import (
+from scripts.prepare_data import (
     NODE_SPECS,
     _aggregate_packets,
     _split_capture_paths,

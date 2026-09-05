@@ -62,3 +62,26 @@ async def publish(topic: str, message: Any) -> None:
 
 async def subscribe(topic: str) -> asyncio.Queue:
     return await AsyncBus().subscribe(topic)
+
+
+class EmbeddingPublisher:
+    """Publish embeddings with bounded retry and exponential backoff."""
+
+    def __init__(self, *, retries: int = 3, backoff_seconds: float = 0.05):
+        if retries < 1 or backoff_seconds < 0:
+            raise ValueError("retries must be positive and backoff must be non-negative")
+        self.retries = retries
+        self.backoff_seconds = backoff_seconds
+
+    async def publish(self, node_id: str, message: Any) -> None:
+        topic = f"embeddings.{node_id}"
+        last_error: Exception | None = None
+        for attempt in range(self.retries):
+            try:
+                await AsyncBus().publish(topic, message)
+                return
+            except Exception as exc:  # pragma: no cover - queue failures are environment-specific
+                last_error = exc
+                if attempt + 1 < self.retries:
+                    await asyncio.sleep(self.backoff_seconds * (2**attempt))
+        raise RuntimeError(f"Failed to publish embedding on {topic}") from last_error

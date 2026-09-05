@@ -5,6 +5,32 @@ partition:
   modbus_window_seconds: 10
   hai_window_size: 60
   hai_window_stride: 10
+training:
+  local_epochs: 50
+  batch_size: 64
+  learning_rate: 0.001
+  max_grad_norm: 1.0
+  target_epsilon: 2.0
+  delta: 0.00001
+  latent_dim: 32
+  hidden_dim: 128
+
+evaluation:
+  use_test_partition: true
+  test_normal_label: "normal"
+  test_attack_label: "attack"
+  anomaly_score_threshold: "95th_percentile"
+  metrics:
+    - auc
+    - precision
+    - recall
+    - f1_score
+    - roc_curve
+
+privacy_analysis:
+  epsilon_variants: [1.0, 2.0, 4.0, 8.0]
+  baseline_epsilon: infinity
+  comparison_metric: auc
   source_names:
     - hai
     - cic_modbus_2023

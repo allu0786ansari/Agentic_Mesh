@@ -8,7 +8,7 @@ import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Iterator
+from typing import Iterator
 
 import numpy as np
 import pandas as pd
@@ -267,7 +267,7 @@ def _split_capture_paths(root: Path, device_directory: str, seed: int) -> tuple[
     benign = sorted((root / "benign" / device_directory).glob("*.pcap"))
     attack = sorted((root / "attack" / device_directory).glob("*.pcap"))
     if len(benign) < 2:
-        raise ValueError(f"At least two benign captures are required for {device_root}")
+        raise ValueError(f"At least two benign captures are required for {device_directory}")
     rng = np.random.default_rng(seed)
     order = rng.permutation(len(benign))
     train_count = max(1, int(len(benign) * 0.8))

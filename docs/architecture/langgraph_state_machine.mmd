@@ -1,0 +1,11 @@
+stateDiagram-v2
+  [*] --> triaged
+  triaged --> investigated: severity medium/high
+  triaged --> complete: low severity
+  investigated --> classified
+  classified --> complete
+  investigated --> failed: timeout / circuit open
+  classified --> failed: dependency error
+  failed --> recovered: breaker half-open probe succeeds
+  complete --> [*]
+  recovered --> [*]

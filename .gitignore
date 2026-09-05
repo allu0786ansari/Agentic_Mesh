@@ -149,6 +149,7 @@ activemq-data/
 
 # Environments
 .env
+!.env.example
 .envrc
 .venv
 .agentvenv
@@ -219,12 +220,38 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Data — tracked by DVC not Git
+# Data - tracked by DVC, not Git
 data/raw/
 data/processed/
 data/partitions/
+
+# Local vector stores and experiment databases
 qdrant_data/
+qdrant_data_*/
 *.db
+*.sqlite
+*.sqlite3
+
+# Dataset and model binaries. Keep dataset manifests and DVC pointer files tracked.
+*.parquet
+*.feather
+*.csv
+*.npy
+*.npz
+*.pkl
+*.pt
+*.pth
+*.onnx
+*.safetensors
+
+# Local runtime secrets, certificates, and service state
+certs/
+*.pem
+*.key
+*.crt
+logs/
+checkpoints/
+models/
 
 # DVC
 .dvc/cache/
@@ -232,9 +259,13 @@ qdrant_data/
 
 # ML artifacts
 mlruns/
-*.pkl
-*.pt
-*.pth
+results/
+
+# Generated evaluation exports; keep the Python evaluators and source documents.
+evaluation/results.json
+evaluation/ragas_results.json
+evaluation/chaos_results.json
+docs/architecture/*.png
 
 # IDE
 .vscode/

@@ -1,0 +1,13 @@
+flowchart TB
+  Data[Industrial telemetry] --> Edge[Edge nodes: VAE / Isolation Forest]
+  Edge --> FL[Federated learning: Flower FedProx]
+  Edge --> Qdrant[Embedded Qdrant: insight and MITRE memory]
+  FL --> Triage[Triage Agent]
+  Qdrant --> Triage
+  Triage --> Investigator[Investigator Agent]
+  Investigator --> Security[Security Agent]
+  Qdrant --> Security
+  Security --> Dispatcher[Action Dispatcher]
+  Dispatcher --> SQLite[SQLite audit metadata]
+  Dispatcher --> Bus[Async message bus]
+  Trace[Phoenix traces] -. observability .-> Triage

@@ -1,0 +1,23 @@
+sequenceDiagram
+  participant D as Telemetry
+  participant E as Edge node
+  participant F as Flower
+  participant Q as Qdrant
+  participant T as Triage
+  participant I as Investigator
+  participant S as Security
+  participant A as Dispatcher
+  participant DB as SQLite
+  D->>E: ingest local telemetry
+  E->>E: score anomaly and create embedding
+  E->>Q: store insight embedding
+  E->>F: send model update
+  F-->>E: aggregate global model
+  E->>T: publish alert
+  T->>Q: retrieve related evidence
+  T->>I: escalate investigation
+  I->>E: query node evidence
+  I->>S: submit evidence package
+  S->>Q: retrieve MITRE context
+  S->>A: recommend remediation
+  A->>DB: persist dispatch status
