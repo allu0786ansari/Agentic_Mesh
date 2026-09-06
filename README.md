@@ -1,107 +1,103 @@
 # Decentralized Agentic Mesh for Privacy-Preserving Industrial Analytics
 
-A research-first, first-phase prototype for detecting distributed industrial anomalies while preserving data locality, privacy, and explainability. The system combines edge-based anomaly detection, federated learning, and a multi-agent investigation workflow to reason about suspicious activity without centralizing raw operational data.
+## Abstract
 
-This repository represents the first completed development phase of a larger research program. It is structured as a rerunnable local prototype that can be executed on a single development machine with an 8 GB RAM budget, while preserving the architecture needed for scale-up in a later phase.
+This project presents a privacy-preserving, multi-agent framework for industrial anomaly detection and forensic reasoning in distributed cyber-physical environments. The proposed system integrates local edge intelligence, federated learning, and knowledge-grounded agentic investigation to detect complex operational anomalies without centralizing raw telemetry. The implementation is designed as a research prototype that operates within a constrained single-machine environment and demonstrates the feasibility of privacy-aware industrial analytics in the absence of a fully distributed production deployment.
 
-## Project status
+The system combines variational autoencoders and isolation forest models at the edge, a Flower-based federated learning simulation using a FedProx-inspired aggregation strategy, and a LangGraph-based investigation workflow involving triage, investigation, security reasoning, and action dispatch. Semantic retrieval is performed using an embedded Qdrant memory layer, while operational metadata is maintained in SQLite. The design is motivated by the privacy constraints inherent to industrial data, where centralizing sensitive machine and process telemetry raises legal, security, and governance concerns.
 
-This project is currently in a defensible first-phase prototype state:
-
-- Local edge anomaly detection is implemented and operational.
-- Federated learning simulation is implemented in Flower with FedProx-based training logic.
-- A multi-agent LangGraph investigation workflow is implemented.
-- Retrieval and knowledge grounding against a MITRE-inspired local knowledge base is implemented.
-- Evaluation, chaos testing, and evidence-gated reporting are in place.
-- The project is intentionally documented as PASS_WITH_GAPS at the final evaluation gate because the final federated benchmark artifacts, cumulative epsilon evidence, and full 8 GB runtime benchmark are not yet captured as machine-readable results.
-
-This is appropriate for a first-phase submission: the prototype is technically functional, reproducible, and honest about remaining evidence gaps.
+This repository represents the first completed phase of the research work. It is intentionally scoped for local execution on an 8 GB RAM development machine and is structured to support reproducibility, evaluation, and future enhancement in the next development phase.
 
 ---
 
-## 1. Problem statement
+## 1. Introduction
 
-Industrial environments generate large volumes of operational telemetry from machines, sensors, controllers, and network devices. In practice, the most valuable intelligence is also the most sensitive: the same data that is critical for anomaly detection and predictive maintenance is often restricted by privacy, legal, and data residency requirements.
+Industrial systems generate large-scale telemetry from heterogeneous sources such as sensors, controllers, human-machine interfaces, and network infrastructure. This data is highly valuable for predictive maintenance, anomaly detection, and cyber-physical risk identification. However, the same information is frequently sensitive, operationally critical, and constrained by privacy and compliance requirements. In many real-world scenarios, raw data cannot be transmitted outside the originating environment due to legal, organisational, or security restrictions.
 
-The central challenge is not only to detect anomalies, but to do so without moving raw operational data across trust boundaries. Traditional centralised AI systems require data aggregation into a single repository, which creates several problems:
+This creates a significant challenge: the most informative industrial intelligence is often located in distributed, isolated silos, while conventional centralized machine learning approaches require raw data aggregation. Such a model assumes unrestricted access to private operational data, which is not feasible in regulated or security-sensitive industrial environments.
 
-- data sovereignty and compliance exposure
-- high risk of exposure if the central store is compromised
-- inability to capture cross-node patterns that are only visible when evidence is correlated across distributed systems
-- delayed and brittle model updates based on static, manually retrained pipelines
+To address this limitation, the proposed framework adopts a privacy-preserving architecture that keeps data local to each node while enabling collaborative learning and distributed reasoning. The system is designed to detect anomalies across multiple nodes, correlate evidence across heterogeneous sources, and support explainable incident investigation without exposing raw data.
 
-In industrial cyber-physical systems, attacks and faults often appear as weak signals dispersed across multiple nodes over time rather than as one obvious local disruption. A model trained on data from a single node cannot see the broader pattern. Traditional detection systems therefore fail to capture multi-stage and distributed behaviours.
-
-The project addresses this by combining:
-
-- local anomaly detection at the edge
-- privacy-preserving federated learning across distributed node partitions
-- a reasoning layer that correlates alerts, retrieves relevant threat intelligence, and proposes actionable outcomes
+The research problem is therefore formulated as follows: how can a distributed industrial monitoring system detect coordinated anomalies and support root-cause analysis while preserving data locality, privacy, and operational feasibility under resource-constrained conditions?
 
 ---
 
-## 2. Research objective and scope
+## 2. Problem Statement
 
-The objective of this project is to build a privacy-aware, distributed intelligence platform for industrial analytics. The project is designed to demonstrate that:
+Industrial cyber-physical environments are characterized by high data velocity, diverse device types, and non-independent data distributions across operational nodes. In such settings, anomalies are often subtle and distributed across multiple subsystems rather than localized in a single source. Traditional centralized machine learning pipelines are inadequate because they necessitate the movement of sensitive data to a single repository, increasing exposure to privacy violations and compliance breaches.
 
-1. anomaly detection can remain local to each node without centralizing raw telemetry
-2. model learning can occur across private data silos through federated training
-3. a multi-agent system can investigate suspicious events and map them to relevant attack patterns or operational faults
-4. a prototype can be evaluated using deterministic checks, retrieval assessments, and chaos conditions
+Additional limitations of conventional approaches include:
 
-This repository implements the first phase of that objective with a single-machine, 8 GB development configuration. It is intentionally designed as a research prototype rather than a production deployment stack.
+- data residency and sovereignty constraints
+- poor support for non-IID industrial data distributions
+- delayed retraining cycles and model drift
+- inability to reason over distributed evidence in a single investigation workflow
+- limited explainability during root-cause analysis
 
----
-
-## 3. Solution overview
-
-The system is organised into three connected layers.
-
-### 3.1 Local intelligence layer
-
-Each simulated node operates on a local partition of the data and runs a model appropriate to its telemetry type:
-
-- Variational Autoencoder (VAE) for multivariate process and sensor time-series data
-- Isolation Forest for tabular or protocol-derived network anomaly data
-
-These models produce compact insight embeddings rather than raw telemetry, keeping the detection logic local and privacy-aware.
-
-### 3.2 Federated learning layer
-
-A Flower simulation orchestrates learning across node partitions using a FedProx-based tuning strategy to improve robustness under non-IID industrial distributions. DP-SGD is added to track privacy cost, and the training loop is structured such that raw local data remains on the node.
-
-### 3.3 Agentic investigation layer
-
-The investigation layer is implemented as a LangGraph state-based workflow with specialised agents:
-
-- Triage agent: filters and prioritises incoming signals
-- Investigator agent: gathers supporting evidence from relevant nodes
-- Security agent: retrieves and ranks relevant MITRE/NIST-style threat knowledge
-- Action dispatcher: determines the next operational response or alert action
-
-The system uses embedded Qdrant for semantic retrieval and SQLite for operational metadata, allowing the project to remain lightweight and self-contained locally.
+The need for a privacy-aware, distributed, and interpretable approach is therefore evident. This project addresses that need by designing a system that performs local anomaly detection, federated model convergence over private partitions, and multi-agent threat investigation using contextual retrieval and knowledge grounding.
 
 ---
 
-## 4. Architecture summary
+## 3. Objectives and Scope
 
-The project follows a layered architecture designed for research validation and local execution:
+The primary objective of this project is to develop and evaluate a decentralized intelligence framework for privacy-preserving industrial analytics. The scope includes the following research goals:
 
-- Edge layer: local data processing, VAE/Isolation Forest inference, telemetry, and model-specific training
-- Federated layer: aggregated model updates and convergence checks
-- Memory and knowledge layer: embedded Qdrant vector retrieval and local knowledge base indexing
-- Agent layer: LangGraph workflow with triage, investigation, and response logic
-- Evaluation layer: deterministic evidence checks, retrieval metrics, and chaos-run testing
+1. to preserve data locality by ensuring that raw operational data remains within each node
+2. to support distributed learning across heterogeneous node partitions using a federated setup
+3. to identify abnormal behaviour through edge-level anomaly detection models
+4. to perform evidence-based investigation using a multi-agent reasoning graph
+5. to retrieve relevant threat intelligence and operational context from a local knowledge base
+6. to provide a reproducible first-phase prototype suitable for academic review and future extension
 
-![System layers](docs/architecture/system_layers.svg)
-
-The main architecture diagrams are also exported in the docs folder under the architecture section.
+This repository implements the first phase of the system and is intentionally designed as a prototype environment suitable for research validation, algorithmic demonstration, and structured evaluation.
 
 ---
 
-## 5. Technical stack
+## 4. System Overview
 
-### Core ML and analytics
+The architecture is organized into three interconnected layers: edge intelligence, federated learning, and agentic reasoning.
+
+### 4.1 Edge Intelligence Layer
+
+Each node operates on a local data partition and applies an appropriate anomaly detector based on the telemetry characteristics of that node. The system employs:
+
+- Variational Autoencoder (VAE) for multivariate industrial time-series data
+- Isolation Forest for tabular and protocol-based anomaly detection
+
+These models generate compact insight embeddings rather than raw data representations, preserving privacy while enabling downstream correlation and retrieval.
+
+### 4.2 Federated Learning Layer
+
+The federated layer coordinates model updates across nodes using a Flower-based simulation. The training setup follows a FedProx-inspired design to improve convergence under non-IID data distributions, which are common in industrial settings. Differential privacy is incorporated through DP-SGD-style gradient management, and the training loop is designed so that raw data never leaves each node.
+
+### 4.3 Agentic Investigation Layer
+
+The reasoning layer is implemented using LangGraph and comprises a set of interacting agents:
+
+- Triage agent for signal prioritization
+- Investigator agent for evidence collection and node-level correlation
+- Security agent for knowledge-grounded threat attribution
+- Action dispatcher for response generation and alert handling
+
+This layer performs structured investigation over suspicious events, using an embedded vector store for memory and semantic retrieval, and a local knowledge base for contextual interpretation.
+
+---
+
+## 5. Research Motivation
+
+The motivation for this project is rooted in the mismatch between modern industrial data requirements and traditional centralized AI design. In industrial systems, data is often fragmented, privacy-sensitive, and continuously changing. The inability to centralize such data severely limits the applicability of standard machine learning pipelines.
+
+The proposed framework addresses this by introducing a distributed, privacy-aware intelligence architecture that aligns with modern research directions in federated learning, AI security, and agentic reasoning. It is particularly relevant in environments where security monitoring must be both explainable and operationally constrained.
+
+The project also contributes to the broader academic discussion on trustworthy AI in cyber-physical systems by combining privacy, distributed learning, and explainable incident investigation in a single design.
+
+---
+
+## 6. Technical Stack
+
+The implementation uses a combination of Python-based research and ML tools to support local experimentation and evaluation.
+
+### 6.1 Machine Learning and Federated Learning
 
 - Python 3.12
 - PyTorch
@@ -109,101 +105,100 @@ The main architecture diagrams are also exported in the docs folder under the ar
 - NumPy
 - pandas
 - pyarrow
-- Flower (federated simulation)
-- Opacus (DP-SGD)
+- Flower (simulation-based federated learning)
+- Opacus (differential privacy support)
 - MLflow
 - DVC
 
-### Agentic and knowledge retrieval stack
+### 6.2 Agentic and Retrieval Components
 
 - LangGraph
 - LangChain
 - Qdrant (embedded/local mode)
 - Sentence Transformers
 - SQLite
-- local LLM integration via Ollama-compatible local model wrapper
+- local LLM integration through Ollama-compatible execution
 - Arize Phoenix for tracing support
 
-### Security and control plane elements
+### 6.3 Security and Operational Infrastructure
 
-- JWT-based authentication for agent interactions
-- code-level mTLS generation tooling for local development security patterns
-- asyncio-based messaging bus for in-process communication
+- JWT-based authentication
+- code-level mTLS support for local development security patterns
+- asyncio-based in-process messaging
+- structured logging and evaluation exports
 
-### Evaluation and documentation
+### 6.4 Evaluation and Validation
 
 - pytest
 - ruff
 - matplotlib
 - ragas
-- custom evaluation harnesses for Week 14 and Week 15 research checks
+- custom evaluation harnesses for detection, latency, chaos, and retrieval analysis
 
 ---
 
-## 6. Repository structure
+## 7. Architecture Summary
+
+The architecture of the system is layered and modular, with explicit separation between data collection, learning, reasoning, and evaluation.
+
+- Edge layer: local data processing and anomaly detection
+- Federated layer: distributed learning and secure aggregation-style coordination
+- Memory layer: embedded Qdrant vector storage for semantic retrieval
+- Agent layer: LangGraph-based workflow for investigation and dispatch
+- Evaluation layer: reproducible harnesses and evidence-gated reporting
+
+![System layers](docs/architecture/system_layers.svg)
+
+The repository also includes additional architecture diagrams and export artifacts under the docs/architecture directory.
+
+---
+
+## 8. Repository Structure
 
 ```text
 Agentic_Mesh/
-├── agents/                     # agent workflows, auth, security, dispatch
-│   ├── auth.py
-│   ├── graph.py
-│   ├── state.py
-│   ├── dispatcher/
-│   ├── investigator/
-│   ├── security/
-│   └── triage/
-├── api/                       # API interfaces and service hooks
-├── data/                      # dataset metadata and partitioned data directories
-├── docs/                      # architecture exports and planning documents
-├── edge/                      # local edge inference, telemetry, and model logic
-├── evaluation/                # benchmark and evidence scripts
-│   ├── harness.py
-│   ├── chaos_test.py
-│   ├── ragas_eval.py
-│   ├── plot_metrics.py
-│   ├── final_report.py
-│   └── check_success_criteria.py
-├── federated/                 # Flower simulation and training logic
+├── agents/                     # agent workflows, authentication, security, dispatch
+├── api/                       # application interfaces and service hooks
+├── data/                      # dataset metadata and partitioned structures
+├── docs/                      # architecture exports and project documentation
+├── edge/                      # local edge inference and training logic
+├── evaluation/                # evaluation harnesses and evidence scripts
+├── federated/                 # Flower-based simulation and FL logic
 ├── scripts/                   # operational and setup utilities
-├── storage/                   # SQLite schema and metadata storage
+├── storage/                   # SQLite registry and metadata handling
 ├── tests/                     # unit and integration validation
-├── Documents/                 # project proposal, plan, and week reports
+├── Documents/                 # project proposal and weekly implementation reports
 ├── requirements.txt
 ├── requirements-dev.txt
 ├── pyproject.toml
 ├── .gitignore
 ├── README.md
 ├── dvc.yaml
-└── mlruns/
+├── mlruns/
+└── .github/
 ```
 
 ---
 
-## 7. Data model and research inputs
+## 9. Experimental Data and Research Inputs
 
-The prototype is designed around industrial benchmark data sources, primarily:
+The project is designed around real industrial benchmark sources, including HAI and Modbus-based partitions. These datasets are organized per node to retain realistic non-IID characteristics and to emulate heterogeneous industrial environments. This structure supports the research objective of validating learning and detection under realistic domain partitions rather than idealized centralized distributions.
 
-- HAI dataset partitions
-- Modbus 2023 dataset partitions
-- local node metadata and partition registry
-
-Data is intentionally organised per node to maintain non-IID conditions and reflect realistic operational heterogeneity. Raw data and generated runtime artifacts are excluded from Git tracking by default via the project .gitignore file.
-
-The project also includes a structured evaluation layer to compare model behavior against labelled windows and retrieval quality across the knowledge and memory stack.
+The project’s data handling strategy emphasizes data locality and reproducibility. Large runtime artifacts, raw datasets, and generated outputs are excluded from version control by configuration in the repository’s .gitignore file.
 
 ---
 
-## 8. Setup and installation
+## 10. Setup and Execution
 
-### Prerequisites
+### 10.1 Prerequisites
 
-- Windows or WSL2/Linux environment
+- Windows or WSL2/Linux operating system
 - Python 3.12
-- 8 GB RAM available for local prototype execution
-- pip and venv support
-- optional local Ollama runtime for real LLM-backed agent execution
+- 8 GB RAM for local prototype execution
+- pip and virtual environment support
+- optional local Ollama runtime for language-model-backed investigation workflows
 
-### Create the environment
+### 10.2 Environment Setup
 
 ```powershell
 python -m venv agentvenv
@@ -211,52 +206,146 @@ python -m venv agentvenv
 .\agentvenv\Scripts\python.exe -m pip install -r requirements.txt -r requirements-dev.txt
 ```
 
-### Verify the installation
+### 10.3 Verification
 
 ```powershell
 .\agentvenv\Scripts\python.exe -m pytest tests -q --disable-warnings
 ```
 
-This repository was validated in a local environment with the test suite passing before final documentation review.
+This validation command checks the repository’s Python test suite and supports reproducibility for local execution.
 
 ---
 
-## 9. How to run the project
+## 11. Running the Prototype
 
-### 9.1 Local stack smoke test
-
-This runs the local graph stack with synthetic alerts and verifies the end-to-end agent workflow can complete sessions:
+### 11.1 Local Stack Smoke Test
 
 ```powershell
 $py = '.\agentvenv\Scripts\python.exe'
 & $py -m scripts.run_local_stack --count 5 --metrics-path logs/metrics.jsonl
 ```
 
-### 9.2 Evaluation harness
+This command launches the local graph stack with synthetic alerts and verifies that the end-to-end workflow completes successfully.
 
-Run the Week 14 evaluation harness for detection and latency metrics:
+### 11.2 Detection and Latency Evaluation
 
 ```powershell
 & $py -m evaluation.harness
 ```
 
-### 9.3 Chaos evaluation
-
-Run the resilience scenario validation for hung investigations, retry loops, and failure conditions:
+### 11.3 Chaos Evaluation
 
 ```powershell
 & $py -m evaluation.chaos_test
 ```
 
-### 9.4 Retrieval quality evaluation
-
-Run the local retrieval quality and grounding assessment:
+### 11.4 Retrieval Quality Evaluation
 
 ```powershell
 & $py -m evaluation.ragas_eval
 ```
 
-### 9.5 Plot generation
+### 11.5 Dashboard Generation
+
+```powershell
+& $py -m evaluation.plot_metrics
+```
+
+### 11.6 Final Evidence Gate
+
+```powershell
+& $py -m evaluation.check_success_criteria
+```
+
+This final stage presents the project’s evidence gate and clearly separates completed validation from pending benchmark artifacts.
+
+---
+
+## 12. Evaluation Strategy and Results
+
+The evaluation plan is designed to provide traceable, reproducible evidence rather than unsupported performance claims. The prototype includes benchmark checks for:
+
+- detection quality
+- false positive behaviour
+- latency analysis
+- chaos robustness
+- retrieval quality and grounding
+- evidence-gated final reporting
+
+The repository currently reports a PASS_WITH_GAPS status at the final gate because several benchmark artifacts remain unmeasured in machine-readable form. Specifically, the final federated model comparison, cumulative privacy accounting, and resource benchmark are still pending. This is an appropriate and academically responsible outcome for a first-phase prototype.
+
+The overall evaluation posture is therefore honest and evidence-driven: the system demonstrates meaningful prototype functionality and validation, while explicitly identifying the remaining requirements for future strengthening.
+
+---
+
+## 13. Limitations and Challenges
+
+This project is a research prototype and therefore has several explicit constraints.
+
+### 13.1 Computational Limitations
+
+The prototype is intentionally executed within a constrained machine environment and is not designed to represent a production-scale industrial deployment. The single-machine configuration limits large-scale benchmarking and system throughput analysis.
+
+### 13.2 Benchmarking Limitations
+
+The final federated learning metrics, FedProx-vs-FedAvg comparison, cumulative epsilon accounting, and full 8 GB runtime profile have not yet been captured as final benchmark artifacts. These remain critical objectives for the next phase of development.
+
+### 13.3 Data and Ground-Truth Constraints
+
+The project uses realistic benchmark data sources, but scenario-level ground truth and threat labels remain limited. This affects the precision of attack attribution and makes the evaluation conservative by design.
+
+### 13.4 Engineering Challenges
+
+Additional challenges include:
+
+- handling non-IID industrial distributions
+- balancing privacy-preservation with model performance
+- maintaining deterministic local evaluation in a research environment
+- ensuring agent reliability under partial failures and investigation retries
+
+These constraints are acknowledged as part of the project’s research integrity and do not diminish the technical value of the implemented first phase.
+
+---
+
+## 14. Contribution and Academic Relevance
+
+This project contributes to the intersection of distributed intelligence, industrial cybersecurity, and privacy-aware AI. The system demonstrates that local anomaly detection, federated learning, and agentic investigation can be combined in a unified framework for cyber-physical monitoring.
+
+The academic contribution is grounded in the following areas:
+
+1. privacy-preserving detection in distributed industrial environments
+2. non-IID learning under federated constraints
+3. explainable incident analysis using a multi-agent workflow
+4. semantic retrieval for threat intelligence and operational evidence
+5. reproducible prototype evaluation in a resource-constrained environment
+
+The work is positioned as a first-phase research prototype and a strong foundation for subsequent improvement, validation, and publication-oriented analysis.
+
+---
+
+## 15. Future Work
+
+The next phase of the project will focus on strengthening evidence quality and transitioning the prototype from a functional research implementation to a more benchmark-ready system. Key direction areas include:
+
+- final measurement of global AUROC and F1 for the federated model
+- systematic comparison of FedProx and FedAvg under identical conditions
+- privacy accounting through cumulative epsilon reporting
+- full 8 GB runtime and resource characterization
+- improved scenario-grounded threat mapping and evaluation fidelity
+- enhanced reproducibility and checkpoint traceability via DVC and MLflow
+
+These steps are necessary to transform the present implementation into a more robust and publication-ready research system.
+
+---
+
+## 16. Conclusion
+
+This project presents a viable first-phase implementation of a privacy-preserving decentralized anomaly detection system for industrial environments. It integrates local inference, federated learning, and agentic reasoning into a unified workflow that is technically coherent, reproducible, and suitable for review.
+
+Although the project is not yet complete in terms of final benchmark-grade evidence, it demonstrates a credible and academically meaningful foundation for future research and development. The transparent documentation of current limitations is an essential part of the project’s integrity and reflects appropriate engineering discipline for a final-year undergraduate or postgraduate research submission.
+
+The repository therefore serves both as a functioning prototype and as a structured research artifact that can be extended in the next phase toward stronger evaluation, improved performance claims, and more complete industrial readiness.
+
 
 Generate the visual dashboards and charts from measured evaluation artifacts:
 
