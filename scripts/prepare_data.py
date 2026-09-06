@@ -152,13 +152,10 @@ def _engineer_hai_features(
         blocks: dict[str, pd.Series] = {}
         for column in retained_columns:
             series = numeric[column]
-            difference = series.diff().fillna(0.0)
             rolling = series.rolling(rolling_window, min_periods=1)
             rolling_mean = rolling.mean()
             blocks[column] = series
             if column not in binary_columns:
-                blocks[f"{column}__delta"] = difference
-                blocks[f"{column}__abs_delta"] = difference.abs()
                 blocks[f"{column}__rolling_std"] = rolling.std(ddof=0).fillna(0.0)
                 blocks[f"{column}__local_deviation"] = series - rolling_mean
             else:
@@ -180,7 +177,7 @@ def _engineer_hai_features(
         "removed_constant_features": removed_columns,
         "binary_base_features": binary_columns,
         "engineered_feature_count": len(retained_columns)
-        + sum(1 if column in binary_columns else 4 for column in retained_columns),
+        + sum(1 if column in binary_columns else 2 for column in retained_columns),
     }
     return engineered_train, engineered_test, metadata
 

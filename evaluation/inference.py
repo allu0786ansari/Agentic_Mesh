@@ -16,16 +16,27 @@ from sklearn.metrics import (
 from torch.utils.data import DataLoader
 
 from edge.data_loader import HAIWindowDataset
-from edge.models.vae import VAE
+from edge.models.vae import TemporalVAE, VAE
 
 
-def load_checkpoint_model(checkpoint_path: str | Path, device: str = "cpu") -> tuple[VAE, dict[str, Any]]:
+def load_checkpoint_model(checkpoint_path: str | Path, device: str = "cpu") -> tuple[torch.nn.Module, dict[str, Any]]:
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
-    model = VAE(
-        input_dim=int(checkpoint["input_dim"]),
-        latent_dim=int(checkpoint["latent_dim"]),
-        hidden_dim=int(checkpoint["hidden_dim"]),
-    ).to(device)
+    architecture = checkpoint.get("architecture", "fully_connected")
+    if architecture == "temporal_residual":
+        model = TemporalVAE(
+            window_size=int(checkpoint["window_size"]),
+            feature_count=int(checkpoint["feature_count"]),
+            latent_dim=int(checkpoint["latent_dim"]),
+            hidden_dim=int(checkpoint["hidden_dim"]),
+        ).to(device)
+    elif architecture == "fully_connected":
+        model = VAE(
+            input_dim=int(checkpoint["input_dim"]),
+            latent_dim=int(checkpoint["latent_dim"]),
+            hidden_dim=int(checkpoint["hidden_dim"]),
+        ).to(device)
+    else:
+        raise ValueError(f"Unsupported checkpoint architecture: {architecture}")
     state_dict = checkpoint["model_state_dict"]
     if any(key.startswith("_module.") for key in state_dict):
         state_dict = {key.removeprefix("_module."): value for key, value in state_dict.items()}
@@ -60,6 +71,72 @@ def reconstruction_errors(
     if not np.isfinite(result).all():
         raise ValueError("Evaluation produced non-finite reconstruction errors")
     return result
+
+
+def latent_mahalanobis_scores(
+    model: torch.nn.Module,
+    dataset: HAIWindowDataset,
+    *,
+    reference_mu: np.ndarray | None = None,
+    reference_precision: np.ndarray | None = None,
+    batch_size: int = 256,
+    device: str = "cpu",
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return latent Mahalanobis scores and optionally fitted normal statistics."""
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, drop_last=False)
+    latent_batches: list[np.ndarray] = []
+    with torch.no_grad():
+        for batch in loader:
+            inputs = batch.to(device)
+            mu, _ = model.encode(inputs)
+            latent_batches.append(mu.cpu().numpy())
+    latent = np.concatenate(latent_batches) if latent_batches else np.empty((0, 0), dtype=np.float64)
+    if latent.size == 0:
+        raise ValueError("Cannot calculate latent scores for an empty dataset")
+    if reference_mu is None or reference_precision is None:
+        reference_mu = latent.mean(axis=0)
+        centered = latent - reference_mu
+        covariance = np.atleast_2d(np.cov(centered, rowvar=False))
+        regularization = max(float(np.trace(covariance)) / max(covariance.shape[0], 1) * 1e-3, 1e-6)
+        reference_precision = np.linalg.pinv(covariance + np.eye(covariance.shape[0]) * regularization)
+    centered = latent - reference_mu
+    scores = np.einsum("ij,jk,ik->i", centered, reference_precision, centered)
+    if not np.isfinite(scores).all():
+        raise ValueError("Latent Mahalanobis scoring produced non-finite values")
+    return scores.astype(np.float64), np.asarray(reference_mu), np.asarray(reference_precision)
+
+
+def combined_anomaly_scores(
+    validation_errors: np.ndarray,
+    test_errors: np.ndarray,
+    validation_latent_scores: np.ndarray,
+    test_latent_scores: np.ndarray,
+    *,
+    alpha: float = 0.5,
+) -> tuple[np.ndarray, np.ndarray, dict[str, float]]:
+    """Combine robustly normalized reconstruction and latent scores."""
+    if not 0 <= alpha <= 1:
+        raise ValueError("alpha must be between 0 and 1")
+    def normalize(reference: np.ndarray, values: np.ndarray) -> tuple[np.ndarray, float, float]:
+        center = float(np.median(reference))
+        scale = float(np.percentile(reference, 75) - np.percentile(reference, 25))
+        scale = max(scale, 1e-8)
+        return (values - center) / scale, center, scale
+    normalized_validation_error, error_center, error_scale = normalize(validation_errors, validation_errors)
+    normalized_test_error, _, _ = normalize(validation_errors, test_errors)
+    normalized_validation_latent, latent_center, latent_scale = normalize(
+        validation_latent_scores, validation_latent_scores
+    )
+    normalized_test_latent, _, _ = normalize(validation_latent_scores, test_latent_scores)
+    validation_score = (1 - alpha) * normalized_validation_error + alpha * normalized_validation_latent
+    test_score = (1 - alpha) * normalized_test_error + alpha * normalized_test_latent
+    return test_score, validation_score, {
+        "alpha": alpha,
+        "reconstruction_center": error_center,
+        "reconstruction_iqr": error_scale,
+        "latent_center": latent_center,
+        "latent_iqr": latent_scale,
+    }
 
 
 def error_distribution(errors: np.ndarray) -> dict[str, float | int]:
@@ -181,12 +258,20 @@ def event_level_metrics(
     detected_events = sum(bool(predicted_rows[start:end].any()) for start, end in events)
     normal_rows = ~attack_rows
     false_positive_rows = int(np.sum(predicted_rows & normal_rows))
+    delays = []
+    for start, end in events:
+        detected_starts = window_starts[(window_starts >= start) & (window_starts < end) & (scores >= threshold)]
+        if detected_starts.size:
+            delays.append(int(detected_starts[0] - start))
     return {
         "attack_event_count": len(events),
         "detected_attack_events": detected_events,
         "event_recall": float(detected_events / max(len(events), 1)),
         "normal_row_count": int(np.sum(normal_rows)),
         "false_positive_row_rate": float(false_positive_rows / max(int(np.sum(normal_rows)), 1)),
+        "detected_event_delays_rows": delays,
+        "mean_detection_delay_rows": float(np.mean(delays)) if delays else None,
+        "median_detection_delay_rows": float(np.median(delays)) if delays else None,
     }
 
 
@@ -276,7 +361,25 @@ def evaluate_node(
     )
     validation_errors = reconstruction_errors(model, validation_dataset, batch_size=batch_size, device=device)
     test_errors = reconstruction_errors(model, test_dataset, batch_size=batch_size, device=device)
+    validation_latent_scores, latent_mean, latent_precision = latent_mahalanobis_scores(
+        model, validation_dataset, batch_size=batch_size, device=device
+    )
+    test_latent_scores, _, _ = latent_mahalanobis_scores(
+        model,
+        test_dataset,
+        reference_mu=latent_mean,
+        reference_precision=latent_precision,
+        batch_size=batch_size,
+        device=device,
+    )
+    combined_test_scores, combined_validation_scores, combined_parameters = combined_anomaly_scores(
+        validation_errors,
+        test_errors,
+        validation_latent_scores,
+        test_latent_scores,
+    )
     threshold = float(np.quantile(validation_errors, validation_quantile))
+    combined_threshold = float(np.quantile(combined_validation_scores, validation_quantile))
     labels = test_dataset.window_labels.astype(np.int8)
     if len(labels) != len(test_errors):
         raise ValueError("Test labels and reconstruction scores have different lengths")
@@ -300,11 +403,15 @@ def evaluate_node(
             "threshold_quantile": validation_quantile,
             "threshold": threshold,
             "reconstruction_errors": error_distribution(validation_errors),
+            "latent_mahalanobis": error_distribution(validation_latent_scores),
+            "combined_parameters": combined_parameters,
+            "combined_threshold": combined_threshold,
         },
         "test": {
             "source": str(test_partition),
             "reconstruction_errors": error_distribution(test_errors),
             "metrics": metrics,
+            "combined_metrics": evaluate_scores(combined_test_scores, labels, threshold=combined_threshold),
             "bootstrap_confidence_intervals": bootstrap_confidence_intervals(
                 test_errors, labels, threshold, seed=seed, samples=bootstrap_samples
             ),
@@ -314,6 +421,13 @@ def evaluate_node(
                 test_dataset.window_size,
                 test_errors,
                 threshold,
+            ),
+            "combined_event_level_metrics": event_level_metrics(
+                test_dataset.labels,
+                test_dataset.window_starts,
+                test_dataset.window_size,
+                combined_test_scores,
+                combined_threshold,
             ),
             "fixed_fpr_operating_points": fixed_fpr_operating_points(
                 validation_errors, test_errors, labels

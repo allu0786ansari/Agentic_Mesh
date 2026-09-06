@@ -12,7 +12,7 @@ import torch
 
 from edge.config import Config
 from edge.data_loader import HAIWindowDataset
-from edge.models.vae import VAE
+from edge.models.vae import TemporalVAE, VAE
 from edge.training.dp_trainer import DPVAETrainer
 from edge.training.trainer import VAETrainer
 from evaluation.inference import evaluate_node
@@ -33,6 +33,7 @@ def main() -> None:
     parser.add_argument("--seeds", nargs="+", type=int, default=[42, 123, 2024])
     parser.add_argument("--variants", nargs="+", choices=["dp", "non_private"], default=["dp", "non_private"])
     parser.add_argument("--epochs", type=int, default=None)
+    parser.add_argument("--architecture", choices=["fully_connected", "temporal_residual"], default="fully_connected")
     args = parser.parse_args()
 
     config = Config.from_env()
@@ -60,7 +61,15 @@ def main() -> None:
         for seed in args.seeds:
             for variant in args.variants:
                 set_seed(seed)
-                model = VAE(train_dataset.input_dim, latent_dim=config.latent_dim, hidden_dim=config.hidden_dim)
+                if args.architecture == "temporal_residual":
+                    model = TemporalVAE(
+                        window_size=config.hai_window_size,
+                        feature_count=len(train_dataset.feature_columns),
+                        latent_dim=config.latent_dim,
+                        hidden_dim=max(32, config.hidden_dim // 2),
+                    )
+                else:
+                    model = VAE(train_dataset.input_dim, latent_dim=config.latent_dim, hidden_dim=config.hidden_dim)
                 checkpoint = checkpoint_root / variant / f"{node_id}_seed_{seed}.pt"
                 epochs = args.epochs or config.local_epochs
                 if variant == "dp":
@@ -115,6 +124,7 @@ def main() -> None:
                         "false_positive_rate": metrics["false_positive_rate"],
                         "fixed_fpr": evaluation["test"]["fixed_fpr_operating_points"],
                         "overlap_stride": config.hai_window_stride,
+                        "architecture": args.architecture,
                     }
                 )
 

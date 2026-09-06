@@ -31,7 +31,7 @@ class DPVAETrainer:
         self.model = model.to(device)
         self.input_dim = model.input_dim
         self.latent_dim = model.latent_dim
-        self.hidden_dim = model.encoder[0].out_features
+        self.hidden_dim = model.hidden_dim
         self.learning_rate = learning_rate
         self.beta = beta
         self.max_grad_norm = max_grad_norm
@@ -130,6 +130,9 @@ class DPVAETrainer:
                 "epsilon": epsilon,
                 "delta": delta,
                 "max_grad_norm": self.max_grad_norm,
+                "architecture": getattr(self.model, "architecture", "fully_connected"),
+                "window_size": getattr(self.model, "window_size", None),
+                "feature_count": getattr(self.model, "feature_count", None),
             },
             destination,
         )
