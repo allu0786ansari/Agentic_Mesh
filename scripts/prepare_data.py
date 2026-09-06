@@ -16,6 +16,7 @@ import pandas as pd
 from storage.sqlite_schema import seed_registry
 
 HAI_LABEL_COLUMNS = {"attack", "attack_p1", "attack_p2", "attack_p3"}
+HAI_ROLLING_WINDOW = 15
 PACKET_COLUMNS = (
     "timestamp_epoch",
     "src_ip",
@@ -123,8 +124,69 @@ def _load_hai_split(root: Path, split: str, prefix: str) -> pd.DataFrame:
     return frame.drop(columns=attack_columns)
 
 
-def _scale_hai(train: pd.DataFrame, test: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+def _engineer_hai_features(
+    train: pd.DataFrame,
+    test: pd.DataFrame,
+    *,
+    rolling_window: int = HAI_ROLLING_WINDOW,
+) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, object]]:
+    """Add temporal features while selecting base sensors from normal training rows."""
+    if rolling_window < 2:
+        raise ValueError("rolling_window must be at least 2")
     feature_columns = [column for column in train.columns if column.startswith(("P1_", "P2_", "P3_"))]
+    normal = train.loc[train["label"] == 0, feature_columns]
+    if normal.empty:
+        raise ValueError("HAI training split contains no normal rows for feature selection")
+
+    retained_columns = [
+        column
+        for column in feature_columns
+        if normal[column].nunique(dropna=True) > 1
+        and float(normal[column].std(ddof=0)) > 1e-12
+    ]
+    removed_columns = [column for column in feature_columns if column not in retained_columns]
+    binary_columns = [column for column in retained_columns if normal[column].nunique(dropna=True) <= 2]
+
+    def transform(frame: pd.DataFrame) -> pd.DataFrame:
+        numeric = frame[retained_columns].apply(pd.to_numeric, errors="raise")
+        blocks: dict[str, pd.Series] = {}
+        for column in retained_columns:
+            series = numeric[column]
+            difference = series.diff().fillna(0.0)
+            rolling = series.rolling(rolling_window, min_periods=1)
+            rolling_mean = rolling.mean()
+            blocks[column] = series
+            if column not in binary_columns:
+                blocks[f"{column}__delta"] = difference
+                blocks[f"{column}__abs_delta"] = difference.abs()
+                blocks[f"{column}__rolling_std"] = rolling.std(ddof=0).fillna(0.0)
+                blocks[f"{column}__local_deviation"] = series - rolling_mean
+            else:
+                blocks[f"{column}__transition"] = series.ne(series.shift()).astype(np.float32)
+        engineered = pd.DataFrame(blocks, index=frame.index)
+        return pd.concat([frame[["time", "label"]], engineered], axis=1)
+
+    engineered_train = transform(train)
+    engineered_test = transform(test)
+    if list(engineered_train.columns) != list(engineered_test.columns):
+        raise ValueError("HAI feature engineering produced different train and test columns")
+    engineered_values = engineered_train.drop(columns=["time", "label"]).to_numpy(dtype=np.float64)
+    if not np.isfinite(engineered_values).all():
+        raise ValueError("HAI feature engineering produced non-finite training values")
+    metadata = {
+        "rolling_window_rows": rolling_window,
+        "base_feature_count": len(feature_columns),
+        "retained_base_features": retained_columns,
+        "removed_constant_features": removed_columns,
+        "binary_base_features": binary_columns,
+        "engineered_feature_count": len(retained_columns)
+        + sum(1 if column in binary_columns else 4 for column in retained_columns),
+    }
+    return engineered_train, engineered_test, metadata
+
+
+def _scale_hai(train: pd.DataFrame, test: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    feature_columns = [column for column in train.columns if column not in {"time", "label"}]
     normal = train.loc[train["label"] == 0, feature_columns]
     if normal.empty:
         raise ValueError("HAI training split contains no normal rows for scaler fitting")
@@ -142,6 +204,7 @@ def prepare_hai(root: Path, output_root: Path, seed: int) -> list[Path]:
     for node in NODE_SPECS[:3]:
         train = _load_hai_split(root, "train", node.feature_prefix or "")
         test = _load_hai_split(root, "test", node.feature_prefix or "")
+        train, test, feature_metadata = _engineer_hai_features(train, test)
         train, test = _scale_hai(train, test)
         metadata_paths.append(
             _write_node(
@@ -150,7 +213,12 @@ def prepare_hai(root: Path, output_root: Path, seed: int) -> list[Path]:
                 test,
                 output_root,
                 seed=seed,
-                metadata_extra={"window_size_rows": 60, "window_stride_rows": 10, "normal_only_scaler": True},
+                metadata_extra={
+                    "window_size_rows": 60,
+                    "window_stride_rows": 10,
+                    "normal_only_scaler": True,
+                    "feature_engineering": feature_metadata,
+                },
             )
         )
     return metadata_paths
