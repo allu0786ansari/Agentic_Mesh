@@ -1,0 +1,92 @@
+# Agentic Mesh v3 — single source of truth (Implementation Plan v3.0, WR-8).
+# Every count, window, target and hyperparameter is read from here by code and docs.
+# Values marked "G0" or "G1" are confirmed or revised at that decision gate and the
+# change is recorded in docs/adr/.
+
+project:
+  seeds: [11, 23, 37, 41, 53]
+
+paths:
+  raw_root: data/raw
+  hai_dir: data/raw/hai/hai-21.03          # G0: pinned release (21.03 is the release available locally)
+  modbus_dir: data/raw/modbus2023          # expects benign/<device>/*.pcap and attack/<device>/*.pcap
+  results_root: results
+  checksums_file: data/raw_checksums.json
+
+data:
+  hai:
+    release: "21.03"                       # G0: confirm
+    sample_rate_hz: 1
+  windows:
+    site_a: {length_s: 60, train_stride_s: 60, infer_stride_s: 10}
+    site_b: {length_s: 10, train_stride_s: 10, infer_stride_s: 5}
+  splits:
+    normal_val_fraction: 0.15
+    gap_windows: 1
+    attack_val_fraction: 0.30
+  partition:
+    site_a:
+      clients: [a1, a2, a3, a4]
+      block_hours: 6
+      scheme: regime                       # regime | iid | time
+    site_b:
+      clients: {b1: ied1a, b2: ied1b, b3: scada-hmi}
+
+models:
+  vae: {hidden: [256, 128], latent: 16, lr: 1.0e-3, batch: 256}
+  ae: {hidden: [64, 32], lr: 1.0e-3, batch: 256}
+
+federated:
+  strategy: fedprox                        # fedavg | fedprox
+  proximal_mu: 0.01                        # grid: [0.001, 0.01, 0.1]
+  max_rounds: 50
+  local_epochs: 1                          # heterogeneous arm samples from [1, 2, 3]
+  dropout_prob: 0.0                        # heterogeneous arm: 0.2
+  min_fit_clients: {site_a: 3, site_b: 2}
+  round_timeout_s: 120
+  stopping: {patience: 5, min_rel_delta: 0.005}
+  rounds_to_target_tolerance: 0.02
+  client_resources: {num_cpus: 2}          # G0: confirmed from the Ray benchmark
+
+privacy:
+  target_epsilon: 10.0                     # sweep: [1, 3, 10, .inf]
+  delta_cap: 1.0e-5                        # delta = min(delta_cap, 1 / (delta_divisor * n_train_windows))
+  delta_divisor: 10
+  max_grad_norm: 1.0
+  accountant: rdp
+  normalisation_stats_epsilon: 0.1
+
+evaluation:
+  target_window_fpr: 0.01
+  report_window_fprs: [0.005, 0.01, 0.05]
+  event_tolerance_s: 60
+  calibration: isotonic
+  pooled_auroc_bins: 1000
+  bootstrap_resamples: 2000
+
+fusion:
+  site_b: {delta_t_s: 60, method: noisy_or, k_of_n: 2}
+
+mesh:
+  max_hops: 3
+  connect_timeout_s: 0.2
+  read_timeout_s: 0.5
+  max_retries: 1
+  investigation_deadline_s: 3.0
+  breaker: {failure_threshold: 2, open_seconds: 30}
+  attribution:
+    mode: full                             # full | retrieval_only | llm_no_retrieval | rule_only
+    top_k: 5
+    min_confidence: 0.5
+    llm_timeout_s: 20                      # G0: replaced by L_LLM from the LLM benchmark
+
+llm:
+  base_url: "http://127.0.0.1:11434"
+  model: "phi3.5:3.8b-mini-instruct-q4_K_M"  # G0: confirmed or swapped
+  alternative_model: "llama3.2:3b"
+  num_ctx: 2048
+  temperature: 0
+
+security:
+  jwt: {issuer: mesh, ttl_s: 120}
+  egress_allowlist: ["127.0.0.1", "::1", "localhost"]

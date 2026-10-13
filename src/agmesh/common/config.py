@@ -1,0 +1,254 @@
+"""Typed loader for ``configs/params.yaml`` (the single source of truth, WR-8).
+
+Every section is validated on load so that inconsistent settings (for example a
+minimum client count larger than the federation, or overlapping training windows)
+fail immediately instead of surfacing weeks later as a wrong result.
+"""
+
+from __future__ import annotations
+
+import math
+from pathlib import Path
+from typing import Literal
+
+import yaml
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+DEFAULT_PARAMS_PATH = Path("configs/params.yaml")
+
+
+class _Section(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+
+class ProjectConfig(_Section):
+    seeds: list[int] = Field(min_length=1)
+
+
+class PathsConfig(_Section):
+    raw_root: Path
+    hai_dir: Path
+    modbus_dir: Path
+    results_root: Path
+    checksums_file: Path
+
+
+class HaiConfig(_Section):
+    release: str
+    sample_rate_hz: int = Field(gt=0)
+
+
+class WindowConfig(_Section):
+    length_s: int = Field(gt=0)
+    train_stride_s: int = Field(gt=0)
+    infer_stride_s: int = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _privacy_unit_is_non_overlapping(self) -> WindowConfig:
+        # The DP privacy unit is one training window, so training windows must not
+        # overlap (Proposal §7.3). Inference windows may overlap freely.
+        if self.train_stride_s != self.length_s:
+            raise ValueError(
+                "train_stride_s must equal length_s: training windows define the "
+                "privacy unit and must not overlap"
+            )
+        if self.infer_stride_s > self.length_s:
+            raise ValueError("infer_stride_s must not exceed length_s")
+        return self
+
+
+class WindowsConfig(_Section):
+    site_a: WindowConfig
+    site_b: WindowConfig
+
+
+class SplitsConfig(_Section):
+    normal_val_fraction: float = Field(gt=0, lt=1)
+    gap_windows: int = Field(ge=0)
+    attack_val_fraction: float = Field(gt=0, lt=1)
+
+
+class SiteAPartition(_Section):
+    clients: list[str] = Field(min_length=2)
+    block_hours: int = Field(gt=0)
+    scheme: Literal["regime", "iid", "time"]
+
+
+class SiteBPartition(_Section):
+    clients: dict[str, str] = Field(min_length=2)
+
+
+class PartitionConfig(_Section):
+    site_a: SiteAPartition
+    site_b: SiteBPartition
+
+
+class DataConfig(_Section):
+    hai: HaiConfig
+    windows: WindowsConfig
+    splits: SplitsConfig
+    partition: PartitionConfig
+
+
+class VaeConfig(_Section):
+    hidden: list[int] = Field(min_length=1)
+    latent: int = Field(gt=0)
+    lr: float = Field(gt=0)
+    batch: int = Field(gt=0)
+
+
+class AeConfig(_Section):
+    hidden: list[int] = Field(min_length=1)
+    lr: float = Field(gt=0)
+    batch: int = Field(gt=0)
+
+
+class ModelsConfig(_Section):
+    vae: VaeConfig
+    ae: AeConfig
+
+
+class StoppingConfig(_Section):
+    patience: int = Field(gt=0)
+    min_rel_delta: float = Field(gt=0)
+
+
+class MinFitClients(_Section):
+    site_a: int = Field(gt=0)
+    site_b: int = Field(gt=0)
+
+
+class ClientResources(_Section):
+    num_cpus: float = Field(gt=0)
+
+
+class FederatedConfig(_Section):
+    strategy: Literal["fedavg", "fedprox"]
+    proximal_mu: float = Field(ge=0)
+    max_rounds: int = Field(gt=0)
+    local_epochs: int = Field(gt=0)
+    dropout_prob: float = Field(ge=0, lt=1)
+    min_fit_clients: MinFitClients
+    round_timeout_s: float = Field(gt=0)
+    stopping: StoppingConfig
+    rounds_to_target_tolerance: float = Field(gt=0)
+    client_resources: ClientResources
+
+
+class PrivacyConfig(_Section):
+    target_epsilon: float = Field(gt=0)  # math.inf means non-private reference runs
+    delta_cap: float = Field(gt=0, lt=1)
+    delta_divisor: float = Field(gt=1)
+    max_grad_norm: float = Field(gt=0)
+    accountant: Literal["rdp", "prv", "gdp"]
+    normalisation_stats_epsilon: float = Field(gt=0)
+
+    @property
+    def is_private(self) -> bool:
+        return math.isfinite(self.target_epsilon)
+
+    def resolve_delta(self, n_train_windows: int) -> float:
+        """Return delta = min(delta_cap, 1 / (delta_divisor * N)) for a client with N windows.
+
+        This keeps delta strictly below 1/N, the usual requirement for a meaningful
+        (epsilon, delta) guarantee (Proposal §7.3, flaw P5).
+        """
+        if n_train_windows <= 0:
+            raise ValueError("n_train_windows must be positive")
+        return min(self.delta_cap, 1.0 / (self.delta_divisor * n_train_windows))
+
+
+class EvaluationConfig(_Section):
+    target_window_fpr: float = Field(gt=0, lt=1)
+    report_window_fprs: list[float] = Field(min_length=1)
+    event_tolerance_s: int = Field(ge=0)
+    calibration: Literal["isotonic", "platt"]
+    pooled_auroc_bins: int = Field(gt=10)
+    bootstrap_resamples: int = Field(gt=0)
+
+
+class SiteBFusion(_Section):
+    delta_t_s: int = Field(gt=0)
+    method: Literal["noisy_or", "k_of_n"]
+    k_of_n: int = Field(gt=0)
+
+
+class FusionConfig(_Section):
+    site_b: SiteBFusion
+
+
+class BreakerConfig(_Section):
+    failure_threshold: int = Field(gt=0)
+    open_seconds: float = Field(gt=0)
+
+
+class AttributionConfig(_Section):
+    mode: Literal["full", "retrieval_only", "llm_no_retrieval", "rule_only"]
+    top_k: int = Field(gt=0)
+    min_confidence: float = Field(ge=0, le=1)
+    llm_timeout_s: float = Field(gt=0)
+
+
+class MeshConfig(_Section):
+    max_hops: int = Field(gt=0)
+    connect_timeout_s: float = Field(gt=0)
+    read_timeout_s: float = Field(gt=0)
+    max_retries: int = Field(ge=0)
+    investigation_deadline_s: float = Field(gt=0)
+    breaker: BreakerConfig
+    attribution: AttributionConfig
+
+
+class LlmConfig(_Section):
+    base_url: str
+    model: str
+    alternative_model: str
+    num_ctx: int = Field(gt=0)
+    temperature: float = Field(ge=0)
+
+
+class JwtConfig(_Section):
+    issuer: str
+    ttl_s: int = Field(gt=0)
+
+
+class SecurityConfig(_Section):
+    jwt: JwtConfig
+    egress_allowlist: list[str] = Field(min_length=1)
+
+
+class Params(_Section):
+    project: ProjectConfig
+    paths: PathsConfig
+    data: DataConfig
+    models: ModelsConfig
+    federated: FederatedConfig
+    privacy: PrivacyConfig
+    evaluation: EvaluationConfig
+    fusion: FusionConfig
+    mesh: MeshConfig
+    llm: LlmConfig
+    security: SecurityConfig
+
+    @model_validator(mode="after")
+    def _cross_section_checks(self) -> Params:
+        n_a = len(self.data.partition.site_a.clients)
+        n_b = len(self.data.partition.site_b.clients)
+        if self.federated.min_fit_clients.site_a > n_a:
+            raise ValueError(f"min_fit_clients.site_a exceeds the {n_a} Site A clients")
+        if self.federated.min_fit_clients.site_b > n_b:
+            raise ValueError(f"min_fit_clients.site_b exceeds the {n_b} Site B clients")
+        if self.fusion.site_b.k_of_n > n_b:
+            raise ValueError(f"fusion k_of_n exceeds the {n_b} Site B clients")
+        if self.evaluation.target_window_fpr not in self.evaluation.report_window_fprs:
+            raise ValueError("target_window_fpr must be one of report_window_fprs")
+        return self
+
+
+def load_params(path: Path | str = DEFAULT_PARAMS_PATH) -> Params:
+    """Load and validate the parameter file."""
+    with Path(path).open(encoding="utf-8") as handle:
+        raw = yaml.safe_load(handle)
+    if not isinstance(raw, dict):
+        raise ValueError(f"{path} does not contain a YAML mapping")
+    return Params.model_validate(raw)

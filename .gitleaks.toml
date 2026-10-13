@@ -1,0 +1,13 @@
+# Secret scanning for CI (gitleaks). Uses the default rules plus one documented exception.
+[extend]
+useDefault = true
+
+[allowlist]
+description = """
+Commit fc1b2a3 (May 2026, v1 scaffold) committed a development JWT_SECRET value in
+.env.example. It was removed in commit 2ab077f (August 2026) and is not used by v3.
+It stays in Git history, so it must be treated as public: if that value was ever used
+anywhere other than local development, rotate it. This entry stops the historical
+commit from failing every CI run; new leaks anywhere else are still caught.
+"""
+commits = ["fc1b2a3b05a60df9823bd3bce8c97a7acc9d9787"]

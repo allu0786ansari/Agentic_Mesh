@@ -220,22 +220,26 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Data - tracked by DVC, not Git
-data/raw/
-data/processed/
-data/partitions/
+# ---------------------------------------------------------------------------
+# Agentic Mesh v3 (phase3 branch)
+# ---------------------------------------------------------------------------
 
-# Local vector stores and experiment databases
+# Data - tracked by DVC, never by Git
+/data/raw/
+/data/interim/
+/data/partitions/
+
+# Local stores and databases
 qdrant_data/
-qdrant_data_*/
 *.db
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
 
-# Dataset and model binaries. Keep dataset manifests and DVC pointer files tracked.
+# Data and model binaries (anywhere)
 *.parquet
 *.feather
-*.csv
 *.npy
 *.npz
 *.pkl
@@ -243,47 +247,36 @@ qdrant_data_*/
 *.pth
 *.onnx
 *.safetensors
+*.pcap
+*.pcapng
+*.csv.gz
 
-# Local runtime secrets, certificates, and service state
-certs/
+# Secrets, certificates and runtime state
+.env
+!.env.example
+/certs/
 *.pem
 *.key
 *.crt
-logs/
-checkpoints/
-models/
-!edge/models/
-!edge/models/*.py
+/logs/
+/checkpoints/
 
-# DVC
+# DVC internals
 .dvc/cache/
 .dvc/tmp/
 
-# ML artifacts
+# Experiment tracking
 mlruns/
-results/
+mlartifacts/
 
-# Generated evaluation exports; keep the Python evaluators and source documents.
-evaluation/results.json
-evaluation/ragas_results.json
-evaluation/chaos_results.json
-docs/architecture/*.png
+# Results: large artifacts go to DVC; small feasibility reports are committed
+/results/*
+!/results/feasibility/
+/results/feasibility/*.tmp
 
-# IDE
+# IDE / OS
 .vscode/
 .idea/
-
-# OS
 .DS_Store
 Thumbs.db
 desktop.ini
-
-# Test / coverage
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Certs
-infra/certs/*.pem
-infra/certs/*.key
-infra/certs/*.crt

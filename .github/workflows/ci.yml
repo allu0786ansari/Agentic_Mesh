@@ -1,0 +1,54 @@
+# Agentic Mesh v3 CI (Implementation Plan v3.0, WR-7).
+# Runs the quality gates on every push and pull request. The federated-learning
+# stack (flwr, ray, torch) is not installed here; tests that need it are skipped.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Install Python 3.12
+        run: uv python install 3.12
+
+      - name: Install core and dev dependencies
+        run: |
+          if [ -f uv.lock ]; then
+            uv sync --locked --group dev
+          else
+            echo "::warning::uv.lock not committed yet; resolving without a lock"
+            uv sync --group dev
+          fi
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+      - name: Mypy
+        run: uv run mypy
+
+      - name: Pytest
+        run: uv run pytest --cov --cov-report=term
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
