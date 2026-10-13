@@ -11,6 +11,7 @@ from agmesh.feasibility.captures import (
     capture_span,
     intersect,
     merge_intervals,
+    scan_hosts,
     total_length,
 )
 from tests.fixtures import write_pcap, write_pcapng
@@ -59,3 +60,22 @@ def test_interval_maths() -> None:
     assert intersect(merged, [(3, 6), (11, 20)]) == [(3, 4), (5, 6), (11, 12)]
     assert total_length(merged) == 11
     assert intersect([(0, 1)], [(1, 2)]) == []
+
+
+def test_scan_hosts_counts_hosts_and_watched_windows(tmp_path: Path) -> None:
+    attacker, hmi, ied = "185.175.0.7", "185.175.0.3", "185.175.0.4"
+    times = [T0, T0 + 1, T0 + 12, T0 + 15, T0 + 45]
+    pairs = [(hmi, ied), (attacker, ied), (ied, attacker), (hmi, ied), (attacker, ied)]
+    path = write_pcap(tmp_path / "a.pcap", times, hosts=pairs)
+    scan = scan_hosts(path, attacker)
+    assert scan.watched_packets == 3
+    assert scan.watched_windows(10.0) == 3  # windows 0, 1 and 4 from the first packet
+    assert scan.hosts[ied] == 5
+    assert scan.hosts[attacker] == 3
+
+
+def test_scan_hosts_ignores_non_ip_frames(tmp_path: Path) -> None:
+    path = write_pcap(tmp_path / "a.pcap", [T0, T0 + 1])  # opaque 4-byte frames
+    scan = scan_hosts(path, "185.175.0.7")
+    assert scan.watched_packets == 0
+    assert not scan.hosts

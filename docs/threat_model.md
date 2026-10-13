@@ -1,7 +1,7 @@
 # Threat Model (draft)
 
 **Status:** Draft, Week 1. Finalised in Week 16.
-**Source:** Proposal v3.0 §5. Where this file and the proposal disagree, update both.
+**Source:** Proposal v3.1 §5. Where this file and the proposal disagree, update both.
 
 ## 1. Assets
 

@@ -3,11 +3,12 @@
 Federated, differentially private anomaly detection with knowledge-grounded agentic
 attribution for industrial control systems — designed to run on a single 8 GB machine.
 
-This branch (`phase3`) is the **v3 redesign**. It is being built phase by phase from
-the documents in `docs/`:
+This branch (`phase3`) is the **v3 redesign**, revised to v3.1 after a full analysis of
+both datasets. It is being built phase by phase from the documents in `docs/`:
 
-- [Proposal v3.0](docs/proposal_v3.md) — research questions, design, evaluation and success criteria.
-- [Implementation Plan v3.0](docs/implementation_plan_v3.md) — 16 weeks, decision gates G0–G4, contracts.
+- [Proposal v3.1](docs/proposal_v3.md) — research questions, design, evaluation and success criteria.
+- [Implementation Plan v3.1](docs/implementation_plan_v3.md) — 16 weeks, decision gates G0–G4, contracts.
+- [Data card](docs/data_card.md) — measured facts for HAI 21.03 and CIC Modbus 2023; the same facts are checked by `configs/data_expectations.yaml`.
 
 The v2.1 code is kept for reference only in [`legacy/v2/`](legacy/v2). It is excluded
 from linting, type checking, tests and CI.
@@ -16,7 +17,7 @@ from linting, type checking, tests and CI.
 
 | Phase | Weeks | Status |
 |---|---|---|
-| 0 — Feasibility | 1 | **Code done.** Waiting for the laptop runs ([runbook](docs/runbooks/phase0_week1.md)) and the Gate G0 review |
+| 0 — Feasibility | 1 | **Code done; data decisions accepted.** Both datasets analysed (v3.1); G0 data decisions 1–5 accepted in [ADR 0001](docs/adr/0001-g0-decisions.md). Waiting for the laptop runs ([runbook](docs/runbooks/phase0_week1.md)) for the LLM and Ray decisions 6–10 |
 | 1 — Data and evaluation first | 2–4 | Not started |
 | 2 — Privacy-preserving federated detection | 5–7 | Not started |
 | 3 — Operations path and agentic attribution | 8–11 | Not started |
@@ -38,6 +39,7 @@ benchmarks, is in [docs/runbooks/phase0_week1.md](docs/runbooks/phase0_week1.md)
 
 ```
 configs/params.yaml     single source of truth for every setting (validated on load)
+configs/data_expectations.yaml  measured dataset facts, checked by scripts/inspect_data.py
 src/agmesh/             the package
   common/               config, provenance, artifacts, checksums, memory sampling
   feasibility/          Week 1 spikes: LLM benchmark, Ray benchmark, data inspection
@@ -54,4 +56,4 @@ legacy/v2/              v2.1 code, reference only
 Every reported number comes from a JSON artifact with provenance (git commit, data
 and parameter hashes, machine), and each artifact states whether its data is
 `runtime`, `fixture` or `synthetic`. Raw data is tracked by DVC, never by Git. See
-Implementation Plan v3.0 §2 for the full list.
+Implementation Plan v3.1 §2 for the full list.

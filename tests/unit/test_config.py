@@ -66,3 +66,70 @@ def test_delta_is_below_one_over_n(n: int) -> None:
 def test_delta_requires_positive_window_count() -> None:
     with pytest.raises(ValueError, match="positive"):
         load_params(REPO_PARAMS).privacy.resolve_delta(0)
+
+
+def test_dataset_decisions_are_encoded() -> None:
+    params = load_params(REPO_PARAMS)
+    site_a = params.data.partition.site_a
+    assert site_a.scheme == "time"
+    assert site_a.period_assignment == {
+        "a1": "train1",
+        "a2": "train2",
+        "a3": "train3:first_half",
+        "a4": "train3:second_half",
+    }
+    assert params.data.hai.label_column == "attack"
+    assert params.data.modbus.label_source == "attacker_address"
+    assert params.fusion.site_b.exclude_latency
+
+
+def test_time_scheme_requires_matching_assignment() -> None:
+    raw = _raw()
+    del raw["data"]["partition"]["site_a"]["period_assignment"]["a4"]
+    with pytest.raises(ValidationError, match="exactly the Site A clients"):
+        Params.model_validate(raw)
+
+    raw = _raw()
+    raw["data"]["partition"]["site_a"]["period_assignment"]["a4"] = "train3:first_half"
+    with pytest.raises(ValidationError, match="different period"):
+        Params.model_validate(raw)
+
+    raw = _raw()
+    raw["data"]["partition"]["site_a"]["period_assignment"]["a1"] = "test1"
+    with pytest.raises(ValidationError, match="period must look like"):
+        Params.model_validate(raw)
+
+
+def test_other_schemes_do_not_need_assignment() -> None:
+    raw = _raw()
+    raw["data"]["partition"]["site_a"]["scheme"] = "iid"
+    del raw["data"]["partition"]["site_a"]["period_assignment"]
+    assert Params.model_validate(raw).data.partition.site_a.scheme == "iid"
+
+
+def test_attacker_cannot_be_a_testbed_device() -> None:
+    raw = _raw()
+    raw["data"]["modbus"]["attacker_ip"] = "185.175.0.4"
+    with pytest.raises(ValidationError, match="attacker_ip"):
+        Params.model_validate(raw)
+
+
+def test_invalid_ip_is_rejected() -> None:
+    raw = _raw()
+    raw["data"]["modbus"]["devices"]["ied1a"] = "185.175.0.400"
+    with pytest.raises(ValidationError, match="IPv4"):
+        Params.model_validate(raw)
+
+
+def test_segments_must_divide_the_window() -> None:
+    raw = _raw()
+    raw["models"]["vae"]["segments_per_window"] = 7
+    with pytest.raises(ValidationError, match="segments_per_window"):
+        Params.model_validate(raw)
+
+
+def test_site_b_clients_must_match_modbus_devices() -> None:
+    raw = _raw()
+    raw["data"]["partition"]["site_b"]["clients"]["b3"] = "ied4c"
+    with pytest.raises(ValidationError, match="modbus devices"):
+        Params.model_validate(raw)

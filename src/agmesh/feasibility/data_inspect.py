@@ -30,6 +30,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+import yaml
 
 from agmesh.common.artifacts import write_artifact
 from agmesh.common.checksums import is_lfs_pointer
@@ -40,6 +41,7 @@ from agmesh.feasibility.captures import (
     capture_span,
     intersect,
     merge_intervals,
+    scan_hosts,
     total_length,
 )
 
@@ -49,6 +51,7 @@ TEXT_SUFFIXES = (".csv", ".txt", ".md", ".json", ".log", ".html", ".htm", ".tsv"
 MITRE_ICS_ID = re.compile(r"\bT0\d{3}\b")
 MAX_TEXT_SCAN_BYTES = 50 * 2**20
 MIN_FUSION_OVERLAP_S = 600.0  # at least 10 minutes of shared attack time to evaluate fusion
+DEFAULT_EXPECTATIONS = Path("configs/data_expectations.yaml")
 
 
 # --------------------------------------------------------------------------- HAI
@@ -289,7 +292,9 @@ def overlap_report(groups: dict[str, list[Interval]]) -> dict[str, Any]:
     }
 
 
-def inspect_modbus(root: Path, devices: list[str]) -> dict[str, Any]:
+def inspect_modbus(
+    root: Path, devices: list[str], attacker_ip: str | None = None, window_s: float = 10.0
+) -> dict[str, Any]:
     if not root.is_dir():
         return {"root": root.as_posix(), "status": "missing"}
     all_files = sorted(p for p in root.rglob("*") if p.is_file())
@@ -326,6 +331,14 @@ def inspect_modbus(root: Path, devices: list[str]) -> dict[str, Any]:
                 )
                 if span.first_ts is not None and span.last_ts is not None:
                     intervals[split][device].append((span.first_ts, span.last_ts))
+                if attacker_ip:
+                    hosts = scan_hosts(path, attacker_ip)
+                    record["top_hosts"] = dict(hosts.hosts.most_common(8))
+                    record["attacker_packets"] = hosts.watched_packets
+                    record["attacker_windows"] = hosts.watched_windows(window_s)
+                    if hosts.watched_timestamps:
+                        record["attacker_first"] = _iso(min(hosts.watched_timestamps))
+                        record["attacker_last"] = _iso(max(hosts.watched_timestamps))
         records.append(record)
 
     log_like = [
@@ -341,12 +354,21 @@ def inspect_modbus(root: Path, devices: list[str]) -> dict[str, Any]:
     counts: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     for r in records:
         counts[r["split"]][r["device"]] += 1
+    attacker: dict[str, dict[str, dict[str, int]]] = defaultdict(lambda: defaultdict(dict))
+    for r in records:
+        if "attacker_packets" in r:
+            entry = attacker[r["split"]].setdefault(r["device"], {"packets": 0, "windows": 0})
+            entry["packets"] += r["attacker_packets"]
+            entry["windows"] += r["attacker_windows"]
     return {
         "root": root.as_posix(),
         "status": "ok" if captures else "no_captures",
         "n_captures": len(captures),
         "captures_by_split_and_device": {s: dict(d) for s, d in counts.items()},
         "captures": records,
+        "attacker_ip": attacker_ip,
+        "window_s": window_s,
+        "attacker_by_split_and_device": {s: dict(d) for s, d in attacker.items()},
         "overlap": {split: overlap_report(groups) for split, groups in intervals.items()},
         "non_capture_files": [p.relative_to(root).as_posix() for p in others],
         "possible_label_or_log_files": log_like,
@@ -358,7 +380,9 @@ def inspect_modbus(root: Path, devices: list[str]) -> dict[str, Any]:
 # -------------------------------------------------------------------- G0 hints
 
 
-def gate_hints(hai: dict[str, Any], modbus: dict[str, Any]) -> dict[str, Any]:
+def gate_hints(
+    hai: dict[str, Any], modbus: dict[str, Any], configured_scheme: str | None = None
+) -> dict[str, Any]:
     """Suggestions for Gate G0, derived mechanically from the inspection.
 
     These are inputs to the decision, not the decision: the ADR records what is
@@ -370,23 +394,91 @@ def gate_hints(hai: dict[str, Any], modbus: dict[str, Any]) -> dict[str, Any]:
     has_logs = bool(modbus.get("possible_label_or_log_files"))
     has_mitre = bool(modbus.get("mitre_ids_in_text_files"))
     candidates = hai.get("regime_analysis", {}).get("candidates", [])
+    attacked = modbus.get("attacker_by_split_and_device", {}).get("attack", {})
+    seen_on = sorted(d for d, v in attacked.items() if v.get("packets", 0) > 0)
+    if len(seen_on) >= 2 and best_pair >= MIN_FUSION_OVERLAP_S:
+        fusion = "real_multi_device_attack"
+    elif seen_on:
+        fusion = "single_device_attack"
+    else:
+        fusion = "no_attacker_traffic_found"
+    if has_logs:
+        labels = "attack_logs_available"
+    elif seen_on:
+        labels = "attacker_address"
+    else:
+        labels = "capture_level_only"
     return {
         "hai_release": hai.get("release_hint"),
         "hai_usable": hai.get("status") == "ok" and not hai.get("lfs_pointer_files"),
-        "site_a_partition_scheme": (
-            "regime"
-            if candidates and hai.get("regime_analysis", {}).get("enough_blocks_for_clients")
-            else "time"
-        ),
-        "rq2_fusion_data": "real_overlap"
-        if best_pair >= MIN_FUSION_OVERLAP_S
-        else "synthetic_composition",
-        "rq2_best_pairwise_attack_overlap_s": best_pair,
-        "site_b_attack_labels": "attack_logs_available" if has_logs else "capture_level_only",
+        "site_a_partition_scheme": configured_scheme,
+        "site_a_top_regime_candidate": candidates[0]["feature"] if candidates else None,
+        "devices_overlap_in_time": best_pair >= MIN_FUSION_OVERLAP_S,
+        "attacker_seen_on_devices": seen_on,
+        "rq2_fusion_data": fusion,
+        "site_b_attack_labels": labels,
         "site_b_attribution_ground_truth": (
             "dataset_mitre_mapping_found" if has_mitre else "needs_mapping_protocol_or_manual_check"
         ),
     }
+
+
+def _summarise_for_expectations(hai: dict[str, Any], modbus: dict[str, Any]) -> dict[str, Any]:
+    files = hai.get("files", {})
+    ok_train = [f for f in files.get("train", []) if f.get("status") == "ok"]
+    ok_test = [f for f in files.get("test", []) if f.get("status") == "ok"]
+    attacker = modbus.get("attacker_by_split_and_device", {})
+    first_attack = min(
+        (
+            c["start"]
+            for c in modbus.get("captures", [])
+            if c.get("split") == "attack" and c.get("start")
+        ),
+        default=None,
+    )
+    return {
+        "hai": {
+            "train_files": len(ok_train),
+            "test_files": len(ok_test),
+            "train_rows": sum(f.get("rows", 0) for f in ok_train),
+            "test_rows": sum(f.get("rows", 0) for f in ok_test),
+            "n_features": hai.get("n_features"),
+            "test_attack_events": hai.get("test_attack_events"),
+            "test_attack_rows": sum(f.get("attack_rows", 0) for f in ok_test),
+        },
+        "modbus": {
+            "captures": modbus.get("captures_by_split_and_device", {}),
+            "attack_day_start_utc": first_attack[:19] if first_attack else None,
+            "attacker_packets": {d: v["packets"] for d, v in attacker.get("attack", {}).items()},
+            "attacker_windows": {d: v["windows"] for d, v in attacker.get("attack", {}).items()},
+            "benign_attacker_packets": sum(
+                v["packets"] for v in attacker.get("benign", {}).values()
+            ),
+        },
+    }
+
+
+def _flatten(prefix: str, value: Any) -> dict[str, Any]:
+    if isinstance(value, dict):
+        flat: dict[str, Any] = {}
+        for key, item in value.items():
+            flat.update(_flatten(f"{prefix}.{key}" if prefix else str(key), item))
+        return flat
+    return {prefix: value}
+
+
+def check_expectations(actual: dict[str, Any], expected: dict[str, Any]) -> list[dict[str, Any]]:
+    """Compare inspected facts with the values found when the datasets were analysed."""
+    flat_actual = _flatten("", actual)
+    return [
+        {
+            "check": key,
+            "expected": value,
+            "actual": flat_actual.get(key),
+            "ok": flat_actual.get(key) == value,
+        }
+        for key, value in _flatten("", expected).items()
+    ]
 
 
 # ------------------------------------------------------------------------- main
@@ -400,6 +492,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--output", type=Path, default=Path("results/feasibility/data_inspection.json")
     )
+    parser.add_argument("--expectations", type=Path, default=DEFAULT_EXPECTATIONS)
     args = parser.parse_args(argv)
 
     params = load_params(args.params)
@@ -411,18 +504,40 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Inspecting HAI at {hai_dir}")
     hai = inspect_hai(hai_dir, site_a.block_hours, len(site_a.clients))
     print(f"Inspecting CIC Modbus 2023 at {modbus_dir}")
-    modbus = inspect_modbus(modbus_dir, devices)
-    hints = gate_hints(hai, modbus)
+    modbus = inspect_modbus(
+        modbus_dir,
+        devices,
+        attacker_ip=params.data.modbus.attacker_ip,
+        window_s=float(params.data.windows.site_b.length_s),
+    )
+    hints = gate_hints(hai, modbus, configured_scheme=site_a.scheme)
+    summary = _summarise_for_expectations(hai, modbus)
+    checks: list[dict[str, Any]] = []
+    if args.expectations.is_file():
+        expected = yaml.safe_load(args.expectations.read_text(encoding="utf-8"))
+        checks = check_expectations(summary, expected)
     path = write_artifact(
         args.output,
         kind="feasibility.data_inspection",
         data_source="runtime",
-        payload={"hai": hai, "modbus": modbus, "g0_hints": hints},
+        payload={
+            "hai": hai,
+            "modbus": modbus,
+            "summary": summary,
+            "g0_hints": hints,
+            "expectation_checks": checks,
+        },
         params_path=args.params,
     )
     print(f"\nWrote {path}")
     for key, value in hints.items():
         print(f"  {key}: {value}")
+    if checks:
+        failed = [c for c in checks if not c["ok"]]
+        passed = len(checks) - len(failed)
+        print(f"\nData matches the analysed datasets: {passed}/{len(checks)} checks")
+        for c in failed:
+            print(f"  DIFFERENT {c['check']}: expected {c['expected']}, found {c['actual']}")
     missing = [
         name for name, rep in (("HAI", hai), ("Modbus", modbus)) if rep.get("status") == "missing"
     ]

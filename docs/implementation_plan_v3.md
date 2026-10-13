@@ -7,9 +7,9 @@
 | | |
 |---|---|
 | **Author** | Allaudin Ansari |
-| **Version** | 3.0 — Redesign (supersedes v2.1) |
+| **Version** | 3.1 — Data-informed revision of v3.0 (supersedes v2.1) |
 | **Date** | October 2026 |
-| **Companion document** | Project Proposal v3.0 (cited below as "Proposal §x") |
+| **Companion document** | Project Proposal v3.1 (cited below as "Proposal §x") |
 | **Language** | Python 3.12 (3.11 fallback) |
 | **Target machine** | 8 GB RAM; Windows 11 with WSL2 (Ubuntu 24.04), or native Linux |
 
@@ -17,7 +17,15 @@
 
 ## Revision Note
 
-This plan was rebuilt from scratch to implement Proposal v3.0. Three things changed compared with v2.1.
+**v3.1.** The plan follows the data analysis recorded in Proposal Appendix B. Weeks 1, 2, 4, 8, 9 and 13 change; the order of work and the gates do not.
+- **Week 1:** data inspection now checks a local copy against `configs/data_expectations.yaml` (21 checks) and reports the Gate G0 data hints.
+- **Week 2:** Site A uses the time partition; Modbus captures are parsed with `dpkt` (no `tshark`); labels come from the attacker's address; Site B trains on benign days and evaluates on the attack day; idle periods are cut.
+- **Week 4:** the VAE takes six segment means per feature; Site A ground truth is tactic-level for the 50 HAI events; Site B mapping covers the seven episodes as a case study.
+- **Week 8:** the evidence record gains the attack-driven protocol fields; latency is excluded from fusion.
+- **Week 9:** the evidence-to-text renderer covers the new fields.
+- **Week 13:** X3 measures the fusion trade-off (H2a–H2c); X4 scores Site A tactics and reports the Site B case study.
+
+**v3.0.** This plan was rebuilt from scratch to implement Proposal v3.0. Three things changed compared with v2.1.
 
 **Order of work**
 - Evaluation and baselines are built *before* the federated models.
@@ -119,7 +127,7 @@ Exact versions are pinned in Week 1 with `uv lock`, producing `uv.lock`. `requir
 | opacus | DP-SGD and RDP accountant | Supports the locked torch; accountant state can be saved and restored |
 | flwr[simulation] (Ray) | Federations | Ray wheels exist for Python 3.12 on Linux; check the recommended simulation API and the **SecAgg+ integration path** for this version |
 | scikit-learn, pandas, pyarrow | Baselines, calibration, data | — |
-| tshark (system package) | Modbus field export | `tshark -v` |
+| dpkt | Modbus/TCP capture parsing (pcap and pcapng, via a memory-mapped reader in `feasibility/captures.py`) | Parses one benign capture per device; memory stays under 1 GB |
 | langgraph | Agent state machine | Graph compiles; checkpointing is not required (state lives in SQLite) |
 | sentence-transformers | `all-MiniLM-L6-v2`, 384 dimensions | Model downloads and encodes on CPU |
 | qdrant-client | Embedded mode (`path=`) | Local mode creates a collection and runs search |
@@ -148,7 +156,7 @@ agentic-mesh/
 │   └── policy/actions.yaml       # action → impact → execution
 ├── data/                         # DVC-tracked; never in Git
 │   ├── raw/{hai,cic_modbus_2023}/
-│   ├── interim/                  # tshark exports, cleaned tables
+│   ├── interim/                  # parsed Modbus request/response tables, cleaned HAI tables
 │   └── partitions/{site_a/{a1..a4},site_b/{b1..b3}}/{train,val_normal,val_attack,test}.parquet + manifest.json
 ├── fixtures/                     # small synthetic public fixture for CI (schema-identical)
 ├── src/agmesh/
@@ -194,17 +202,33 @@ project:
   seeds: [11, 23, 37, 41, 53]
 
 data:
-  hai: {release: "PINNED_AT_G0", sample_rate_hz: 1}
+  hai:
+    release: "21.03"
+    sample_rate_hz: 1
+    label_column: attack
+    process_label_columns: [attack_P1, attack_P2, attack_P3]
+    drop_train_constant_features: true
+    drop_features: [P4_HT_PS]
+    scaling: {method: standard, clip_sd: 6.0}
+  modbus:
+    devices: {ied1a: 185.175.0.4, ied1b: 185.175.0.5, scada-hmi: 185.175.0.3}
+    attacker_ip: 185.175.0.7
+    label_source: attacker_address
+    idle_gap_s: 60
   windows:
     site_a: {length_s: 60, train_stride_s: 60, infer_stride_s: 10}
     site_b: {length_s: 10, train_stride_s: 10, infer_stride_s: 5}
   splits: {normal_val_fraction: 0.15, gap_windows: 1, attack_val_fraction: 0.30}
   partition:
-    site_a: {clients: [a1, a2, a3, a4], block_hours: 6, scheme: regime}   # regime | iid | time
-    site_b: {clients: {b1: ied1a, b2: ied1b, b3: scada_hmi}}
+    site_a:
+      clients: [a1, a2, a3, a4]
+      block_hours: 6
+      scheme: time               # regime | iid | time  (G0 decision 2)
+      period_assignment: {a1: train1, a2: train2, a3: "train3:first_half", a4: "train3:second_half"}
+    site_b: {clients: {b1: ied1a, b2: ied1b, b3: scada-hmi}}
 
 models:
-  vae: {hidden: [256, 128], latent: 16, lr: 1.0e-3, batch: 256}
+  vae: {hidden: [256, 128], latent: 16, lr: 1.0e-3, batch: 256, input_mode: segment_means, segments_per_window: 6}
   ae:  {hidden: [64, 32], lr: 1.0e-3, batch: 256}
 
 federated:
@@ -234,7 +258,7 @@ evaluation:
   bootstrap_resamples: 2000
 
 fusion:
-  site_b: {delta_t_s: 60, method: noisy_or, k_of_n: 2}
+  site_b: {delta_t_s: 60, method: noisy_or, k_of_n: 2, exclude_latency: true}
 
 mesh:
   max_hops: 3
@@ -349,7 +373,7 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 
 | Gate | When | Inputs | Decisions | Fallback if inputs are poor |
 |---|---|---|---|---|
-| **G0 — Feasibility** | End of W1 | LLM benchmark, Ray memory spike, dataset inspection | HAI release; LLM model (Phi-3.5-mini or Llama 3.2 3B); L_LLM latency target; Ray concurrency; whether Site B captures overlap in time; whether a MITRE mapping exists | No overlap → RQ2 uses a labelled synthetic composition. LLM too slow → `retrieval_only` becomes the default mode |
+| **G0 — Feasibility** | End of W1 | LLM benchmark, Ray memory spike, dataset inspection (with the 21 expectation checks) | HAI release; Site A partition scheme; RQ2 fusion data; Site B label source; Site B attribution ground truth; LLM model (Phi-3.5-mini or Llama 3.2 3B); L_LLM latency target; Ray concurrency. Data decisions 1–5 were taken from the v3.1 analysis and are confirmed by the laptop inspection | Expectation mismatch → resolve the download before Week 2. LLM too slow → `retrieval_only` becomes the default mode |
 | **G1 — Evaluation frozen** | End of W4 | Harness, validation-only baselines, labelling and mapping protocols | Freeze the evaluation config, ground-truth mappings and fusion candidates; preregister PT1–PT7 in `docs/preregistration.md` | PT3 may be revised here, using validation baselines only, and never afterwards |
 | **G2 — Federation sound** | End of W7 | Pilot federated runs on validation; privacy tests; per-run time | Headline ε candidates; μ grid; seeds per configuration (5, or 3 for non-headline); whether X8 stays in scope | Utility far below baseline → tune clipping norm, local epochs and model width on validation; report the curve honestly |
 | **G3 — Mesh complete** | End of W11 | Integration, security and latency tests | Default attribution mode; final L_LLM | Latency or validity poor → `retrieval_only` default, with the LLM producing explanations after dispatch |
@@ -376,8 +400,9 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 5. **Spike: Flower and Ray.** `scripts/bench_ray.py` runs 4 dummy torch clients for 3 rounds with `client_resources={"num_cpus": 2}`, and records peak memory and time per round.
 6. **Spike: data inspection.**
    - HAI: feature list, sampling rate, number of attack events per test file, and candidate regime variables (setpoints, load).
-   - Modbus: list device captures, and check whether IED1A, IED1B and SCADA HMI captures **overlap in time**.
+   - Modbus: list device captures, check whether IED1A, IED1B and SCADA HMI captures **overlap in time**, and count attacker packets and 10 s windows per device.
    - Check whether the dataset documentation maps attacks to MITRE techniques.
+   - Compare the local copy with `configs/data_expectations.yaml` (`--expectations`); all 21 checks should match. A mismatch means a different release or an incomplete download, and is resolved before Week 2.
 7. **Documentation.** Draft `docs/threat_model.md` from Proposal §5.
 
 **Deliverables:** locked environment; green CI; raw data with checksums under DVC; `results/feasibility/{llm_bench,ray_bench,data_inspection}.json`; draft threat model; filled "Measured (W1)" column in §3.3.
@@ -406,25 +431,26 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 
 **Tasks**
 
-1. **HAI loading** (`data/hai.py`): parse timestamps, handle missing values (forward-fill limited to 5 s, otherwise drop the row), and identify attack events from labels.
+1. **HAI loading** (`data/hai.py`): parse timestamps, handle missing values (forward-fill limited to 5 s, otherwise drop the row), take `attack` as the label, keep `attack_P1`–`attack_P3` aside for ground truth, and build the feature list from `params.yaml` (drop the 22 training-constant features and `P4_HT_PS`, leaving 56). Add the label-free rule that flags changes in training-constant variables.
 2. **Splits** (`data/splits.py`):
-   - Divide training files into blocks of `block_hours`.
-   - The last 15% of each client's blocks become normal validation, with a one-window gap.
-   - Cut the test files into *segments*, each holding at least one event plus normal margins. Assign about 30% of segments to attack validation, stratified by attack type; the rest are test.
+   - Site A: the last 15% of each client's recording period becomes normal validation, with a one-window gap.
+   - Cut the HAI test files into one *event segment* per event, with boundaries halfway between neighbouring events. Assign about 15 of the 50 segments to attack validation, stratified by process combination (P1, P2, P1+P2, P1+P3, P2+P3, P3) and spread across the four clients; the rest are test.
+   - Site B: benign days 22–31 January are training plus normal validation (last 15% of each node's benign time). The attack day is attack validation (episodes 0–3) and test (episodes 4–6), each with its surrounding normal windows.
    - **Split before windowing.**
 3. **Site A partition** (`data/partition.py`):
-   - Summarise each block by the mean of its regime variables.
-   - Cluster blocks into 4 regimes with k-means (fixed seed) and assign one regime per client (`scheme: regime`).
-   - Implement `iid` (random equal assignment, for X2) and `time` (fallback) schemes.
-   - Assign test and validation segments to clients by nearest regime centroid.
-4. **Modbus export and labels** (`data/modbus.py`, `data/labeling.py`):
-   - Export per-device packet fields with `tshark` (time, endpoints, ports, transaction ID, function code, exception flag, length).
-   - Aggregate into 10 s flow windows with a shared schema: counts per function-code family, byte rates, inter-arrival statistics, distinct peers, exception counts.
-   - Derive attack labels from the attack logs, following `docs/labeling_protocol.md`. The protocol defines clock alignment, window membership, and automatic sanity checks (attack windows must show the expected function-code or rate signature). It also requires a manual spot-check of 20 windows per attack type.
-   - Split Site B by attack-scenario instance into validation and test.
-5. **Windowing** (`data/windows.py`): training windows are non-overlapping (this defines the privacy unit); inference windows use the configured stride. A window is labelled attack if it overlaps any attack sample.
+   - `scheme: time` (default, G0 decision 2): a1 = `train1`, a2 = `train2`, a3 and a4 = the two halves of `train3`, as set by `period_assignment`.
+   - `scheme: iid` for X2: shuffled `block_hours` blocks, assigned in equal numbers with a fixed seed.
+   - `scheme: regime` is kept for completeness but is not used; HAI 21.03 has no separable regimes (Proposal §4.1).
+   - Assign test event segments to clients round-robin within each stratum, so each client gets attack segments.
+4. **Modbus parsing and labels** (`data/modbus.py`, `data/labeling.py`):
+   - Parse each capture with `dpkt` through the memory-mapped reader in `feasibility/captures.py`: time, endpoints, ports, TCP flags, MBAP header (transaction ID, length), function code, address, quantity, exception flag, and stacked frames. Pair requests with responses to get latency.
+   - Cut idle periods (no HMI polling for more than `idle_gap_s`) and record them in the manifest.
+   - Learn per-node sets from training data only: peers, addresses read or written, maximum quantity per function code, latency p99.9.
+   - Aggregate into 10 s windows with one schema, computed from the node's own side: requests sent and received per function code; writes per address and whether the address was seen in training; distinct and new peers; new TCP connections and resets; stacked frames and length mismatches; quantities above the training maximum; latency median and slow-response count.
+   - Label each window on each node from the attacker's address (`label_source: attacker_address`), following `docs/labeling_protocol.md`. The protocol states that labels are derived, defines window membership (any IPv4 packet to or from the attacker), defines episodes (attacker activity with gaps under 60 s), and requires the automatic check that IED1A has 51 attack windows (10 s windows aligned to the capture's first packet, as counted by `scan_hosts`) in seven episodes and IED1B and the HMI have none. Spot-check every episode boundary by hand.
+5. **Windowing** (`data/windows.py`): training windows are non-overlapping (this defines the privacy unit); inference windows use the configured stride. Site A windows are also reduced to six 10 s segment means per feature when `input_mode: segment_means`. A window is labelled attack if it overlaps any attack sample.
 6. **Manifests and pipeline:** write manifests (§6.2). Add DVC stages `prepare` and `partition`.
-7. **Fixture:** `fixtures/make_fixture.py` generates a tiny synthetic dataset with the same schemas, so CI runs without raw data.
+7. **Fixture:** `fixtures/make_fixture.py` generates a tiny synthetic dataset with the same schemas (HAI-like CSVs and small Modbus pcaps with an attacker address), so CI runs without raw data.
 
 **Deliverables:** partitions and manifests for 7 nodes; `docs/labeling_protocol.md`; fixture; DVC stages.
 
@@ -437,6 +463,8 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 | Training windows do not overlap | `pytest tests/unit/test_windows.py` | Pass |
 | Manifests deterministic | `make partition` twice, then compare manifest hashes | Identical |
 | Label sanity checks | `python -m agmesh.data.labeling --check` | All checks pass; spot-check log committed |
+| Label counts match the data analysis | `python -m agmesh.data.labeling --check --expectations configs/data_expectations.yaml` | IED1A 51 attack windows, 7 episodes; IED1B and HMI 0 |
+| Feature counts | `pytest tests/unit/test_hai.py` | 56 Site A features; process label columns never in the feature frame |
 | Fixture pipeline in CI | CI job `fixture-smoke` | Pass |
 
 **Resolves:** D1, D2, D3, D5, P4 (unit defined), R1.
@@ -485,12 +513,12 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 **Tasks**
 
 1. **Models:**
-   - `models/vae.py`: a VAE over flattened windows (hidden 256 → 128, latent 16), Opacus-compatible (no batch normalisation).
+   - `models/vae.py`: a VAE over six 10 s segment means per feature (6 × 56 = 336 inputs; hidden 256 → 128, latent 16), Opacus-compatible (no batch normalisation). The flattened 3,360-input variant is trained once on validation as a comparison; the choice is recorded at G1 (`models.vae.input_mode`).
    - `models/autoencoder.py`: dense autoencoder (64 → 32).
    - `models/scoring.py`: window score plus a per-feature error vector, taking `LabelFreeFrame` input only.
 2. **Baselines** (`models/baselines.py`): PCA reconstruction error and Isolation Forest, both local.
 3. **Baseline runs:** `experiments/x1_utility.py --configs baselines --split val` trains local-only and centralised non-private models for both sites (one seed, to sanity-check before the full X1).
-4. **Ground truth:** write `docs/mapping_protocol.md`. Build `evaluation/ground_truth/mapping_site_b.json` (attack type → technique set and tactic) and `mapping_site_a.json` (attack → tactic). Do two review passes on separate days, and log any disagreements.
+4. **Ground truth:** write `docs/mapping_protocol.md`. Build `evaluation/ground_truth/mapping_site_a.json` (each of the 50 HAI events → tactic set, from its targeted processes and deviating variables; technique set where the evidence supports one) and `mapping_site_b.json` (each of the seven Modbus episodes → technique and tactic, for the case study). Do two review passes on separate days, and log any disagreements.
 5. **Preregistration** (`docs/preregistration.md`): the evaluation config hash, PT1–PT7 (PT3 may be revised using validation baselines only), primary metrics, and statistical tests.
 
 **Deliverables:** model modules with tests; validation baseline artifacts; frozen mappings; preregistration.
@@ -611,9 +639,9 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 
 1. **Replay** (`edge/replay.py`): streams a node's partition in real time or at an accelerated rate, using validation data during development.
 2. **Edge runtime** (`edge/runtime.py`): loads the frozen model with the node's calibrator and threshold, scores windows, and on threshold crossing builds an evidence record. Stores it in the per-node evidence store (`edge/evidence_store.py`, SQLite) and publishes an alert.
-3. **Evidence builder** (`edge/evidence.py`): top-5 features by error, direction, magnitude buckets (p90/p99/p99.9 from validation), and Modbus protocol buckets. Never includes raw values.
+3. **Evidence builder** (`edge/evidence.py`): top-5 features by error, direction, magnitude buckets (p90/p99/p99.9 from validation), and the Modbus `protocol_summary` (Proposal §6.6), including `new_peer`, `unseen_address`, `oversized_quantity`, `malformed_frames` and `slow_responses`. Site A also emits a flag when a training-constant variable changes. Never includes raw values, addresses or peer IPs.
 4. **Bus** (`bus/sqlite_bus.py`): WAL mode, leases, acknowledgements, retry on lease expiry. `bus/memory.py` for unit tests.
-5. **Fusion** (`mesh/fusion.py`): noisy-OR and k-of-n over calibrated probabilities within Δt. Tune Δt and k on Site B validation data.
+5. **Fusion** (`mesh/fusion.py`): noisy-OR and k-of-n over calibrated probabilities within Δt. When `exclude_latency` is set, an alert whose top features are latency-only does not count towards fusion and is attached as single-device context. Tune Δt and k on Site B validation data.
 6. **Sessions** (`mesh/sessions.py`): the schema from §6.4 and idempotency-key creation.
 
 **Deliverables:** edge runtime; evidence records; durable bus; fusion module; session store.
@@ -625,7 +653,7 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 | Evidence minimisation | `pytest tests/contract/test_evidence_schema.py` | Only allowlisted fields; property test finds no raw values |
 | Bus at-least-once | `pytest tests/integration/test_bus_redelivery.py` | Consumer killed before ack → message redelivered; processed once thanks to idempotency |
 | Replay → alert | `make edge SITE=site_b SPLIT=val` | Alerts in bus; evidence in node stores |
-| Fusion | `pytest tests/unit/mesh/test_fusion.py` | Pass |
+| Fusion | `pytest tests/unit/mesh/test_fusion.py` | Pass, including a test that simultaneous latency-only alerts on two IEDs do not fuse |
 | Detection latency | `python -m evaluation.latency --segment detection --split val` | p95 recorded (target ≤ 1 s) |
 
 **Resolves:** A3, M2, M3, I1, A9 (session store), R1.
@@ -641,9 +669,9 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 1. **STIX parsing** (`kb/stix_parser.py`): load the ICS domain bundle (pinned version with checksum) and extract techniques, tactics and mitigation relationships.
 2. **Chunking** (`kb/chunking.py`): one chunk per technique (name, description, detection). NIST SP 800-82 Rev. 3 sections are chunked as supplementary context.
 3. **Build** (`kb/build.py`): embed with `all-MiniLM-L6-v2` into embedded Qdrant collections `mitre_ics`, `nist_80082` and `incident_memory` (all 384-dimensional, cosine).
-4. **Renderer** (`kb/render.py`): a deterministic template turning evidence records into text.
+4. **Renderer** (`kb/render.py`): a deterministic template turning evidence records into text, covering every `protocol_summary` field (for example "coil writes >100 to an address unseen in training from a new peer; requested quantity above the training maximum") and, for Site A, the targeted process and deviating variable names.
 5. **Retriever** (`kb/retriever.py`): top-k from `mitre_ics`, with NIST context retrieved separately.
-6. **Retrieval evaluation set** (`evaluation/retrieval_eval.py`): queries rendered from **validation** incidents (Site B), plus 30 paraphrases written without looking at the knowledge-base chunks. Compute Recall@5 and MRR.
+6. **Retrieval evaluation set** (`evaluation/retrieval_eval.py`): queries rendered from **validation** incidents (the 15 Site A validation events and Site B episodes 0–3), plus 30 paraphrases written without looking at the knowledge-base chunks. Compute Recall@5 and MRR.
 7. **Rule baseline:** write the rule table (`configs/policy/rule_baseline.yaml`), which maps evidence patterns to techniques. Freeze it before any test run.
 
 **Deliverables:** built knowledge base (DVC-tracked); renderer; retriever; retrieval artifact; rule baseline.
@@ -774,8 +802,8 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 
 **Tasks**
 
-1. **X3 fusion (Site B):** best single node vs noisy-OR vs k-of-n at matched FPR. Report event recall and time-to-detect with CIs. If G0 found no time overlap, use the labelled synthetic composition and mark the results as synthetic.
-2. **X4 attribution:** the four modes on validation incidents. Report technique top-1 and top-3, tactic accuracy, abstention, raw grounding rate, and the majority-class baseline.
+1. **X3 fusion (Site B):** best single node vs noisy-OR vs 2-of-3 at the same per-node thresholds. Report (a) false alarms per hour on benign validation time (H2a), (b) event recall per episode on the real attack day (H2b), and (c) event recall and time-to-detect on the labelled synthetic multi-device scenario (H2c, marked synthetic), all with CIs. Build the synthetic scenario in `experiments/x3_synthetic.py` by injecting a labelled write burst into two devices' benign validation windows at the same time.
+2. **X4 attribution:** the four modes on validation incidents. Site A: tactic accuracy, technique top-1 and top-3 where a technique set exists, abstention, raw grounding rate and the majority-class baseline. Site B: per-episode chosen technique, JSON validity and raw grounding rate (case study, no accuracy).
 3. **X5 latency:** end to end in `full` and `retrieval_only` modes, reporting p50 and p95 per segment (detection, investigation, incident-to-dispatch).
 4. **X6 chaos** (`tests/chaos/`):
    - Node fails before, during and after a hop.
@@ -890,8 +918,8 @@ The run counts below assume 5 seeds. Per-run time is measured in Week 6; if the 
 |---|---|---|---|---|
 | X1 | Per site: local-only × {∞, headline ε}; centralised × {∞, headline ε}; FedAvg and FedProx × {1, 3, 10, ∞} | 2 sites × 12 configs × 5 = 120 | Validation (W12); test (W14) | W12, W14 |
 | X2 | Site A: IID vs non-IID × FedAvg/FedProx (4); heterogeneous arm: FedAvg + FedProx × 3 μ (4); headline ε | 8 × 5 = 40 | Validation; test | W12, W14 |
-| X3 | Site B: single best, noisy-OR, k-of-n | 3 × 5 = 15 | Validation; test | W13, W14 |
-| X4 | Four attribution modes on Site B (technique and tactic) and Site A (tactic) incidents | 4 × 5 = 20 | Validation; test | W13, W14 |
+| X3 | Site B: single best, noisy-OR, 2-of-3 — benign false alarms, real attack day, synthetic multi-device scenario | 3 × 5 = 15 (+ synthetic) | Validation; test | W13, W14 |
+| X4 | Four attribution modes: Site A tactic level (35 test events); Site B case study (seven episodes) | 4 × 5 = 20 | Validation; test | W13, W14 |
 | X5 | Latency in `full` and `retrieval_only` modes, ≥ 100 incidents each | 2 | Validation | W13 |
 | X6 | Six chaos scenarios × 20 sessions each | 6 | Fixture and validation | W13 |
 | X7 | Resource benchmark: training and operations stages | 2 | Validation | W14 |

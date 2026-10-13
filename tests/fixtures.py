@@ -7,6 +7,7 @@ datasets, so CI never needs raw industrial data.
 from __future__ import annotations
 
 import gzip
+import socket
 import struct
 from pathlib import Path
 
@@ -14,16 +15,36 @@ import numpy as np
 import pandas as pd
 
 
-def write_pcap(path: Path, timestamps: list[float], *, nanoseconds: bool = False) -> Path:
-    """Write a minimal little-endian pcap with one 4-byte packet per timestamp."""
+def ethernet_ipv4(src: str, dst: str) -> bytes:
+    """A minimal Ethernet + IPv4 header (no payload) between two addresses."""
+    eth = b"\x02\x00\x00\x00\x00\x01" + b"\x02\x00\x00\x00\x00\x02" + b"\x08\x00"
+    ip = struct.pack(
+        "!BBHHHBBH4s4s", 0x45, 0, 20, 0, 0, 64, 6, 0, socket.inet_aton(src), socket.inet_aton(dst)
+    )
+    return eth + ip
+
+
+def write_pcap(
+    path: Path,
+    timestamps: list[float],
+    *,
+    nanoseconds: bool = False,
+    hosts: list[tuple[str, str]] | None = None,
+) -> Path:
+    """Write a minimal little-endian Ethernet pcap.
+
+    With ``hosts``, packet i carries an IPv4 header from hosts[i][0] to hosts[i][1];
+    otherwise each packet is 4 opaque bytes.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     magic = 0xA1B23C4D if nanoseconds else 0xA1B2C3D4
     scale = 1e9 if nanoseconds else 1e6
     out = bytearray(struct.pack("<IHHiIII", magic, 2, 4, 0, 0, 65535, 1))
-    for ts in timestamps:
+    for i, ts in enumerate(timestamps):
         seconds = int(ts)
         fraction = round((ts - seconds) * scale)
-        out += struct.pack("<IIII", seconds, fraction, 4, 4) + b"\x00\x01\x02\x03"
+        data = ethernet_ipv4(*hosts[i]) if hosts else b"\x00\x01\x02\x03"
+        out += struct.pack("<IIII", seconds, fraction, len(data), len(data)) + data
     path.write_bytes(bytes(out))
     return path
 

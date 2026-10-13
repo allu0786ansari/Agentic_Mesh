@@ -7,7 +7,9 @@ fail immediately instead of surfacing weeks later as a wrong result.
 
 from __future__ import annotations
 
+import ipaddress
 import math
+import re
 from pathlib import Path
 from typing import Literal
 
@@ -33,9 +35,45 @@ class PathsConfig(_Section):
     checksums_file: Path
 
 
+class ScalingConfig(_Section):
+    method: Literal["standard"]
+    clip_sd: float = Field(gt=0)
+
+
 class HaiConfig(_Section):
     release: str
     sample_rate_hz: int = Field(gt=0)
+    label_column: str
+    process_label_columns: list[str]
+    drop_train_constant_features: bool
+    drop_features: list[str]
+    scaling: ScalingConfig
+
+
+def _check_ipv4(value: str, what: str) -> str:
+    try:
+        ipaddress.IPv4Address(value)
+    except ValueError as exc:
+        raise ValueError(f"{what} is not an IPv4 address: {value!r}") from exc
+    return value
+
+
+class ModbusConfig(_Section):
+    devices: dict[str, str] = Field(min_length=1)
+    other_hosts: dict[str, str]
+    attacker_ip: str
+    label_source: Literal["attacker_address", "attack_logs"]
+    idle_gap_s: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _addresses_are_valid(self) -> ModbusConfig:
+        for name, ip in {**self.devices, **self.other_hosts}.items():
+            _check_ipv4(ip, name)
+        _check_ipv4(self.attacker_ip, "attacker_ip")
+        known = set(self.devices.values()) | set(self.other_hosts.values())
+        if self.attacker_ip in known:
+            raise ValueError("attacker_ip must not be one of the testbed's own devices")
+        return self
 
 
 class WindowConfig(_Section):
@@ -68,10 +106,29 @@ class SplitsConfig(_Section):
     attack_val_fraction: float = Field(gt=0, lt=1)
 
 
+_PERIOD = re.compile(r"^train\d+(:first_half|:second_half)?$")
+
+
 class SiteAPartition(_Section):
     clients: list[str] = Field(min_length=2)
     block_hours: int = Field(gt=0)
     scheme: Literal["regime", "iid", "time"]
+    period_assignment: dict[str, str] | None = None
+
+    @model_validator(mode="after")
+    def _time_scheme_needs_assignment(self) -> SiteAPartition:
+        if self.scheme != "time":
+            return self
+        if not self.period_assignment:
+            raise ValueError("scheme 'time' needs period_assignment")
+        if set(self.period_assignment) != set(self.clients):
+            raise ValueError("period_assignment must name exactly the Site A clients")
+        for client, period in self.period_assignment.items():
+            if not _PERIOD.match(period):
+                raise ValueError(f"{client}: period must look like 'train1' or 'train3:first_half'")
+        if len(set(self.period_assignment.values())) != len(self.clients):
+            raise ValueError("each Site A client must get a different period")
+        return self
 
 
 class SiteBPartition(_Section):
@@ -85,6 +142,7 @@ class PartitionConfig(_Section):
 
 class DataConfig(_Section):
     hai: HaiConfig
+    modbus: ModbusConfig
     windows: WindowsConfig
     splits: SplitsConfig
     partition: PartitionConfig
@@ -95,6 +153,8 @@ class VaeConfig(_Section):
     latent: int = Field(gt=0)
     lr: float = Field(gt=0)
     batch: int = Field(gt=0)
+    input_mode: Literal["flat", "segment_means"]
+    segments_per_window: int = Field(gt=0)
 
 
 class AeConfig(_Section):
@@ -171,6 +231,7 @@ class SiteBFusion(_Section):
     delta_t_s: int = Field(gt=0)
     method: Literal["noisy_or", "k_of_n"]
     k_of_n: int = Field(gt=0)
+    exclude_latency: bool
 
 
 class FusionConfig(_Section):
@@ -242,6 +303,12 @@ class Params(_Section):
             raise ValueError(f"fusion k_of_n exceeds the {n_b} Site B clients")
         if self.evaluation.target_window_fpr not in self.evaluation.report_window_fprs:
             raise ValueError("target_window_fpr must be one of report_window_fprs")
+        window_a = self.data.windows.site_a.length_s * self.data.hai.sample_rate_hz
+        if window_a % self.models.vae.segments_per_window:
+            raise ValueError("segments_per_window must divide the Site A window length")
+        site_b_devices = set(self.data.partition.site_b.clients.values())
+        if site_b_devices != set(self.data.modbus.devices):
+            raise ValueError("partition.site_b.clients must map to exactly the modbus devices")
         return self
 
 

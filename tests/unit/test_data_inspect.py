@@ -70,12 +70,25 @@ def test_classify_capture() -> None:
     assert classify_capture(Path("z.pcap"), DEVICES) == ("unknown", "unknown")
 
 
-def _modbus_layout(root: Path, attack_offsets: dict[str, float]) -> None:
+ATTACKER = "185.175.0.7"
+HMI = "185.175.0.3"
+
+
+def _modbus_layout(
+    root: Path, attack_offsets: dict[str, float], attacked: tuple[str, ...] = ("ied1a",)
+) -> None:
     for device in DEVICES:
-        write_pcap(root / "benign" / device / "b1.pcap", [T0, T0 + 3600])
+        write_pcap(
+            root / "benign" / device / "b1.pcap", [T0, T0 + 3600], hosts=[(HMI, "10.0.0.1")] * 2
+        )
     for device, offset in attack_offsets.items():
         start = T0 + 10_000 + offset
-        write_pcap(root / "attack" / device / "a1.pcap", [start, start + 1800])
+        src = ATTACKER if device in attacked else HMI
+        write_pcap(
+            root / "attack" / device / "a1.pcap",
+            [start, start + 25, start + 1800],
+            hosts=[(HMI, "10.0.0.1"), (src, "10.0.0.1"), (HMI, "10.0.0.1")],
+        )
 
 
 def test_inspect_modbus_reports_overlap_and_logs(tmp_path: Path) -> None:
@@ -84,7 +97,7 @@ def test_inspect_modbus_reports_overlap_and_logs(tmp_path: Path) -> None:
     (root / "docs").mkdir()
     (root / "docs" / "attack_log.csv").write_text("time,attack\n1,T0855\n", encoding="utf-8")
 
-    report = inspect_modbus(root, DEVICES)
+    report = inspect_modbus(root, DEVICES, attacker_ip=ATTACKER)
     assert report["n_captures"] == 6
     assert report["captures_by_split_and_device"]["attack"] == {
         "ied1a": 1,
@@ -99,17 +112,30 @@ def test_inspect_modbus_reports_overlap_and_logs(tmp_path: Path) -> None:
     assert report["possible_label_or_log_files"] == ["docs/attack_log.csv"]
     assert report["mitre_ids_in_text_files"] == {"attack_log.csv": ["T0855"]}
 
-    hints = gate_hints({"status": "ok", "release_hint": "hai-21.03"}, report)
-    assert hints["rq2_fusion_data"] == "real_overlap"
+    assert report["attacker_by_split_and_device"]["attack"]["ied1a"] == {"packets": 1, "windows": 1}
+    assert report["attacker_by_split_and_device"]["attack"]["ied1b"] == {"packets": 0, "windows": 0}
+    hints = gate_hints({"status": "ok", "release_hint": "hai-21.03"}, report, "time")
+    assert hints["devices_overlap_in_time"] is True
+    assert hints["attacker_seen_on_devices"] == ["ied1a"]
+    assert hints["rq2_fusion_data"] == "single_device_attack"
+    assert hints["site_a_partition_scheme"] == "time"
     assert hints["site_b_attack_labels"] == "attack_logs_available"
     assert hints["site_b_attribution_ground_truth"] == "dataset_mitre_mapping_found"
 
 
+def test_gate_hints_multi_device_attack(tmp_path: Path) -> None:
+    root = tmp_path / "modbus2023"
+    _modbus_layout(root, {"ied1a": 0.0, "ied1b": 0.0}, attacked=("ied1a", "ied1b"))
+    hints = gate_hints({"status": "ok"}, inspect_modbus(root, DEVICES, attacker_ip=ATTACKER))
+    assert hints["rq2_fusion_data"] == "real_multi_device_attack"
+    assert hints["site_b_attack_labels"] == "attacker_address"
+
+
 def test_gate_hints_without_overlap_or_logs(tmp_path: Path) -> None:
     root = tmp_path / "modbus2023"
-    _modbus_layout(root, {"ied1a": 0.0, "ied1b": 3000.0})
-    hints = gate_hints({"status": "ok"}, inspect_modbus(root, DEVICES))
-    assert hints["rq2_fusion_data"] == "synthetic_composition"
+    _modbus_layout(root, {"ied1a": 0.0, "ied1b": 3000.0}, attacked=())
+    hints = gate_hints({"status": "ok"}, inspect_modbus(root, DEVICES, attacker_ip=ATTACKER))
+    assert hints["rq2_fusion_data"] == "no_attacker_traffic_found"
     assert hints["site_b_attack_labels"] == "capture_level_only"
     assert hints["site_b_attribution_ground_truth"] == "needs_mapping_protocol_or_manual_check"
 
@@ -141,7 +167,12 @@ def test_main_writes_artifact_with_hints(tmp_path: Path) -> None:
     document = read_artifact(out)
     assert document["kind"] == "feasibility.data_inspection"
     assert document["g0_hints"]["hai_usable"] is True
-    assert document["g0_hints"]["rq2_fusion_data"] == "real_overlap"
+    assert document["g0_hints"]["rq2_fusion_data"] == "single_device_attack"
+    checks = {c["check"]: c for c in document["expectation_checks"]}
+    assert checks["hai.test_attack_events"]["actual"] == 1
+    assert (
+        checks["hai.test_attack_events"]["ok"] is False
+    )  # synthetic data differs from the real files
 
 
 def test_main_reports_missing_data(tmp_path: Path) -> None:
@@ -161,3 +192,21 @@ def test_main_reports_missing_data(tmp_path: Path) -> None:
         ]
     )
     assert code == 1
+
+
+def test_check_expectations_flags_differences() -> None:
+    from agmesh.feasibility.data_inspect import check_expectations
+
+    actual = {"hai": {"rows": 10, "events": 2}, "modbus": {"captures": {"attack": {"ied1a": 1}}}}
+    expected = {"hai": {"rows": 10, "events": 3}, "modbus": {"captures": {"attack": {"ied1a": 1}}}}
+    result = {c["check"]: c["ok"] for c in check_expectations(actual, expected)}
+    assert result == {"hai.rows": True, "hai.events": False, "modbus.captures.attack.ied1a": True}
+
+
+def test_repository_expectations_file_is_valid() -> None:
+    import yaml
+
+    path = Path(__file__).resolve().parents[2] / "configs" / "data_expectations.yaml"
+    expected = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert expected["hai"]["test_attack_events"] == 50
+    assert expected["modbus"]["attacker_windows"]["ied1a"] == 51

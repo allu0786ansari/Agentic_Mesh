@@ -3,7 +3,7 @@
 This runbook covers everything for Week 1 that must happen on your own 8 GB laptop.
 The code is already on the `phase3` branch. Your job is to set up the environment,
 run the three feasibility measurements, and commit their results. Those numbers feed
-Gate G0 (Implementation Plan v3.0 §7), which fixes the decisions every later phase
+Gate G0 (Implementation Plan v3.1 §7), which fixes the decisions every later phase
 depends on.
 
 **Time needed:** about 2 hours, mostly waiting for downloads and benchmarks.
@@ -126,7 +126,9 @@ find data/raw -maxdepth 3 -type d
 - `data/raw/modbus2023/benign/{ied1a,ied1b,scada-hmi}`
 - `data/raw/modbus2023/attack/{ied1a,ied1b,scada-hmi}`
 
-If your folders are named differently, change `paths.hai_dir` and `paths.modbus_dir` in `configs/params.yaml` to match.
+This is the layout the code expects, and your current copy already matches it (including `benign/scada-hmi/`), so nothing needs moving. If your folders are ever named differently, change `paths.hai_dir` and `paths.modbus_dir` in `configs/params.yaml` instead of moving files.
+
+The capture counts the inspection expects are: attack 1 file per device; benign `ied1a` 8, `ied1b` 7, `scada-hmi` 19. Files may be `.pcap`, `.pcapng` or `.cap`.
 
 ## Step 6 — Record checksums and track the data with DVC
 
@@ -150,15 +152,28 @@ dvc push
 make inspect-data
 ```
 
-This reads every HAI file and walks every Modbus capture, so it takes a few minutes. When it finishes, it prints a list of **G0 hints**. The most important ones are:
+This reads every HAI file and walks every Modbus capture (about 3.7 GB), so it takes about 4 minutes. Memory stays low because captures are memory-mapped rather than loaded.
 
-| Hint | What it tells us |
-|---|---|
-| `hai_usable` | Whether all HAI files were readable (no LFS placeholders) |
-| `site_a_partition_scheme` | Whether HAI has distinct operating regimes to split the four Site A nodes by |
-| `rq2_fusion_data` | Whether the Modbus attack captures overlap in time across devices (needed for evidence fusion) |
-| `site_b_attack_labels` | Whether any attack log or label files exist |
-| `site_b_attribution_ground_truth` | Whether the dataset files mention MITRE ATT&CK technique IDs |
+It prints the **G0 hints**, then compares your copy with `configs/data_expectations.yaml` (the facts measured during the v3.1 data analysis). **Expected result:** the last line is
+
+```
+Data matches the analysed datasets: 21/21 checks
+```
+
+and the hints read:
+
+| Hint | Expected value | What it tells us |
+|---|---|---|
+| `hai_usable` | `True` | All HAI files were readable (no LFS placeholders) |
+| `site_a_partition_scheme` | `time` | The configured scheme: Site A is split by recording period, because HAI has no separable regimes |
+| `site_a_top_regime_candidate` | `P1_PCV02Z` | The largest between-block difference is a calibration offset, not a regime |
+| `devices_overlap_in_time` | `True` | The three Modbus devices were captured at the same time |
+| `attacker_seen_on_devices` | `['ied1a']` | The external attacker reached IED1A only |
+| `rq2_fusion_data` | `single_device_attack` | Fusion is evaluated as a trade-off, plus a synthetic multi-device scenario |
+| `site_b_attack_labels` | `attacker_address` | Labels come from the attacker's address, window by window |
+| `site_b_attribution_ground_truth` | `needs_mapping_protocol_or_manual_check` | No MITRE mapping ships with the dataset |
+
+If any check fails, the output lists which value differed (for example a missing capture, or a different row count). Don't change the expectations file to make it pass; tell me which checks failed, because it usually means a file is missing or incomplete. Data decisions 1–5 in `docs/adr/0001-g0-decisions.md` are already accepted on the basis of these values.
 
 ## Step 8 — Benchmark the local LLM
 
@@ -206,7 +221,7 @@ git push origin phase3
 
 If you configured a DVC remote in Step 6, `git add .dvc/config` as well.
 
-Then tell me it's pushed. I'll read the results, fill in `docs/adr/0001-g0-decisions.md`, update `configs/params.yaml` to match, and we'll review Gate G0 together before starting Phase 1.
+Then tell me it's pushed. I'll read the results, fill in decisions 6–10 of `docs/adr/0001-g0-decisions.md` (LLM model, L_LLM, default attribution mode, Ray resources, memory budget), update `configs/params.yaml` to match, and we'll review Gate G0 together before starting Phase 1.
 
 ---
 
@@ -223,3 +238,4 @@ Then tell me it's pushed. I'll read the results, fill in `docs/adr/0001-g0-decis
 | Ray prints warnings about `/dev/shm` or the object store | Usually harmless; the benchmark asks Ray for only 256 MB of object store |
 | `make check` fails after you edited a file | Run `make format`, then `make check` again |
 | Inspection reports `missing` for HAI or Modbus | The folder paths in `configs/params.yaml` don't match your copy; fix them and re-run |
+| Fewer than 21/21 expectation checks match | Note the failing checks (they are also in `data_inspection.json` under `expectation_checks`) and send them to me; usually a capture is missing or a download is incomplete |

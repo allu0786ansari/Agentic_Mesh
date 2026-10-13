@@ -1,0 +1,20 @@
+# Facts measured when the datasets were analysed in Week 1 (October 2026) from the
+# files downloaded for this project. `make inspect-data` compares a local copy with
+# these values and lists any difference, so everyone can confirm they have the same data.
+hai:
+  train_files: 3
+  test_files: 5
+  train_rows: 921603
+  test_rows: 402005
+  n_features: 79
+  test_attack_events: 50
+  test_attack_rows: 8947
+modbus:
+  captures:
+    attack: {ied1a: 1, ied1b: 1, scada-hmi: 1}
+    benign: {ied1a: 8, ied1b: 7, scada-hmi: 19}
+  attack_day_start_utc: "2023-02-01T03:48:39"
+  # IPv4 traffic to or from the external attacker (185.175.0.7), by attack capture
+  attacker_packets: {ied1a: 538648, ied1b: 0, scada-hmi: 0}
+  attacker_windows: {ied1a: 51, ied1b: 0, scada-hmi: 0}
+  benign_attacker_packets: 0

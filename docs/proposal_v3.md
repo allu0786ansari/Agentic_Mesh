@@ -8,16 +8,29 @@
 |---|---|
 | **Author** | Allaudin Ansari |
 | **Document type** | Research and engineering proposal |
-| **Version** | 3.0 — Redesign (supersedes v2.1) |
+| **Version** | 3.1 — Data-informed revision of v3.0 (supersedes v2.1) |
 | **Date** | October 2026 |
-| **Companion document** | Implementation Plan v3.0 |
+| **Companion document** | Implementation Plan v3.1 |
 | **Domain** | ICS security · federated learning · differential privacy · agentic AI |
 
 ---
 
 ## Revision Note
 
-Version 3.0 is a redesign, not an edit. A structured review of v2.1 and its implementation plan identified **68 issues, 16 of them critical**. Appendix A lists every issue, how it was resolved, and where the resolution appears in this proposal and in the Implementation Plan.
+**v3.1 (data-informed revision).** Before Week 2, both datasets were analysed in full: HAI 21.03 and the CIC Modbus 2023 captures obtained for this project (one external-attacker day plus nine benign days per device). The analysis produced 21 findings, HAI-1 to HAI-7 and MB-1 to MB-14. Appendix B maps each one to the decision it changed. The changes are:
+
+1. **Site A is partitioned by recording period, not operating regime** (§4.1). HAI shows one weak regime (turbine demand) and a calibration offset that follows file boundaries. Clients are `train1`, `train2` and the two halves of `train3`.
+2. **HAI facts are fixed** (§6.1): 79 columns, 57 vary in training, 56 are modelled; the label is `attack`; there are 50 attack events in the test files. Validation and test are split by event segment (§6.2).
+3. **The Site A model input is six 10-second segment means per feature** (336 inputs), not a flattened 3,360-value window, to keep DP-SGD noise manageable (§6.4).
+4. **Site B labels come from the attacker's address at window level** (§6.1). The attack day available has one external attacker that reached only IED1A (51 of 3,681 10-second windows). Training uses benign days 22–31 January; the attack day is used only for attack validation and test (§6.2).
+5. **Site B features are defined around what the attacks changed** and from each node's own side of the traffic (§6.6). Latency stays a single-device feature and is **excluded from fusion**, because the two secure IEDs stall together on normal days (§8.2).
+6. **RQ2 becomes a fusion trade-off question** (§2): k-of-n fusion should cut false alarms but cannot help against an attack seen by one device. A labelled synthetic multi-device scenario is a secondary experiment.
+7. **RQ3 is evaluated at tactic level on HAI's 50 events, plus a case study of the seven Modbus episodes** (§10.4). The Site B technique-accuracy target is removed (PT5).
+8. **Week 2 parses captures with `dpkt`** instead of exporting fields with `tshark`; a memory-mapped reader handles the 50–400 MB files on 8 GB.
+
+Everything else in v3.0 stands.
+
+**v3.0.** Version 3.0 is a redesign, not an edit. A structured review of v2.1 and its implementation plan identified **68 issues, 16 of them critical**. Appendix A lists every issue, how it was resolved, and where the resolution appears in this proposal and in the Implementation Plan.
 
 The critical issues fell into five groups:
 
@@ -77,8 +90,8 @@ The system is evaluated on two public ICS datasets, modelled as two sites:
 The evaluation answers three research questions:
 
 - **RQ1:** how much detection quality federated DP training costs, compared with centralised and local-only training.
-- **RQ2:** whether fusing evidence across nodes at one site improves detection.
-- **RQ3:** whether retrieval-grounded LLM attribution beats retrieval-only and LLM-only baselines.
+- **RQ2:** what fusing evidence across nodes at one site gains and loses: fewer false alarms, against missed single-device attacks.
+- **RQ3:** whether retrieval-grounded LLM attribution beats retrieval-only and LLM-only baselines at tactic level.
 
 The methodology is evaluation-first. The test set is sealed; thresholds are selected on validation data; metrics are event-level and avoid inflated point-adjusted scores; every configuration runs on five seeds with confidence intervals; and targets are preregistered before any federated results exist.
 
@@ -117,14 +130,14 @@ all on a single 8 GB development machine.
 | RQ | Question | Hypothesis (falsifiable) | Experiments |
 |---|---|---|---|
 | **RQ1** | What detection quality does federated training with DP-SGD retain, compared with centralised and local-only training, on non-IID industrial partitions? | **H1a:** at ε ≤ 10, the federated DP model's AUROC is within 0.05 of centralised non-private training and above the mean local-only model on each site. **H1b:** under unequal local work and client dropout, FedProx reaches the target validation loss in fewer rounds than FedAvg; with full, equal participation the two are statistically indistinguishable. | X1, X2 |
-| **RQ2** | Does fusing calibrated evidence from several nodes at the same site improve detection over the best single node? | **H2:** fusion increases event recall at a matched false-positive rate, or reduces median time-to-detect, by a margin whose 95% CI excludes zero. | X3 |
-| **RQ3** | Does retrieval-grounded attribution with a local small language model improve MITRE ATT&CK for ICS attribution over simpler alternatives? | **H3:** retrieval plus LLM has higher technique top-3 accuracy than retrieval-only and LLM-without-retrieval baselines, and every emitted technique ID is grounded in the retrieved candidates. | X4 |
+| **RQ2** | What does fusing calibrated evidence from several nodes at the same site gain and lose compared with the best single node? | **H2a:** on benign Site B data, 2-of-3 fusion lowers false alarms per hour relative to the best single node at the same per-node threshold, with a 95% CI excluding zero. **H2b:** on the real external-attack day, which only IED1A observes, noisy-OR fusion keeps the single-node event recall while 2-of-3 fusion loses it; the loss is reported, not hidden. **H2c (secondary, synthetic):** on a labelled synthetic scenario in which an attack is visible on two or more devices, fusion raises event recall at matched FPR. | X3 |
+| **RQ3** | Does retrieval-grounded attribution with a local small language model improve MITRE ATT&CK for ICS attribution over simpler alternatives? | **H3:** on HAI's attack events, retrieval plus LLM has higher tactic accuracy than retrieval-only and LLM-without-retrieval baselines, and every emitted technique ID is grounded in the retrieved candidates. The seven Modbus episodes are reported as a qualitative case study with validity and grounding rates. | X4 |
 
 ### 2.2 Contributions
 
 - **C1 — Evaluation protocol.** A reproducible protocol for privacy-preserving federated ICS anomaly detection: sealed test data, validation-only thresholds, event-level and range-based metrics, ε sweeps, and multi-seed confidence intervals.
 - **C2 — Privacy–utility characterisation.** Empirical results for FedAvg and FedProx with DP-SGD on two ICS datasets under controlled heterogeneity.
-- **C3 — Evidence fusion.** A minimised, structured evidence record and a within-site fusion method, evaluated against single-node detection.
+- **C3 — Evidence fusion.** A minimised, structured evidence record and a within-site fusion method, with its false-alarm benefit and its single-device blind spot both measured.
 - **C4 — Grounded attribution.** An attribution pipeline whose outputs are constrained and validated, with policy-gated dispatch, evaluated against rule-based, retrieval-only and ungrounded-LLM ablations.
 - **Artifact.** An open, reproducible codebase in which every reported number comes from a provenance-stamped artifact.
 
@@ -146,18 +159,18 @@ all on a single 8 GB development machine.
 
 | Node | Site | Represents | Data | Model | Federation |
 |---|---|---|---|---|---|
-| a1, a2, a3, a4 | **Site A — process fleet** | Four installations of the same process type | HAI (single pinned release), full sensor and actuator feature set. Each node receives a distinct operating-regime partition | VAE | Fed-A (4 clients) |
-| b1 | **Site B — substation** | IED1A | CIC Modbus 2023, per-device flow-window features (shared schema) | Dense autoencoder | Fed-B (3 clients) |
-| b2 | Site B | IED1B | As b1 | Dense autoencoder | Fed-B |
-| b3 | Site B | SCADA HMI | As b1 | Dense autoencoder | Fed-B |
+| a1, a2, a3, a4 | **Site A — process fleet** | Four installations of the same process type | HAI 21.03, the 56 modelled features. a1 = `train1`, a2 = `train2`, a3 and a4 = the first and second halves of `train3` | VAE | Fed-A (4 clients) |
+| b1 | **Site B — substation** | IED1A (secure IED, 185.175.0.4) | CIC Modbus 2023, per-device 10 s window features from the node's own side of the traffic (shared schema) | Dense autoencoder | Fed-B (3 clients) |
+| b2 | Site B | IED1B (insecure IED, 185.175.0.5) | As b1 | Dense autoencoder | Fed-B |
+| b3 | Site B | SCADA HMI (185.175.0.3) | As b1; the HMI is a Modbus client, so its features differ in distribution from the IEDs (the non-IID part of Fed-B) | Dense autoencoder | Fed-B |
 
 **Why horizontal partitioning.** FedAvg and FedProx average parameters, so every client must have the same model shape and the same feature schema. Version 2.1 gave each HAI node a different subsystem. That made the data vertically partitioned and left the VAEs with different input sizes, so they could not be averaged.
 
-In v3.0, every Site A node sees all features. Non-IID conditions come from assigning each node a different operating regime, which is how a real fleet of similar plants differs. If HAI's regimes turn out not to be separable, a time-ordered partition is used instead.
+In v3.0, every Site A node sees all features. v3.0 planned to make the nodes non-IID by giving each one a different operating regime. The v3.1 data analysis found that HAI 21.03 does not support this: the only real regime is turbine power demand (`P4_ST_PS` at 0 or 50), clustering six-hour blocks on setpoints gives weak groups (silhouette 0.34 for four clusters) that follow file boundaries, and the largest between-block difference is a calibration offset (`P1_PCV02Z`) that separates `train1` from the other files. Site A is therefore **partitioned by recording period** (HAI-3). The four clients are nearly equal (60–66.5 hours each) and differ through real drift between periods: 10 features have a two-sample KS statistic above 0.2 between `train1` and `train3`, and the turbine speed sensors shift by about 1.35 standard deviations. This resembles a fleet of plants calibrated and operated slightly differently. An IID variant (shuffled six-hour blocks) is kept for experiment X2.
 
 **Why two separate sites.** HAI and CIC Modbus 2023 were recorded on different testbeds at different times, so nothing links an event in one to an event in the other. The sites therefore never share parameters, and the project makes no cross-site correlation claims.
 
-Cross-node evidence fusion (RQ2) is evaluated on Site B. Its devices share a capture period; this must be verified at Gate G0, with a documented fallback (§12). On Site A, nodes are separate installations recorded at different times, so investigation there gathers additional evidence from the alerting node only.
+Cross-node evidence fusion (RQ2) is evaluated on Site B. Its three captures overlap in time on every recorded day (verified in the data analysis). On the attack day, however, the attacker reached only IED1A, so a real attack gives fusion a single device to work with; §2 frames RQ2 around that trade-off. On Site A, nodes are separate installations recorded at different times, so investigation there gathers additional evidence from the alerting node only.
 
 ### 4.2 Three research modules
 
@@ -240,27 +253,49 @@ The proposal makes only claims the design supports:
 
 ### 6.1 Datasets
 
-**HAI**
-- One release is pinned at Week 1 and recorded with its SHA-256 checksums in the data manifest and data card.
-- Sampling is 1 Hz.
-- The training files contain normal operation. The test files contain labelled attack events.
+Both datasets were analysed in full before Week 2. `configs/data_expectations.yaml` records the measured facts, and `scripts/inspect_data.py` checks any local copy against them (21 checks).
+
+**HAI 21.03**
+- Release pinned: HAI 21.03, 3 training files (921,603 rows) and 5 test files (402,005 rows), sampled at 1 Hz. SHA-256 checksums are recorded in the data manifest and the data card.
+- 79 sensor and actuator columns across processes P1–P4. **57 vary in training** and 22 are constant. One of the 57, `P4_HT_PS`, is an exact copy of `P4_ST_PS` and is dropped, leaving **56 modelled features** (HAI-2).
+- Training-constant variables that change in test (for example `P1_PCV02D`, `P2_Emerg`, `P2_OnOff`) are not model inputs. A separate label-free rule reports "a training-constant variable changed" as evidence.
+- **Label:** the `attack` column (HAI-1). The per-process columns `attack_P1`, `attack_P2` and `attack_P3` are never model inputs; they record which subsystems an event targeted and feed the tactic-level ground truth (§10.4).
+- The test files contain **50 attack events** (8,947 attack rows; median duration 162 s, shortest 17 s). By target: P1 23, P2 11, P1+P2 8, P1+P3 3, P2+P3 3, P3 2. The smallest gap between events is 24 minutes.
 
 **CIC Modbus 2023**
-- Per-device packet captures are converted to flow-window features by exporting fields with `tshark`.
-- Attack labels are derived from the dataset's attack logs, following a written **labelling protocol** (`docs/labeling_protocol.md`). The protocol covers clock alignment, window membership and sanity checks.
-- Gate G0 verifies two things: whether device captures overlap in time, and whether the dataset documentation maps attacks to MITRE techniques.
+- The captures available are one **external-attacker day** (1 February 2023, about 10 hours per device) and **nine benign days** (22–31 January) for IED1A, IED1B and the SCADA HMI. Benign data ends about 11 hours before the attack day starts.
+- Captures are parsed directly with `dpkt` and a memory-mapped pcap/pcapng reader, which keeps memory flat on the 50–400 MB files. `tshark` is not needed.
+- **Labels come from the attacker's address** (185.175.0.7), window by window, and are marked as derived (MB-2). The public attack logs are not part of the obtained data. A window is an attack window if the node sees any IPv4 packet from or to the attacker in it. Capture-level labels are never used.
+- On the attack day the attacker sent 538,648 packets to **IED1A only**, in **seven episodes**: four short reconnaissance probes, a 20-minute slow read scan, a 4-minute flood of 65,535 coil writes to one address, and a final burst of writes to two addresses (MB-6). That gives **51 attack windows out of 3,681** (1.4%) on IED1A. IED1B and the HMI saw no attacker traffic; every one of their attack-day windows is normal (MB-11).
+- The obtained data has no compromised-IED or compromised-HMI attacker positions, and the documentation does not map attacks to MITRE techniques. Both are handled in §2 and §10.4.
 
-Synthetic anomalies are used only for robustness tests and for the RQ2 fallback. They are generated as explicit, labelled perturbations (spike, drift, stuck-at, replay) and always reported as synthetic.
+Synthetic anomalies are used only for robustness tests and for the secondary RQ2 scenario (H2c). They are generated as explicit, labelled perturbations (spike, drift, stuck-at, replay, cross-device write burst) and always reported as synthetic.
 
 ### 6.2 Splits, windows and labels
 
 **Split before windowing.** Data is split into train, validation and test by time first, with a one-window gap at each boundary. Windows are generated afterwards, so no window crosses a split.
 
+**Site A (HAI)**
+
 | Partition | Content |
 |---|---|
-| Normal validation | The last 15% of each client's training blocks |
-| Attack validation | About 30% of attack *segments*, assigned whole and stratified by attack type |
-| Test | All remaining attack segments, plus normal test data; sealed (§10.1) |
+| Training | The first 85% of each client's recording period |
+| Normal validation | The last 15% of each client's recording period |
+| Attack validation | About 15 of the 50 events, as whole **event segments** (boundaries halfway between neighbouring events), stratified by process combination and spread across the four clients (HAI-5) |
+| Test | The remaining 35 event segments; sealed (§10.1) |
+
+Test files are assigned to clients segment by segment so that each client receives attack segments for evaluation.
+
+**Site B (Modbus)**
+
+| Partition | Content |
+|---|---|
+| Training | Benign days 22–31 January, excluding the last 15% of each node's benign time |
+| Normal validation | The last 15% of each node's benign time |
+| Attack validation | The first attacker episodes on the attack day (episodes 0–3), with the normal attack-day windows around them |
+| Test | The rest of the attack day (episodes 4–6 and the surrounding normal windows); sealed |
+
+**Idle periods are dropped before windowing** (MB-7): any stretch longer than 60 s with no HMI polling (for example the 16-hour gap on IED1A on 22 January) is cut and recorded in the partition manifest.
 
 **Windows**
 
@@ -270,21 +305,25 @@ Synthetic anomalies are used only for robustness tests and for the RQ2 fallback.
 | B | 10 s | 10 s | 5 s |
 
 **Labels**
-- A window is labelled *attack* if it overlaps any labelled attack sample.
-- An *attack event* is a maximal contiguous labelled interval.
+- Site A: a window is labelled *attack* if it overlaps any row with `attack = 1`. An *attack event* is a maximal contiguous labelled interval.
+- Site B: a window is labelled *attack* on a node if that node sees attacker traffic in it. An *attack event* is an attacker episode (a run of attacker activity with gaps under 60 s).
 - Events are never split across partitions or across clients.
 
 ### 6.3 Normalisation
 
 A global model needs consistently scaled inputs. Before training, each client releases the per-feature count, sum and sum of squares with Gaussian noise added. The server aggregates them into global mean and variance. The privacy cost of this step (ε = 0.1 by default) is added to each client's budget by basic composition.
 
+Features are standardised with the global mean and standard deviation and clipped to ±6 standard deviations (HAI-4). Min–max scaling is not used: test data goes outside the training range, and zero-variance features would divide by zero.
+
 ### 6.4 Models
 
 | Site | Model | Notes |
 |---|---|---|
-| A | Variational autoencoder over flattened windows | Hidden layers 256 → 128, latent size 16. Only Opacus-compatible layers (no batch normalisation). Anomaly score = mean reconstruction error over the window |
-| B | Dense autoencoder over flow-window features | Hidden layers 64 → 32. Same scoring approach |
+| A | Variational autoencoder over **segment means**: each 60 s window is summarised as six 10 s means per feature, 6 × 56 = 336 inputs (HAI-6) | Hidden layers 256 → 128, latent size 16. Only Opacus-compatible layers (no batch normalisation). Anomaly score = mean reconstruction error over the inputs. A flattened 60 × 56 window (3,360 inputs) is compared on validation in Week 4 as an alternative |
+| B | Dense autoencoder over per-node window features | Hidden layers 64 → 32. Same scoring approach |
 | A, B | PCA reconstruction error; Isolation Forest | **Local baselines only**; not federated (Isolation Forest has no gradients to aggregate) |
+
+The input reduction matters for privacy. Each Site A client has about 3,000–3,400 training windows, fewer than the inputs of a flattened window, and DP-SGD noise is added to every parameter. With batch 256 and 50 rounds of one local epoch, the RDP accountant gives σ ≈ 8.4 at ε = 1, 3.2 at ε = 3 and 1.3 at ε = 10 (HAI-7). Site B clients have about 60,000 training windows each, so the same budgets need only σ ≈ 2.1, 1.0 and 0.63.
 
 ### 6.5 Scoring, calibration and thresholds
 
@@ -308,14 +347,24 @@ A global model needs consistently scaled inputs. Before training, each client re
   "calibrated_prob": 0.0,
   "top_features": [{"name": "feature_name", "direction": "up|down", "magnitude": "low|medium|high"}],
   "protocol_summary": {"read_ops": "0|1-10|11-100|>100", "write_ops": "…", "diagnostic_ops": "…",
-                       "exception_responses": "…", "request_rate": "low|normal|high", "new_peer": false},
+                       "exception_responses": "…", "request_rate": "low|normal|high",
+                       "new_peer": false, "unseen_address": false, "oversized_quantity": false,
+                       "malformed_frames": "0|1-10|>10", "slow_responses": "0|1-10|>10"},
   "provenance": {"run_id": "…", "data_source": "runtime"}
 }
 ```
 
 - `top_features` holds at most 5 entries.
 - Magnitude buckets are defined against the node's normal validation error distribution: low = p90–p99, medium = p99–p99.9, high = above p99.9.
-- `protocol_summary` is present for Site B only.
+- `protocol_summary` is present for Site B only. Its fields follow what the attacks on the attack day actually changed (MB-4, MB-9):
+  - `new_peer`: a peer address never seen by this node in training;
+  - `unseen_address`: a register or coil address never read or written in training;
+  - `oversized_quantity`: a requested quantity above the training maximum (the attacker asked for 65,535 registers);
+  - `malformed_frames`: stacked frames or MBAP length mismatches;
+  - `slow_responses`: responses slower than this node's training p99.9.
+- Address and peer sets are learned per node, because each IED has its own point list.
+- Site B features are computed **from the node's own side of the traffic** (MB-14): requests sent and received per function code, peers, addresses, frame anomalies and latency. The HMI is a client of three IEDs; each IED is a server to one HMI. The schema is shared, so Fed-B can average, but the distributions differ.
+- Latency features are robust (window median and count of slow responses) with per-node baselines (MB-10). The secure IEDs (IED1A and the unmonitored IED4C) stall for tens of seconds most days; the insecure IED1B never does.
 
 ---
 
@@ -386,7 +435,7 @@ Alerts from edge nodes go to a LangGraph state machine with four agents. Only th
 
 | Agent | Implementation | Responsibility |
 |---|---|---|
-| **Triage** | Deterministic | Deduplicates alerts and groups them into incidents per site within Δt (default 60 s). Computes the fused incident score (Site B: noisy-OR of calibrated probabilities; a k-of-n variant with k = 2 is evaluated as an alternative). Assigns severity. Opens a session with an idempotency key |
+| **Triage** | Deterministic | Deduplicates alerts and groups them into incidents per site within Δt (default 60 s). Computes the fused incident score (Site B: noisy-OR of calibrated probabilities; a k-of-n variant with k = 2 is evaluated as an alternative). Latency-only anomalies are **excluded from fusion** and kept as single-device context, because the secure IEDs stall together on normal days (MB-13). Assigns severity. Opens a session with an idempotency key |
 | **Investigator** | Deterministic | Requests evidence from nodes **at the same site only**, up to 3 hops. On Site A, it requests extra evidence (adjacent windows, subsystem breakdown) from the alerting node only. Every hop is persisted before the graph advances |
 | **Attribution** (renamed from "Security") | Retrieval plus one constrained LLM call | Renders evidence as text, retrieves candidate techniques, and asks the LLM to choose among those candidates and explain the choice. Validates the output, falls back when needed, and attaches mitigations |
 | **Dispatcher** | Policy table | Converts the attribution into actions. Executes low-impact actions automatically; queues high-impact actions for human approval. Dispatch is idempotent per session and action type |
@@ -522,7 +571,7 @@ Exact versions are pinned in a lock file during Week 1; compatibility checks are
 | PyTorch (CPU), Opacus | VAE and autoencoder; DP-SGD with RDP accounting |
 | scikit-learn | PCA and Isolation Forest baselines; isotonic calibration; metrics |
 | Flower (simulation with Ray backend) | FedAvg, FedProx, SecAgg+, federated evaluation |
-| pandas, pyarrow, tshark | Data preparation; Modbus field export |
+| pandas, pyarrow, dpkt | Data preparation; Modbus/TCP capture parsing with a memory-mapped pcap/pcapng reader |
 | LangGraph | Agent state machine |
 | Ollama with Phi-3.5-mini (Llama 3.2 3B as alternative, chosen at G0) | Local LLM with schema-constrained JSON output |
 | sentence-transformers, qdrant-client (embedded) | Knowledge-base embeddings and retrieval |
@@ -569,13 +618,13 @@ Point-adjusted F1 is not used, because it is known to inflate time-series anomal
 ### 10.4 Attribution and retrieval metrics
 
 **Ground truth**
-- A mapping from attack type to technique set is built under a written protocol (`docs/mapping_protocol.md`) and frozen at Gate G1, before any attribution results exist.
-- Site B is evaluated at technique and tactic level.
-- Site A is evaluated at **tactic level only**, because HAI attacks do not map cleanly to individual techniques.
+- A mapping from attack to tactic set (and, where the evidence supports it, a technique set) is built under a written protocol (`docs/mapping_protocol.md`) and frozen at Gate G1, before any attribution results exist. Two review passes are made, and disagreements are recorded.
+- **Site A (primary, quantitative):** the 50 HAI events are mapped at **tactic level**, using the targeted processes (`attack_P1`–`attack_P3`) and the variables that deviate in each event. HAI attacks do not map cleanly to individual techniques. Test events only are scored; validation events tune nothing in the mapping.
+- **Site B (case study):** the seven Modbus episodes are mapped by hand from their observed behaviour (for example, reconnaissance reads, a register scan with oversized quantities, a coil-write flood). The dataset documentation gives no MITRE mapping and seven episodes from one attacker position are too few for an accuracy estimate, so Site B reports validity rate, grounding rate and the chosen technique per episode, not accuracy.
 
 **Attribution metrics**
-- Technique top-1 and top-3 accuracy (a prediction is correct if it is in the ground-truth set).
-- Tactic accuracy.
+- Tactic accuracy (primary, Site A).
+- Technique top-1 and top-3 accuracy, where a technique set exists (secondary).
 - Abstention rate.
 - **Grounding rate:** the share of raw LLM outputs whose ID is among the retrieved candidates. It is reported before validation; after validation it is 100% by construction.
 - A majority-class baseline is always reported alongside.
@@ -596,7 +645,7 @@ Point-adjusted F1 is not used, because it is known to inflate time-series anomal
 | IID vs non-IID partition | Effect of heterogeneity |
 | ε ∈ {1, 3, 10, ∞} | Privacy–utility curve |
 | PCA reconstruction; Isolation Forest (local) | Classical reference points |
-| Best single node vs fused (Site B) | H2 |
+| Best single node vs noisy-OR vs 2-of-3 (Site B, real and synthetic) | H2a–H2c |
 | `rule_only` / `retrieval_only` / `llm_no_retrieval` / `full` | H3 |
 | SecAgg+ on vs off (Fed-A) | Correctness and overhead (X8) |
 
@@ -606,8 +655,8 @@ Point-adjusted F1 is not used, because it is known to inflate time-series anomal
 |---|---|---|
 | X1 | Detection utility: local-only, centralised, FedAvg and FedProx across the ε sweep, both sites | RQ1, H1a |
 | X2 | Heterogeneity: IID vs non-IID; homogeneous vs systems-heterogeneous; FedAvg vs FedProx with μ grid | RQ1, H1b |
-| X3 | Fusion on Site B: best single node vs noisy-OR vs k-of-n at matched FPR | RQ2 |
-| X4 | Attribution ablation: four modes | RQ3 |
+| X3 | Fusion on Site B: best single node vs noisy-OR vs 2-of-3, measuring false alarms per hour on benign validation and test time (H2a), event recall on the real attack day (H2b), and event recall on the labelled synthetic multi-device scenario (H2c, reported as synthetic) | RQ2 |
+| X4 | Attribution ablation, four modes: tactic accuracy on HAI test events; Site B episode case study | RQ3 |
 | X5 | Latency profile, end to end, in both modes | §8.6 |
 | X6 | Fault and chaos tests: node failure before, during and after a hop; process kill; slow node; duplicate alert replay | EA1 |
 | X7 | Resource benchmark on 8 GB: peak memory per stage | CC8 |
@@ -652,9 +701,9 @@ Success is defined in three tiers. **Completion criteria** must all pass for the
 |---|---|
 | PT1 | Federated DP model at ε ≤ 10: AUROC no more than 0.05 below centralised non-private, on each site |
 | PT2 | Federated DP model at ε ≤ 10: AUROC at or above the mean local-only AUROC, on each site |
-| PT3 | Site A event recall ≥ 0.80 at window FPR ≤ 1%. Provisional: may be revised at G1 using validation-only baseline results, never afterwards |
-| PT4 | Site B fusion: event recall at least 0.05 above the best single node at matched FPR, *or* median time-to-detect reduced by at least 20% |
-| PT5 | Site B attribution: technique top-3 ≥ 0.70 and tactic top-1 ≥ 0.80, both above the majority-class baseline; `full` mode ≥ `retrieval_only`, reported with CI |
+| PT3 | Site A event recall ≥ 0.70 on the 35 test events at window FPR ≤ 1%. Provisional: may be revised at G1 using validation-only baseline results on the 15 validation events, never afterwards. Site B event recall on the test episodes is reported, with no target, because there are only three |
+| PT4 | Site B fusion: 2-of-3 fusion reduces false alarms per hour by at least 30% relative to the best single node at the same per-node threshold (H2a). The single-device recall loss on the real attack day (H2b) is reported with no target |
+| PT5 | Site A attribution: tactic accuracy ≥ 0.70 on HAI test events and above the majority-class baseline; `full` mode ≥ `retrieval_only`, reported with CI. Site B: JSON validity ≥ 95% and raw grounding rate reported over the seven episodes; no accuracy target |
 | PT6 | Retrieval Recall@5 ≥ 0.85 on the held-out query set |
 | PT7 | Latency p95: detection ≤ 1 s; investigation ≤ 2 s; incident-to-dispatch ≤ 3 s in `retrieval_only` mode and ≤ L_LLM in `full` mode |
 
@@ -676,14 +725,18 @@ Success is defined in three tiers. **Completion criteria** must all pass for the
 | Risk | Likelihood | Impact | Mitigation | Decision point |
 |---|---|---|---|---|
 | DP federated utility far below centralised | Medium | High | Tune clipping norm, model size and local epochs on validation; report the full privacy–utility curve honestly | G2 |
-| Site B device captures do not overlap in time | Medium | High (RQ2) | Fallback: a documented synthetic composition aligning per-device attack segments on a shared timeline, reported as synthetic | G0 |
-| No published MITRE mapping for CIC Modbus attacks | Medium | Medium | Mapping protocol with two review passes; tactic level as the primary result | G0, G1 |
+| Site B device captures do not overlap in time | Resolved | — | Verified in the data analysis: the three captures overlap on every day | G0 (closed) |
+| Only one Site B attacker position (external) is available; the attack reaches one device | Certain | High (RQ2) | RQ2 reframed as a fusion trade-off (H2a, H2b); labelled synthetic multi-device scenario as H2c; obtaining the compromised-IED and compromised-HMI days remains optional and would be added as real data | G0 |
+| Few Site B attack events (seven episodes, 51 windows) | Certain | Medium | Site B detection reported per episode without a target; Site A carries the quantitative detection and attribution results | G1 |
+| No published MITRE mapping for CIC Modbus attacks | Certain | Medium | Site B attribution becomes a case study; Site A tactic level is the primary result; mapping protocol with two review passes | G0, G1 |
+| Site A DP noise too high at ε = 1 (σ ≈ 8.4) | High | Medium | Segment-mean input (336 inputs); batch 256; report the full ε curve | G1, G2 |
+| Normal latency stalls on the secure IEDs cause false alarms | High | Medium | Robust per-node latency features; latency excluded from fusion | W2, W8 |
 | LLM too slow, or JSON validity rate too low | High | Medium | Schema-constrained decoding; smaller or alternative model; `retrieval_only` as the default mode with the LLM for explanation only | G0, G3 |
 | Out of memory on 8 GB | Medium | High | Stage isolation; Ray concurrency limits; 2,048-token context; swap; measured budget | W1, W14 |
 | Flower or Ray unstable on WSL2 | Low–Medium | Medium | Pinned versions; run clients sequentially as a fallback | W1 |
 | SecAgg+ integration problems | Medium | Low | Kept as a separate systems experiment; documented limitation | G2 |
-| Modbus label derivation errors | Medium | High | Written protocol; automated sanity checks; manual spot-check of 20 windows per attack type | W2 |
-| HAI operating regimes not separable | Low | Medium | Time-ordered partition fallback | W2 |
+| Modbus label derivation errors | Medium | High | Labels from the attacker's address; written protocol; automated check that the label counts match `configs/data_expectations.yaml` (51 attack windows on IED1A, none elsewhere); manual spot-check of every episode boundary | W2 |
+| HAI operating regimes not separable | Occurred | Medium | Time partition adopted at G0 (HAI-3) | G0 (closed) |
 | Experiment compute exceeds the schedule | Medium | Medium | Per-run time measured in Week 6; three seeds for non-headline configurations; overnight runs | G2 |
 | Schedule slip | Medium | High | Decision gates, a buffer in Week 14, and a predefined cut order: X8 SecAgg+ → systems-heterogeneity arm of X2 → `llm_no_retrieval` ablation → Docker full profile (smoke profile is always kept) | Every gate |
 
@@ -694,6 +747,8 @@ Success is defined in three tiers. **Completion criteria** must all pass for the
 **Limitations**
 
 - Evidence is fused only *within* a site; attack campaigns spanning sites are not tested, because no public dataset links them.
+- Site B has one real attacker position, one attack day and seven episodes. Its detection and attribution results are indicative, and the multi-device fusion benefit is shown only on synthetic data.
+- Site B labels are derived from the attacker's address, not from the dataset's attack logs.
 - Evidence records are minimised but carry no formal DP guarantee.
 - No defence against poisoning by malicious clients.
 - With 3–4 clients per federation, secure aggregation provides limited anonymity.
@@ -764,7 +819,7 @@ Severity: **C** = critical, **M** = major, **m** = minor. "Plan" refers to weeks
 
 | ID | Sev | Issue in v2.1 | Resolution in v3.0 | Where |
 |---|---|---|---|---|
-| D1 | C | Subsystem split is vertical; VAEs cannot be averaged | Horizontal split by operating regime; shared schema | §4.1; Plan W2 |
+| D1 | C | Subsystem split is vertical; VAEs cannot be averaged | Horizontal split with a shared schema (by recording period since v3.1; see HAI-3) | §4.1; Plan W2 |
 | D2 | C | No validation split | Temporal train/val/test with gaps; segment-level attack validation | §6.2; Plan W2 |
 | D3 | M | Window leakage; boundary labels undefined | Split before windowing; explicit labelling rule | §6.2; Plan W2 |
 | D4 | M | Per-node normalisation | Noisy federated normalisation statistics | §6.3; Plan W6 |
@@ -864,3 +919,35 @@ Severity: **C** = critical, **M** = major, **m** = minor. "Plan" refers to weeks
 *— End of Proposal —*
 
 **Allaudin Ansari** · October 2026
+
+---
+
+## Appendix B — Data Findings to Decisions (v3.1)
+
+Findings come from the full analysis of HAI 21.03 and of the CIC Modbus 2023 attack and benign captures. Each one is checked on the laptop by `scripts/inspect_data.py --expectations configs/data_expectations.yaml`.
+
+| ID | Finding | Decision | Where |
+|---|---|---|---|
+| HAI-1 | `attack` is the overall label; `attack_P1`–`attack_P3` mark targeted processes | `attack` is the label; process columns feed tactic ground truth only | §6.1, §10.4; `data.hai.label_column` |
+| HAI-2 | 22 of 79 features are constant in training; `P4_HT_PS` duplicates `P4_ST_PS` | Model 56 features; separate rule for changes in training-constant variables | §6.1; `drop_train_constant_features`, `drop_features` |
+| HAI-3 | Only one weak regime; the main split follows file boundaries | Partition Site A by recording period; IID variant for X2 | §4.1; `partition.site_a.scheme: time` |
+| HAI-4 | Test values exceed training ranges; some features have zero variance | Standard scaling with ±6 SD clipping | §6.3; `data.hai.scaling` |
+| HAI-5 | 50 events, smallest gap 24 min | Validation/test split by event segment, about 15/35 | §6.2 |
+| HAI-6 | A flattened window has more inputs than a client has training windows | Six 10 s segment means per feature (336 inputs) | §6.4; `models.vae.input_mode` |
+| HAI-7 | About 3,000–3,400 windows per client; σ ≈ 8.4 at ε = 1 | Keep the ε sweep; batch 256; report the curve | §6.4, §7.3 |
+| MB-1 | Attack logs and other attacker positions are not in the obtained data | Labels from attacker address; optional extra data recorded as a risk | §6.1, §12 |
+| MB-2 | Capture-level labels would mark all 3,681 IED1A attack-day windows as attacks; only 51 contain attacker traffic | Window-level labels, marked derived | §6.1; `data.modbus.label_source` |
+| MB-3 | Only IED1A saw the external attacker | RQ2 reframed as a trade-off | §2 |
+| MB-4 | The attacks changed function-code mix, addresses, quantities, peers and frames | Feature schema built around those | §6.6 |
+| MB-5 | Attack-day quiet hours are not proven normal for IED1A | Train on benign days only | §6.2 |
+| MB-6 | 51 of 3,681 attack-day windows on IED1A have attacker IPv4 traffic, in seven episodes | IED1A carries Site B detection; per-episode reporting | §6.1, §11.2 |
+| MB-7 | Long idle gaps with no polling (up to 16 h) | Drop idle periods over 60 s before windowing | §6.2; `data.modbus.idle_gap_s` |
+| MB-8 | Benign data ends 11 h before the attack day | Benign days for training and normal validation; attack day for attack validation and test | §6.2 |
+| MB-9 | Unseen address, new peer and oversized quantity separate every episode | Learn address and peer sets per node | §6.6 |
+| MB-10 | Secure IEDs stall for tens of seconds daily; the insecure one never does | Robust per-node latency features | §6.6 |
+| MB-11 | IED1B and HMI saw no attacker traffic | All their attack-day windows are normal | §6.1 |
+| MB-12 | Normal write bursts rarely coincide across devices | 2-of-3 fusion for false-alarm reduction (H2a) | §2, §10.6 |
+| MB-13 | The secure IEDs stall together on normal days | Latency excluded from fusion | §8.2; `fusion.site_b.exclude_latency` |
+| MB-14 | The HMI is a client; the IEDs are servers | Features from each node's own side; one schema | §4.1, §6.6 |
+
+The window figure in MB-6 counts IPv4 traffic only. An earlier count of 80 windows also included 29 windows containing only ARP frames from the attacker, which carry no Modbus content.

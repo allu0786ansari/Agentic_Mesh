@@ -1,4 +1,4 @@
-# Agentic Mesh v3 — single source of truth (Implementation Plan v3.0, WR-8).
+# Agentic Mesh v3 — single source of truth (Implementation Plan v3.1, WR-8).
 # Every count, window, target and hyperparameter is read from here by code and docs.
 # Values marked "G0" or "G1" are confirmed or revised at that decision gate and the
 # change is recorded in docs/adr/.
@@ -9,14 +9,25 @@ project:
 paths:
   raw_root: data/raw
   hai_dir: data/raw/hai/hai-21.03          # G0: pinned release (21.03 is the release available locally)
-  modbus_dir: data/raw/modbus2023          # expects benign/<device>/*.pcap and attack/<device>/*.pcap
+  modbus_dir: data/raw/modbus2023          # benign/<device>/*.pcap and attack/<device>/*.pcap
   results_root: results
   checksums_file: data/raw_checksums.json
 
 data:
   hai:
-    release: "21.03"                       # G0: confirm
+    release: "21.03"                       # G0 decision 1 (only complete release available)
     sample_rate_hz: 1
+    label_column: attack                   # HAI-1: primary label (process columns are shorter at event edges)
+    process_label_columns: [attack_P1, attack_P2, attack_P3]
+    drop_train_constant_features: true     # HAI-2: 22 of 79 features never change in training
+    drop_features: [P4_HT_PS]              # HAI-2: exact scaled copy of P4_ST_PS
+    scaling: {method: standard, clip_sd: 6.0}  # HAI-4: min-max breaks on out-of-range test values
+  modbus:
+    devices: {ied1a: 185.175.0.4, ied1b: 185.175.0.5, scada-hmi: 185.175.0.3}
+    other_hosts: {ied4c: 185.175.0.8, central_agent: 185.175.0.6, docker_gateway: 185.175.0.1}
+    attacker_ip: 185.175.0.7               # MB-2: the external attacker; labels the attack day
+    label_source: attacker_address         # no attack logs in the download (G0 decision 4)
+    idle_gap_s: 60                         # MB-7: HMI polling pauses longer than this are cut out
   windows:
     site_a: {length_s: 60, train_stride_s: 60, infer_stride_s: 10}
     site_b: {length_s: 10, train_stride_s: 10, infer_stride_s: 5}
@@ -27,13 +38,24 @@ data:
   partition:
     site_a:
       clients: [a1, a2, a3, a4]
-      block_hours: 6
-      scheme: regime                       # regime | iid | time
+      block_hours: 6                       # unit for the iid variant (experiment X2)
+      scheme: time                         # HAI-3 / G0 decision 2: regime | iid | time
+      period_assignment:                   # used when scheme = time
+        a1: train1
+        a2: train2
+        a3: train3:first_half
+        a4: train3:second_half
     site_b:
       clients: {b1: ied1a, b2: ied1b, b3: scada-hmi}
 
 models:
-  vae: {hidden: [256, 128], latent: 16, lr: 1.0e-3, batch: 256}
+  vae:
+    hidden: [256, 128]
+    latent: 16
+    lr: 1.0e-3
+    batch: 256
+    input_mode: segment_means              # HAI-6: flat | segment_means (chosen on validation in Week 4)
+    segments_per_window: 6                 # 60 s window -> six 10 s means per feature
   ae: {hidden: [64, 32], lr: 1.0e-3, batch: 256}
 
 federated:
@@ -65,7 +87,7 @@ evaluation:
   bootstrap_resamples: 2000
 
 fusion:
-  site_b: {delta_t_s: 60, method: noisy_or, k_of_n: 2}
+  site_b: {delta_t_s: 60, method: noisy_or, k_of_n: 2, exclude_latency: true}  # MB-13
 
 mesh:
   max_hops: 3
