@@ -19,7 +19,7 @@
 
 **v3.1.** The plan follows the data analysis recorded in Proposal Appendix B. Weeks 1, 2, 4, 8, 9 and 13 change; the order of work and the gates do not.
 - **Week 1:** data inspection now checks a local copy against `configs/data_expectations.yaml` (21 checks) and reports the Gate G0 data hints.
-- **Week 2:** Site A uses the time partition; Modbus captures are parsed with `dpkt` (no `tshark`); labels come from the attacker's address; Site B trains on benign days and evaluates on the attack day; idle periods are cut.
+- **Week 2:** Site A uses the time partition; Modbus captures are parsed by a built-in memory-mapped reader (no `tshark`); labels come from the attacker's address; Site B trains on benign days and evaluates on the attack day; idle periods are cut.
 - **Week 4:** the VAE takes six segment means per feature; Site A ground truth is tactic-level for the 50 HAI events; Site B mapping covers the seven episodes as a case study.
 - **Week 8:** the evidence record gains the attack-driven protocol fields; latency is excluded from fusion.
 - **Week 9:** the evidence-to-text renderer covers the new fields.
@@ -127,7 +127,7 @@ Exact versions are pinned in Week 1 with `uv lock`, producing `uv.lock`. `requir
 | opacus | DP-SGD and RDP accountant | Supports the locked torch; accountant state can be saved and restored |
 | flwr[simulation] (Ray) | Federations | Ray wheels exist for Python 3.12 on Linux; check the recommended simulation API and the **SecAgg+ integration path** for this version |
 | scikit-learn, pandas, pyarrow | Baselines, calibration, data | — |
-| dpkt | Modbus/TCP capture parsing (pcap and pcapng, via a memory-mapped reader in `feasibility/captures.py`) | Parses one benign capture per device; memory stays under 1 GB |
+| (none: built-in reader) | Modbus/TCP capture parsing: `feasibility/captures.py` walks pcap and pcapng records and `data/modbus.py` decodes IPv4, TCP and MBAP headers directly | All 37 captures (40 M packets) parse in about 4 minutes with under 0.5 GB of memory |
 | langgraph | Agent state machine | Graph compiles; checkpointing is not required (state lives in SQLite) |
 | sentence-transformers | `all-MiniLM-L6-v2`, 384 dimensions | Model downloads and encodes on CPU |
 | qdrant-client | Embedded mode (`path=`) | Local mode creates a collection and runs search |
@@ -433,40 +433,38 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 **Tasks**
 
 1. **HAI loading** (`data/hai.py`): parse timestamps, handle missing values (forward-fill limited to 5 s, otherwise drop the row), take `attack` as the label, keep `attack_P1`–`attack_P3` aside for ground truth, and build the feature list from `params.yaml` (drop the 22 training-constant features and `P4_HT_PS`, leaving 56). Add the label-free rule that flags changes in training-constant variables.
-2. **Splits** (`data/splits.py`):
+2. **Splits** (`data/site_a.py`, `data/site_b.py`):
    - Site A: the last 15% of each client's recording period becomes normal validation, with a one-window gap.
    - Cut the HAI test files into one *event segment* per event, with boundaries halfway between neighbouring events. Assign about 15 of the 50 segments to attack validation, stratified by process combination (P1, P2, P1+P2, P1+P3, P2+P3, P3) and spread across the four clients; the rest are test.
    - Site B: benign days 22–31 January are training plus normal validation (last 15% of each node's benign time). The attack day is attack validation (episodes 0–3) and test (episodes 4–6), each with its surrounding normal windows.
    - **Split before windowing.**
-3. **Site A partition** (`data/partition.py`):
+3. **Site A partition** (`data/site_a.py`):
    - `scheme: time` (default, G0 decision 2): a1 = `train1`, a2 = `train2`, a3 and a4 = the two halves of `train3`, as set by `period_assignment`.
    - `scheme: iid` for X2: shuffled `block_hours` blocks, assigned in equal numbers with a fixed seed.
    - `scheme: regime` is kept for completeness but is not used; HAI 21.03 has no separable regimes (Proposal §4.1).
    - Assign test event segments to clients round-robin within each stratum, so each client gets attack segments.
-4. **Modbus parsing and labels** (`data/modbus.py`, `data/labeling.py`):
-   - Parse each capture with `dpkt` through the memory-mapped reader in `feasibility/captures.py`: time, endpoints, ports, TCP flags, MBAP header (transaction ID, length), function code, address, quantity, exception flag, and stacked frames. Pair requests with responses to get latency.
+4. **Modbus parsing and labels** (`data/modbus.py`, `data/site_b.py`):
+   - Parse each capture through the memory-mapped reader in `feasibility/captures.py`, decoding headers directly: time, endpoints, ports, TCP flags, MBAP header (transaction ID, length), function code, address, quantity, exception flag, and stacked frames. Pair requests with responses to get latency.
    - Cut idle periods (no HMI polling for more than `idle_gap_s`) and record them in the manifest.
    - Learn per-node sets from training data only: peers, addresses read or written, maximum quantity per function code, latency p99.9.
    - Aggregate into 10 s windows with one schema, computed from the node's own side: requests sent and received per function code; writes per address and whether the address was seen in training; distinct and new peers; new TCP connections and resets; stacked frames and length mismatches; quantities above the training maximum; latency median and slow-response count.
-   - Label each window on each node from the attacker's address (`label_source: attacker_address`), following `docs/labeling_protocol.md`. The protocol states that labels are derived, defines window membership (any IPv4 packet to or from the attacker), defines episodes (attacker activity with gaps under 60 s), and requires the automatic check that IED1A has 51 attack windows (10 s windows aligned to the capture's first packet, as counted by `scan_hosts`) in seven episodes and IED1B and the HMI have none. Spot-check every episode boundary by hand.
+   - Label each window on each node from the attacker's address (`label_source: attacker_address`), following `docs/labeling_protocol.md`. The protocol states that labels are derived, defines window membership (any IPv4 packet to or from the attacker), defines episodes (attacker activity split at gaps above `episode_gap_s` = 125 s), and requires the automatic check that IED1A has 51 attack windows (10 s windows on the epoch grid) in seven episodes and IED1B and the HMI have none. Spot-check every episode boundary by hand.
 5. **Windowing** (`data/windows.py`): training windows are non-overlapping (this defines the privacy unit); inference windows use the configured stride. Site A windows are also reduced to six 10 s segment means per feature when `input_mode: segment_means`. A window is labelled attack if it overlaps any attack sample.
 6. **Manifests and pipeline:** write manifests (§6.2). Add DVC stages `prepare` and `partition`.
-7. **Fixture:** `fixtures/make_fixture.py` generates a tiny synthetic dataset with the same schemas (HAI-like CSVs and small Modbus pcaps with an attacker address), so CI runs without raw data.
+7. **Fixture:** `python -m agmesh.data.fixture` (`make fixture`) generates a tiny synthetic dataset with the same schemas (HAI-like CSVs and small Modbus pcaps with an attacker address), so CI runs without raw data.
 
-**Deliverables:** partitions and manifests for 7 nodes; `docs/labeling_protocol.md`; fixture; DVC stages.
+**Deliverables:** partitions and manifests for 7 nodes; `results/data/partition_check.json`; `docs/labeling_protocol.md`; fixture; DVC stages (`dvc.yaml`, `dvc.lock`).
 
 **Validation**
 
 | Check | Command | Expected |
 |---|---|---|
-| No window crosses a split | `pytest tests/unit/test_splits.py` | Pass |
-| No event split across partitions or clients | `pytest tests/unit/test_event_integrity.py` | Pass |
-| Training windows do not overlap | `pytest tests/unit/test_windows.py` | Pass |
-| Manifests deterministic | `make partition` twice, then compare manifest hashes | Identical |
-| Label sanity checks | `python -m agmesh.data.labeling --check` | All checks pass; spot-check log committed |
-| Label counts match the data analysis | `python -m agmesh.data.labeling --check --expectations configs/data_expectations.yaml` | IED1A 51 attack windows, 7 episodes; IED1B and HMI 0 |
-| Feature counts | `pytest tests/unit/test_hai.py` | 56 Site A features; process label columns never in the feature frame |
-| Fixture pipeline in CI | CI job `fixture-smoke` | Pass |
+| No window crosses a split; training windows never overlap | `pytest tests/unit/data/test_windows_events.py tests/unit/data/test_site_a.py` | Pass (includes a property test) |
+| No event split across partitions or clients | `pytest tests/unit/data` | Pass |
+| Manifests deterministic | `pytest tests/unit/data -k deterministic`; on real data, `make partition` twice and compare `manifest.json` hashes | Identical |
+| Integrity and label checks on real data | `make check-data` (`configs/partition_expectations.yaml`) | All checks pass: 56 features, 50 events (15/35), 7 episodes (4/3), IED1A 51 attack windows, IED1B and HMI 0 |
+| Process label columns never features | `make check-data` (`site_a.no_label_column_is_a_feature`) | Pass |
+| Fixture pipeline in CI | CI job `fixture-smoke` (`make fixture-smoke`) | Pass |
 
 **Resolves:** D1, D2, D3, D5, P4 (unit defined), R1.
 

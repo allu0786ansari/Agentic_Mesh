@@ -73,6 +73,31 @@ Captures may be `.pcap`, `.pcapng` or `.cap`; the reader handles all three.
 | MITRE ATT&CK mapping shipped with the dataset | None |
 | Use in v3.1 | Site B substation: three nodes, one feature schema computed from each node's own side of the traffic. Training on benign days; attack day for attack validation (episodes 0–3) and test (episodes 4–6) |
 
+## Partitions (Week 2)
+
+Built by `dvc repro` (stages `prepare` and `partition`) and checked by
+`make check-data`; labels follow `docs/labeling_protocol.md`. Counts are windows
+(Site A 60 s, Site B 10 s); attack windows in brackets.
+
+| Node | Data | train | val_normal | val_attack | test |
+|---|---|---|---|---|---|
+| a1 | `train1` | 3,060 | 539 | 320 (9) | 1,015 (31) |
+| a2 | `train2` | 3,213 | 566 | 326 (20) | 1,023 (39) |
+| a3 | `train3`, first half | 3,391 | 597 | 623 (17) | 1,457 (32) |
+| a4 | `train3`, second half | 3,391 | 597 | 303 (13) | 1,561 (34) |
+| b1 | IED1A | 64,792 | 11,433 | 147 (12) | 3,532 (39) |
+| b2 | IED1B | 60,596 | 10,692 | 147 (0) | 3,531 (0) |
+| b3 | SCADA HMI | 59,419 | 10,485 | 147 (0) | 3,532 (0) |
+
+- Site A test events are split 15 validation / 35 test, by process group, across all
+  four clients (each client gets 3–4 validation and 8–9 test events).
+- Site B: idle stretches removed before splitting: 5,957 windows on IED1A (mostly the
+  16-hour gap on 22 January), 141 on IED1B, 138 on the HMI; none on the attack day.
+- Site B features: 18 per window (`site_b.FEATURES`), computed from each node's own
+  side of the traffic. Normal traffic always requests quantity 1 and uses 8 addresses
+  per IED (24 for the HMI); the attacker used unseen addresses and quantities up to
+  65,535.
+
 ## Privacy budget implications
 
 | Site | Training windows per client | σ at ε = 1 / 3 / 10 (batch 256, 50 rounds, 1 local epoch, RDP) |

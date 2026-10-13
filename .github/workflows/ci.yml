@@ -1,4 +1,4 @@
-# Agentic Mesh v3 CI (Implementation Plan v3.0, WR-7).
+# Agentic Mesh v3 CI (Implementation Plan v3.1, WR-7).
 # Runs the quality gates on every push and pull request. The federated-learning
 # stack (flwr, ray, torch) is not installed here; tests that need it are skipped.
 name: CI
@@ -41,6 +41,23 @@ jobs:
 
       - name: Pytest
         run: uv run pytest --cov --cov-report=term
+
+  fixture-smoke:
+    # Runs the Week 2 data pipeline end to end on the synthetic public fixture.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Install Python 3.12
+        run: uv python install 3.12
+
+      - name: Install core dependencies
+        run: uv sync --locked --group dev
+
+      - name: Data pipeline on the fixture
+        run: make fixture-smoke
 
   secrets:
     runs-on: ubuntu-latest

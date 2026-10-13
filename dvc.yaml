@@ -1,0 +1,31 @@
+# Week 2 data stages (Implementation Plan v3.1, Week 2). Run with `dvc repro` or
+# `make data`; commit the resulting dvc.lock. Raw data, interim tables and
+# partitions are DVC-tracked and never enter Git.
+stages:
+  prepare:
+    cmd: uv run python -m agmesh.data.pipeline prepare
+    deps:
+      - data/raw
+      - src/agmesh/data/modbus.py
+      - src/agmesh/data/site_b.py
+      - src/agmesh/feasibility/captures.py
+    params:
+      - configs/params.yaml:
+          - data.modbus
+          - paths.modbus_dir
+          - paths.interim_dir
+    outs:
+      - data/interim/modbus
+  partition:
+    cmd: uv run python -m agmesh.data.pipeline partition
+    deps:
+      - data/raw
+      - data/interim/modbus
+      - src/agmesh/data
+    params:
+      - configs/params.yaml:
+          - data
+          - paths.hai_dir
+          - paths.partitions_dir
+    outs:
+      - data/partitions

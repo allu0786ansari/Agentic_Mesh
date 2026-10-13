@@ -26,7 +26,7 @@
 5. **Site B features are defined around what the attacks changed** and from each node's own side of the traffic (§6.6). Latency stays a single-device feature and is **excluded from fusion**, because the two secure IEDs stall together on normal days (§8.2).
 6. **RQ2 becomes a fusion trade-off question** (§2): k-of-n fusion should cut false alarms but cannot help against an attack seen by one device. A labelled synthetic multi-device scenario is a secondary experiment.
 7. **RQ3 is evaluated at tactic level on HAI's 50 events, plus a case study of the seven Modbus episodes** (§10.4). The Site B technique-accuracy target is removed (PT5).
-8. **Week 2 parses captures with `dpkt`** instead of exporting fields with `tshark`; a memory-mapped reader handles the 50–400 MB files on 8 GB.
+8. **Week 2 parses captures with a built-in memory-mapped reader** instead of exporting fields with `tshark`; it handles the 50–400 MB files on 8 GB.
 
 Everything else in v3.0 stands.
 
@@ -264,7 +264,7 @@ Both datasets were analysed in full before Week 2. `configs/data_expectations.ya
 
 **CIC Modbus 2023**
 - The captures available are one **external-attacker day** (1 February 2023, about 10 hours per device) and **nine benign days** (22–31 January) for IED1A, IED1B and the SCADA HMI. Benign data ends about 11 hours before the attack day starts.
-- Captures are parsed directly with `dpkt` and a memory-mapped pcap/pcapng reader, which keeps memory flat on the 50–400 MB files. `tshark` is not needed.
+- Captures are parsed by a memory-mapped pcap/pcapng reader that decodes IPv4, TCP and Modbus/TCP headers directly, which keeps memory flat on the 50–400 MB files. `tshark` is not needed.
 - **Labels come from the attacker's address** (185.175.0.7), window by window, and are marked as derived (MB-2). The public attack logs are not part of the obtained data. A window is an attack window if the node sees any IPv4 packet from or to the attacker in it. Capture-level labels are never used.
 - On the attack day the attacker sent 538,648 packets to **IED1A only**, in **seven episodes**: four short reconnaissance probes, a 20-minute slow read scan, a 4-minute flood of 65,535 coil writes to one address, and a final burst of writes to two addresses (MB-6). That gives **51 attack windows out of 3,681** (1.4%) on IED1A. IED1B and the HMI saw no attacker traffic; every one of their attack-day windows is normal (MB-11).
 - The obtained data has no compromised-IED or compromised-HMI attacker positions, and the documentation does not map attacks to MITRE techniques. Both are handled in §2 and §10.4.
@@ -306,7 +306,7 @@ Test files are assigned to clients segment by segment so that each client receiv
 
 **Labels**
 - Site A: a window is labelled *attack* if it overlaps any row with `attack = 1`. An *attack event* is a maximal contiguous labelled interval.
-- Site B: a window is labelled *attack* on a node if that node sees attacker traffic in it. An *attack event* is an attacker episode (a run of attacker activity with gaps under 60 s).
+- Site B: a window is labelled *attack* on a node if that node sees attacker traffic in it. An *attack event* is an attacker episode: attacker activity split at gaps longer than 125 s. On the attack day, gaps inside a probe reach 121 s (the slow scan sends one request a minute) and gaps between probes are at least 133 s, which gives the seven episodes.
 - Events are never split across partitions or across clients.
 
 ### 6.3 Normalisation
@@ -571,7 +571,7 @@ Exact versions are pinned in a lock file during Week 1; compatibility checks are
 | PyTorch (CPU), Opacus | VAE and autoencoder; DP-SGD with RDP accounting |
 | scikit-learn | PCA and Isolation Forest baselines; isotonic calibration; metrics |
 | Flower (simulation with Ray backend) | FedAvg, FedProx, SecAgg+, federated evaluation |
-| pandas, pyarrow, dpkt | Data preparation; Modbus/TCP capture parsing with a memory-mapped pcap/pcapng reader |
+| pandas, pyarrow | Data preparation; Modbus/TCP capture parsing with a built-in memory-mapped pcap/pcapng reader |
 | LangGraph | Agent state machine |
 | Ollama with Llama 3.2 3B (chosen at G0; Phi-3.5-mini as alternative) | Local LLM with schema-constrained JSON output |
 | sentence-transformers, qdrant-client (embedded) | Knowledge-base embeddings and retrieval |

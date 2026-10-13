@@ -12,6 +12,8 @@ paths:
   modbus_dir: data/raw/modbus2023          # benign/<device>/*.pcap and attack/<device>/*.pcap
   results_root: results
   checksums_file: data/raw_checksums.json
+  interim_dir: data/interim                # parsed Modbus tables (DVC stage: prepare)
+  partitions_dir: data/partitions          # per-node splits and manifests (DVC stage: partition)
 
 data:
   hai:
@@ -21,6 +23,7 @@ data:
     process_label_columns: [attack_P1, attack_P2, attack_P3]
     drop_train_constant_features: true     # HAI-2: 22 of 79 features never change in training
     drop_features: [P4_HT_PS]              # HAI-2: exact scaled copy of P4_ST_PS
+    max_ffill_s: 5                         # missing values: forward-fill at most 5 s, else drop the row
     scaling: {method: standard, clip_sd: 6.0}  # HAI-4: min-max breaks on out-of-range test values
   modbus:
     devices: {ied1a: 185.175.0.4, ied1b: 185.175.0.5, scada-hmi: 185.175.0.3}
@@ -28,13 +31,16 @@ data:
     attacker_ip: 185.175.0.7               # MB-2: the external attacker; labels the attack day
     label_source: attacker_address         # no attack logs in the download (G0 decision 4)
     idle_gap_s: 60                         # MB-7: HMI polling pauses longer than this are cut out
+    episode_gap_s: 125                     # attacker IPv4 gaps: up to 121 s inside a probe, at least 133 s between probes
+    attack_val_episodes: 4                 # episodes 0-3 -> attack validation, the rest -> test (Proposal §6.2)
   windows:
     site_a: {length_s: 60, train_stride_s: 60, infer_stride_s: 10}
     site_b: {length_s: 10, train_stride_s: 10, infer_stride_s: 5}
   splits:
     normal_val_fraction: 0.15
     gap_windows: 1
-    attack_val_fraction: 0.30
+    attack_val_fraction: 0.30              # Site A: about 15 of the 50 HAI events
+    seed: 2026                             # fixed seed for segment assignment and the iid scheme
   partition:
     site_a:
       clients: [a1, a2, a3, a4]

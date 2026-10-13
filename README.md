@@ -18,7 +18,7 @@ the design reasons for leaving them behind are in Proposal Appendix A.
 | Phase | Weeks | Status |
 |---|---|---|
 | 0 — Feasibility | 1 | **Done.** 21/21 data checks matched on the laptop; Gate G0 closed ([ADR 0001](docs/adr/0001-g0-decisions.md)): Llama 3.2 3B, L_LLM 24 s, 2 CPUs per Ray client |
-| 1 — Data and evaluation first | 2–4 | Week 2 in progress |
+| 1 — Data and evaluation first | 2–4 | **Week 2 code done** and verified on the real data (37/37 partition checks); waiting for the laptop run ([runbook](docs/runbooks/phase1_week2.md)). Weeks 3–4 not started |
 | 2 — Privacy-preserving federated detection | 5–7 | Not started |
 | 3 — Operations path and agentic attribution | 8–11 | Not started |
 | 4 — Experiments and systems evidence | 12–14 | Not started |
@@ -40,9 +40,12 @@ benchmarks, is in [docs/runbooks/phase0_week1.md](docs/runbooks/phase0_week1.md)
 ```
 configs/params.yaml     single source of truth for every setting (validated on load)
 configs/data_expectations.yaml  measured dataset facts, checked by scripts/inspect_data.py
+configs/partition_expectations.yaml  expected partition counts, checked by make check-data
+dvc.yaml                DVC stages: prepare (Modbus parsing) and partition
 src/agmesh/             the package
   common/               config, provenance, artifacts, checksums, memory sampling
   feasibility/          Week 1 spikes: LLM benchmark, Ray benchmark, data inspection
+  data/                 Week 2 pipeline: HAI and Modbus loading, labels, windows, partitions, fixture
   security/             egress allowlist (mTLS and JWT arrive in Week 11)
 scripts/                command-line entry points
 tests/unit/             unit tests (synthetic inputs only; CI never needs raw data)

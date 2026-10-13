@@ -33,6 +33,8 @@ class PathsConfig(_Section):
     modbus_dir: Path
     results_root: Path
     checksums_file: Path
+    interim_dir: Path
+    partitions_dir: Path
 
 
 class ScalingConfig(_Section):
@@ -47,6 +49,7 @@ class HaiConfig(_Section):
     process_label_columns: list[str]
     drop_train_constant_features: bool
     drop_features: list[str]
+    max_ffill_s: int = Field(ge=0)
     scaling: ScalingConfig
 
 
@@ -64,6 +67,8 @@ class ModbusConfig(_Section):
     attacker_ip: str
     label_source: Literal["attacker_address", "attack_logs"]
     idle_gap_s: float = Field(gt=0)
+    episode_gap_s: float = Field(gt=0)
+    attack_val_episodes: int = Field(gt=0)
 
     @model_validator(mode="after")
     def _addresses_are_valid(self) -> ModbusConfig:
@@ -104,6 +109,7 @@ class SplitsConfig(_Section):
     normal_val_fraction: float = Field(gt=0, lt=1)
     gap_windows: int = Field(ge=0)
     attack_val_fraction: float = Field(gt=0, lt=1)
+    seed: int
 
 
 _PERIOD = re.compile(r"^train\d+(:first_half|:second_half)?$")

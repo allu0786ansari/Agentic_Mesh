@@ -1,0 +1,16 @@
+# What the Week 2 partitions must contain for the analysed datasets (Proposal v3.1,
+# Appendix B). `make check-data` compares data/partitions/*/manifest.json with these
+# values. They are facts about the data and the split rules, not tuning targets:
+# never edit them to make a check pass.
+site_a:
+  n_features: 56                 # 57 vary in training, minus P4_HT_PS (HAI-2)
+  training_constant_features: 22
+  events_total: 50
+  events_val_attack: 15          # attack_val_fraction 0.30, largest-remainder by process group
+  events_test: 35
+site_b:
+  episodes: 7                    # attacker activity split at gaps above episode_gap_s
+  val_attack_episodes: 4
+  # 10-second windows with attacker IPv4 traffic on the attack day, per device
+  attack_windows: {ied1a: 51, ied1b: 0, scada-hmi: 0}
+  attack_windows_dropped_as_idle: 0
