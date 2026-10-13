@@ -30,6 +30,12 @@ class Config:
     metrics_log_path: str = "./logs/metrics.jsonl"
     run_manifest_path: str = "./results/week4_training.json"
     scaler_root: str = "./results/scalers"
+    graph_embed_dim: int = 32
+    sequence_latent_dim: int = 16
+    flow_layers: int = 2
+    free_bits: float = 0.05
+    robust_scaling: bool = False
+    enable_spectral_features: bool = False
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -56,6 +62,12 @@ class Config:
             metrics_log_path=os.getenv("METRICS_LOG_PATH", "./logs/metrics.jsonl"),
             run_manifest_path=os.getenv("RUN_MANIFEST_PATH", "./results/week4_training.json"),
             scaler_root=os.getenv("SCALER_ROOT", "./results/scalers"),
+            graph_embed_dim=int(os.getenv("GRAPH_EMBED_DIM", "32")),
+            sequence_latent_dim=int(os.getenv("SEQUENCE_LATENT_DIM", "16")),
+            flow_layers=int(os.getenv("FLOW_LAYERS", "2")),
+            free_bits=float(os.getenv("FREE_BITS", "0.05")),
+            robust_scaling=os.getenv("ROBUST_SCALING", "false").lower() in {"1", "true", "yes"},
+            enable_spectral_features=os.getenv("ENABLE_SPECTRAL_FEATURES", "false").lower() in {"1", "true", "yes"},
         )
 
     @property

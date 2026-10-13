@@ -12,9 +12,11 @@ import torch
 
 from edge.config import Config
 from edge.data_loader import HAIWindowDataset
-from edge.models.vae import VAE
+from edge.models.vae import TemporalVAE, VAE
+from edge.models.sequence_vae import RecurrentFlowVAE
 from edge.training.dp_trainer import DPVAETrainer
 from edge.training.trainer import VAETrainer
+from edge.training.sequence_trainer import SequenceVAETrainer
 from evaluation.inference import evaluate_node
 
 
@@ -33,6 +35,8 @@ def main() -> None:
     parser.add_argument("--seeds", nargs="+", type=int, default=[42, 123, 2024])
     parser.add_argument("--variants", nargs="+", choices=["dp", "non_private"], default=["dp", "non_private"])
     parser.add_argument("--epochs", type=int, default=None)
+    parser.add_argument("--architecture", choices=["fully_connected", "temporal_residual", "recurrent_flow"], default="fully_connected")
+    parser.add_argument("--threshold-method", choices=["quantile", "pot"], default="pot")
     args = parser.parse_args()
 
     config = Config.from_env()
@@ -60,10 +64,42 @@ def main() -> None:
         for seed in args.seeds:
             for variant in args.variants:
                 set_seed(seed)
-                model = VAE(train_dataset.input_dim, latent_dim=config.latent_dim, hidden_dim=config.hidden_dim)
+                if args.architecture == "recurrent_flow":
+                    model = RecurrentFlowVAE(
+                        feature_count=len(train_dataset.feature_columns),
+                        latent_dim=config.sequence_latent_dim,
+                        hidden_dim=max(32, config.hidden_dim // 2),
+                        graph_embed_dim=config.graph_embed_dim,
+                        flow_layers=config.flow_layers,
+                    )
+                elif args.architecture == "temporal_residual":
+                    model = TemporalVAE(
+                        window_size=config.hai_window_size,
+                        feature_count=len(train_dataset.feature_columns),
+                        latent_dim=config.latent_dim,
+                        hidden_dim=max(32, config.hidden_dim // 2),
+                    )
+                else:
+                    model = VAE(train_dataset.input_dim, latent_dim=config.latent_dim, hidden_dim=config.hidden_dim)
                 checkpoint = checkpoint_root / variant / f"{node_id}_seed_{seed}.pt"
                 epochs = args.epochs or config.local_epochs
-                if variant == "dp":
+                if args.architecture == "recurrent_flow" and variant == "dp":
+                    raise ValueError("DP-SGD for recurrent_flow requires a dedicated sequence DP trainer")
+                if args.architecture == "recurrent_flow":
+                    trainer = SequenceVAETrainer(
+                        model,
+                        learning_rate=config.learning_rate,
+                        beta=0.3,
+                        free_bits=config.free_bits,
+                        device="cpu",
+                    )
+                    result = trainer.train(
+                        train_dataset,
+                        epochs=epochs,
+                        batch_size=config.batch_size,
+                        checkpoint_path=checkpoint,
+                    )
+                elif variant == "dp":
                     trainer = DPVAETrainer(
                         model,
                         learning_rate=config.learning_rate,
@@ -97,6 +133,7 @@ def main() -> None:
                     plot_path=run_dir / "plots" / f"{variant}_{node_id}_seed_{seed}.png",
                     scaler_path=scaler_path,
                     seed=seed,
+                    threshold_method=args.threshold_method,
                 )
                 metrics = evaluation["test"]["metrics"]
                 records.append(
@@ -115,6 +152,7 @@ def main() -> None:
                         "false_positive_rate": metrics["false_positive_rate"],
                         "fixed_fpr": evaluation["test"]["fixed_fpr_operating_points"],
                         "overlap_stride": config.hai_window_stride,
+                        "architecture": args.architecture,
                     }
                 )
 

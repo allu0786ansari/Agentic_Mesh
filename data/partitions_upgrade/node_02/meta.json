@@ -1,0 +1,573 @@
+{
+  "node_id": "node_02",
+  "source": "hai_21.03_p2",
+  "model_type": "vae",
+  "data_type": "timeseries",
+  "label_column": "label",
+  "timestamp_column": "time",
+  "feature_columns": [
+    "P2_24Vdc",
+    "P2_CO_rpm",
+    "P2_HILout",
+    "P2_SIT01",
+    "P2_SIT02",
+    "P2_VT01",
+    "P2_VXT02",
+    "P2_VXT03",
+    "P2_VYT02",
+    "P2_VYT03",
+    "P2_VYT02__rolling_std_w60",
+    "P2_CO_rpm__rolling_std_w60",
+    "P2_VYT03__rolling_std_w60",
+    "P2_VXT03__rolling_std_w15",
+    "P2_VT01__rolling_std_w60",
+    "P2_SIT01__rolling_std_w60",
+    "P2_SIT02__rolling_std_w60",
+    "P2_VXT03__rolling_std_w60",
+    "P2_VYT03__local_deviation_w15"
+  ],
+  "feature_count": 19,
+  "row_count": 1323608,
+  "train_rows": 921603,
+  "test_rows": 402005,
+  "seed": 42,
+  "content_sha256": "e4f86a82b76ce6e30ed37bf4cfb0e358d2619013a5f440e68bde9a152e8eb68f",
+  "window_size_rows": 60,
+  "window_stride_rows": 10,
+  "normal_only_scaler": true,
+  "partition_scaling": "none",
+  "feature_engineering": {
+    "rolling_window_rows": 15,
+    "base_feature_count": 22,
+    "retained_base_features": [
+      "P2_24Vdc",
+      "P2_CO_rpm",
+      "P2_HILout",
+      "P2_SIT01",
+      "P2_SIT02",
+      "P2_VT01",
+      "P2_VXT02",
+      "P2_VXT03",
+      "P2_VYT02",
+      "P2_VYT03"
+    ],
+    "removed_constant_features": [
+      "P2_ASD",
+      "P2_AutoGO",
+      "P2_Emerg",
+      "P2_MSD",
+      "P2_ManualGO",
+      "P2_OnOff",
+      "P2_RTR",
+      "P2_TripEx",
+      "P2_VTR01",
+      "P2_VTR02",
+      "P2_VTR03",
+      "P2_VTR04"
+    ],
+    "binary_base_features": [],
+    "control_loop_pairs": [],
+    "rolling_windows": [
+      5,
+      15,
+      60
+    ],
+    "candidate_engineered_features": [
+      "P2_24Vdc__rolling_std_w5",
+      "P2_24Vdc__local_deviation_w5",
+      "P2_24Vdc__rolling_std_w15",
+      "P2_24Vdc__local_deviation_w15",
+      "P2_24Vdc__rolling_std_w60",
+      "P2_24Vdc__local_deviation_w60",
+      "P2_CO_rpm__rolling_std_w5",
+      "P2_CO_rpm__local_deviation_w5",
+      "P2_CO_rpm__rolling_std_w15",
+      "P2_CO_rpm__local_deviation_w15",
+      "P2_CO_rpm__rolling_std_w60",
+      "P2_CO_rpm__local_deviation_w60",
+      "P2_HILout__rolling_std_w5",
+      "P2_HILout__local_deviation_w5",
+      "P2_HILout__rolling_std_w15",
+      "P2_HILout__local_deviation_w15",
+      "P2_HILout__rolling_std_w60",
+      "P2_HILout__local_deviation_w60",
+      "P2_SIT01__rolling_std_w5",
+      "P2_SIT01__local_deviation_w5",
+      "P2_SIT01__rolling_std_w15",
+      "P2_SIT01__local_deviation_w15",
+      "P2_SIT01__rolling_std_w60",
+      "P2_SIT01__local_deviation_w60",
+      "P2_SIT02__rolling_std_w5",
+      "P2_SIT02__local_deviation_w5",
+      "P2_SIT02__rolling_std_w15",
+      "P2_SIT02__local_deviation_w15",
+      "P2_SIT02__rolling_std_w60",
+      "P2_SIT02__local_deviation_w60",
+      "P2_VT01__rolling_std_w5",
+      "P2_VT01__local_deviation_w5",
+      "P2_VT01__rolling_std_w15",
+      "P2_VT01__local_deviation_w15",
+      "P2_VT01__rolling_std_w60",
+      "P2_VT01__local_deviation_w60",
+      "P2_VXT02__rolling_std_w5",
+      "P2_VXT02__local_deviation_w5",
+      "P2_VXT02__rolling_std_w15",
+      "P2_VXT02__local_deviation_w15",
+      "P2_VXT02__rolling_std_w60",
+      "P2_VXT02__local_deviation_w60",
+      "P2_VXT03__rolling_std_w5",
+      "P2_VXT03__local_deviation_w5",
+      "P2_VXT03__rolling_std_w15",
+      "P2_VXT03__local_deviation_w15",
+      "P2_VXT03__rolling_std_w60",
+      "P2_VXT03__local_deviation_w60",
+      "P2_VYT02__rolling_std_w5",
+      "P2_VYT02__local_deviation_w5",
+      "P2_VYT02__rolling_std_w15",
+      "P2_VYT02__local_deviation_w15",
+      "P2_VYT02__rolling_std_w60",
+      "P2_VYT02__local_deviation_w60",
+      "P2_VYT03__rolling_std_w5",
+      "P2_VYT03__local_deviation_w5",
+      "P2_VYT03__rolling_std_w15",
+      "P2_VYT03__local_deviation_w15",
+      "P2_VYT03__rolling_std_w60",
+      "P2_VYT03__local_deviation_w60"
+    ],
+    "selected_engineered_features": [
+      "P2_VYT02__rolling_std_w60",
+      "P2_CO_rpm__rolling_std_w60",
+      "P2_VYT03__rolling_std_w60",
+      "P2_VXT03__rolling_std_w15",
+      "P2_VT01__rolling_std_w60",
+      "P2_SIT01__rolling_std_w60",
+      "P2_SIT02__rolling_std_w60",
+      "P2_VXT03__rolling_std_w60",
+      "P2_VYT03__local_deviation_w15"
+    ],
+    "feature_screening": [
+      {
+        "feature": "P2_VYT02__rolling_std_w60",
+        "roc_auc": 0.7110634562606251,
+        "pr_auc": 0.7744371888109494,
+        "finite_fraction": 1.0,
+        "selected": true
+      },
+      {
+        "feature": "P2_CO_rpm__rolling_std_w60",
+        "roc_auc": 0.6881909798997767,
+        "pr_auc": 0.6402028840771289,
+        "finite_fraction": 1.0,
+        "selected": true
+      },
+      {
+        "feature": "P2_VYT03__rolling_std_w60",
+        "roc_auc": 0.6617851309458994,
+        "pr_auc": 0.7186677822087629,
+        "finite_fraction": 1.0,
+        "selected": true
+      },
+      {
+        "feature": "P2_VXT03__rolling_std_w15",
+        "roc_auc": 0.6511072345248281,
+        "pr_auc": 0.6369484526953487,
+        "finite_fraction": 1.0,
+        "selected": true
+      },
+      {
+        "feature": "P2_VT01__rolling_std_w60",
+        "roc_auc": 0.6352181690907677,
+        "pr_auc": 0.6036751240513826,
+        "finite_fraction": 1.0,
+        "selected": true
+      },
+      {
+        "feature": "P2_SIT01__rolling_std_w60",
+        "roc_auc": 0.6211624573606374,
+        "pr_auc": 0.6774980366043455,
+        "finite_fraction": 1.0,
+        "selected": true
+      },
+      {
+        "feature": "P2_SIT02__rolling_std_w60",
+        "roc_auc": 0.6194846609406772,
+        "pr_auc": 0.6732881957411618,
+        "finite_fraction": 1.0,
+        "selected": true
+      },
+      {
+        "feature": "P2_VXT03__rolling_std_w60",
+        "roc_auc": 0.5628062534028155,
+        "pr_auc": 0.572025758173788,
+        "finite_fraction": 1.0,
+        "selected": true
+      },
+      {
+        "feature": "P2_VYT03__local_deviation_w15",
+        "roc_auc": 0.5529394771053011,
+        "pr_auc": 0.5743008056129019,
+        "finite_fraction": 1.0,
+        "selected": true
+      },
+      {
+        "feature": "P2_HILout__rolling_std_w60",
+        "roc_auc": 0.6943077145301615,
+        "pr_auc": 0.37634086023601393,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_CO_rpm__rolling_std_w15",
+        "roc_auc": 0.6505516727963645,
+        "pr_auc": 0.4247127299471502,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_CO_rpm__rolling_std_w5",
+        "roc_auc": 0.6124068045200501,
+        "pr_auc": 0.4236691967897934,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_HILout__rolling_std_w15",
+        "roc_auc": 0.6008511205680063,
+        "pr_auc": 0.4268402908069744,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VYT02__rolling_std_w15",
+        "roc_auc": 0.5485172057467305,
+        "pr_auc": 0.5942487068073934,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_HILout__local_deviation_w5",
+        "roc_auc": 0.5485060945121613,
+        "pr_auc": 0.5997128298804913,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_24Vdc__rolling_std_w15",
+        "roc_auc": 0.5472116356848409,
+        "pr_auc": 0.47667515211038636,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VYT03__local_deviation_w60",
+        "roc_auc": 0.5444504938943766,
+        "pr_auc": 0.5415262432182861,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VXT02__local_deviation_w60",
+        "roc_auc": 0.5421949132768141,
+        "pr_auc": 0.46993346306252815,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_24Vdc__local_deviation_w15",
+        "roc_auc": 0.5418504650051668,
+        "pr_auc": 0.5841601576874844,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_SIT02__local_deviation_w5",
+        "roc_auc": 0.5413949043878266,
+        "pr_auc": 0.4813755368188573,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VXT02__local_deviation_w15",
+        "roc_auc": 0.5405060056222848,
+        "pr_auc": 0.48330415847457353,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_HILout__rolling_std_w5",
+        "roc_auc": 0.5388837653751708,
+        "pr_auc": 0.4783749186143691,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VXT03__local_deviation_w60",
+        "roc_auc": 0.5358948432760364,
+        "pr_auc": 0.4827123932230396,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VXT03__rolling_std_w5",
+        "roc_auc": 0.5288725430282558,
+        "pr_auc": 0.5321831340062823,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VXT02__rolling_std_w60",
+        "roc_auc": 0.528183646484961,
+        "pr_auc": 0.4617524970743888,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VYT02__local_deviation_w5",
+        "roc_auc": 0.5271447460527339,
+        "pr_auc": 0.5318952110923052,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VYT02__local_deviation_w15",
+        "roc_auc": 0.5270947454971722,
+        "pr_auc": 0.5478801836589997,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_SIT01__local_deviation_w60",
+        "roc_auc": 0.5264836275958622,
+        "pr_auc": 0.4862536817639759,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VYT02__rolling_std_w5",
+        "roc_auc": 0.525661396237736,
+        "pr_auc": 0.5796675780589955,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VYT03__local_deviation_w5",
+        "roc_auc": 0.5253447260525117,
+        "pr_auc": 0.5317178582766315,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_CO_rpm__local_deviation_w60",
+        "roc_auc": 0.5241558239535995,
+        "pr_auc": 0.564443254347823,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VXT03__local_deviation_w15",
+        "roc_auc": 0.5238169312992367,
+        "pr_auc": 0.5037370525879895,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VXT02__rolling_std_w15",
+        "roc_auc": 0.5223835820398004,
+        "pr_auc": 0.5723109824155641,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_SIT02__local_deviation_w60",
+        "roc_auc": 0.5223502483360927,
+        "pr_auc": 0.48862476550117895,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VT01__local_deviation_w5",
+        "roc_auc": 0.5213613484594273,
+        "pr_auc": 0.4933790311238747,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VYT02__local_deviation_w60",
+        "roc_auc": 0.5183502038911544,
+        "pr_auc": 0.5514818449331114,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VT01__local_deviation_w60",
+        "roc_auc": 0.5180279780886454,
+        "pr_auc": 0.4942574718486736,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VT01__rolling_std_w15",
+        "roc_auc": 0.5161279569772997,
+        "pr_auc": 0.5371611809895946,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VYT03__rolling_std_w15",
+        "roc_auc": 0.5147390526561406,
+        "pr_auc": 0.5877030669334761,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VXT02__local_deviation_w5",
+        "roc_auc": 0.5147390526561406,
+        "pr_auc": 0.504232634290555,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_HILout__local_deviation_w60",
+        "roc_auc": 0.5146946077178636,
+        "pr_auc": 0.48179959972380815,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_SIT02__local_deviation_w15",
+        "roc_auc": 0.5121501350015001,
+        "pr_auc": 0.5313324543251731,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_SIT02__rolling_std_w15",
+        "roc_auc": 0.5111056789519883,
+        "pr_auc": 0.5720075385665293,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_SIT02__rolling_std_w5",
+        "roc_auc": 0.5107501194457715,
+        "pr_auc": 0.5444525474465789,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_HILout__local_deviation_w15",
+        "roc_auc": 0.5107167857420638,
+        "pr_auc": 0.5066003582681573,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VT01__local_deviation_w15",
+        "roc_auc": 0.5097278858653985,
+        "pr_auc": 0.5584919508629579,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_24Vdc__local_deviation_w60",
+        "roc_auc": 0.5082500916676851,
+        "pr_auc": 0.49406733558692845,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_SIT01__local_deviation_w15",
+        "roc_auc": 0.5056556183957599,
+        "pr_auc": 0.4925592270589501,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_CO_rpm__local_deviation_w15",
+        "roc_auc": 0.5046278291981022,
+        "pr_auc": 0.4965882591107965,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_SIT01__rolling_std_w15",
+        "roc_auc": 0.5033222591362125,
+        "pr_auc": 0.5743802105365078,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_24Vdc__rolling_std_w5",
+        "roc_auc": 0.5026611406793409,
+        "pr_auc": 0.56682915711061,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VXT02__rolling_std_w5",
+        "roc_auc": 0.5026278069756331,
+        "pr_auc": 0.5137252792566974,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VXT03__local_deviation_w5",
+        "roc_auc": 0.5025111390126556,
+        "pr_auc": 0.5102223271999022,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VT01__rolling_std_w5",
+        "roc_auc": 0.50160557339526,
+        "pr_auc": 0.5066596383398252,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_SIT01__local_deviation_w5",
+        "roc_auc": 0.5011389015433505,
+        "pr_auc": 0.5164006560385792,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_24Vdc__local_deviation_w5",
+        "roc_auc": 0.5011277903087812,
+        "pr_auc": 0.503911439597176,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_VYT03__rolling_std_w5",
+        "roc_auc": 0.5008833431482572,
+        "pr_auc": 0.5204687564291306,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_CO_rpm__local_deviation_w5",
+        "roc_auc": 0.5003722263580707,
+        "pr_auc": 0.48412218911012805,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_SIT01__rolling_std_w5",
+        "roc_auc": 0.5002944477160858,
+        "pr_auc": 0.5396573443109784,
+        "finite_fraction": 1.0,
+        "selected": false
+      },
+      {
+        "feature": "P2_24Vdc__rolling_std_w60",
+        "roc_auc": 0.5000388893209925,
+        "pr_auc": 0.5024316721855255,
+        "finite_fraction": 1.0,
+        "selected": false
+      }
+    ],
+    "feature_screening_skipped_reason": null,
+    "engineered_feature_count": 19
+  }
+}
