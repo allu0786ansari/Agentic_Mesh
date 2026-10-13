@@ -33,6 +33,7 @@ def main() -> None:
     parser.add_argument("--nodes", nargs="+", default=["node_01", "node_02", "node_03"])
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--threshold-quantile", type=float, default=0.95)
+    parser.add_argument("--threshold-method", choices=("quantile", "pot"), default="quantile")
     parser.add_argument("--overlap-strides", nargs="+", type=int, default=[10, 30, 60])
     parser.add_argument("--scalers-root", type=Path, default=Path("results/scalers"))
     parser.add_argument("--bootstrap-samples", type=int, default=200)
@@ -59,6 +60,7 @@ def main() -> None:
             scaler_path=scaler_path,
             bootstrap_samples=args.bootstrap_samples,
             seed=args.seed,
+            threshold_method=args.threshold_method,
         )
         overlap_results = {}
         for overlap_stride in args.overlap_strides:
@@ -72,6 +74,7 @@ def main() -> None:
                 scaler_path=scaler_path,
                 bootstrap_samples=args.bootstrap_samples,
                 seed=args.seed,
+                threshold_method=args.threshold_method,
             )
             overlap_results[str(overlap_stride)] = {
                 "validation_windows": overlap["validation"]["threshold_windows"],

@@ -93,18 +93,22 @@ class TemporalVAE(nn.Module):
         latent_dim: int = 32,
         hidden_dim: int = 64,
         dropout: float = 0.05,
+        output_activation: str = "sigmoid",
     ) -> None:
         super().__init__()
         if window_size < 2 or feature_count < 1 or latent_dim < 1 or hidden_dim < 8:
             raise ValueError("window_size, feature_count, latent_dim, and hidden_dim are invalid")
         if not 0 <= dropout < 1:
             raise ValueError("dropout must be between 0 and 1")
+        if output_activation not in {"sigmoid", "linear"}:
+            raise ValueError("output_activation must be sigmoid or linear")
         self.window_size = window_size
         self.feature_count = feature_count
         self.input_dim = window_size * feature_count
         self.latent_dim = latent_dim
         self.hidden_dim = hidden_dim
         self.dropout = dropout
+        self.output_activation = output_activation
         self.input_projection = nn.Conv1d(feature_count, hidden_dim, kernel_size=1)
         self.encoder_blocks = nn.Sequential(
             _ResidualTemporalBlock(hidden_dim, dilation=1, dropout=dropout),
@@ -147,7 +151,10 @@ class TemporalVAE(nn.Module):
     def decode(self, latent: Tensor) -> Tensor:
         hidden = self.decoder_projection(latent).reshape(-1, self.hidden_dim, self.window_size)
         hidden = self.decoder_blocks(hidden)
-        return torch.sigmoid(self.output_projection(hidden)).transpose(1, 2).reshape(-1, self.input_dim)
+        output = self.output_projection(hidden)
+        if self.output_activation == "sigmoid":
+            output = torch.sigmoid(output)
+        return output.transpose(1, 2).reshape(-1, self.input_dim)
 
     def forward(self, inputs: Tensor) -> VAEOutput:
         mu, logvar = self.encode(inputs)

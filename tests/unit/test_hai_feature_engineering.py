@@ -28,8 +28,8 @@ def test_hai_feature_engineering_removes_constants_and_aligns_splits() -> None:
 
     assert engineered_train.columns.tolist() == engineered_test.columns.tolist()
     assert "P1_CONSTANT" not in engineered_train.columns
-    assert "P1_CONTINUOUS__rolling_std" in engineered_train.columns
-    assert "P1_CONTINUOUS__local_deviation" in engineered_train.columns
+    assert "P1_CONTINUOUS__rolling_std_w3" in engineered_train.columns
+    assert "P1_CONTINUOUS__local_deviation_w3" in engineered_train.columns
     assert "P1_CONTINUOUS__delta" not in engineered_train.columns
     assert "P1_CONTINUOUS__abs_delta" not in engineered_train.columns
     assert "P1_BINARY__transition" in engineered_train.columns

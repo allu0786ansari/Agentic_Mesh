@@ -17,6 +17,9 @@ from torch.utils.data import DataLoader
 
 from edge.data_loader import HAIWindowDataset
 from edge.models.vae import TemporalVAE, VAE
+from edge.models.sequence_vae import RecurrentFlowVAE
+from evaluation.latent_likelihood import flow_anomaly_scores
+from evaluation.threshold import pot_threshold
 
 
 def load_checkpoint_model(checkpoint_path: str | Path, device: str = "cpu") -> tuple[torch.nn.Module, dict[str, Any]]:
@@ -28,6 +31,15 @@ def load_checkpoint_model(checkpoint_path: str | Path, device: str = "cpu") -> t
             feature_count=int(checkpoint["feature_count"]),
             latent_dim=int(checkpoint["latent_dim"]),
             hidden_dim=int(checkpoint["hidden_dim"]),
+            output_activation=checkpoint.get("output_activation", "sigmoid"),
+        ).to(device)
+    elif architecture == "recurrent_flow":
+        model = RecurrentFlowVAE(
+            feature_count=int(checkpoint["feature_count"]),
+            latent_dim=int(checkpoint["latent_dim"]),
+            hidden_dim=int(checkpoint["hidden_dim"]),
+            graph_embed_dim=int(checkpoint.get("graph_embed_dim", 32)),
+            flow_layers=int(checkpoint.get("flow_layers", 2)),
         ).to(device)
     elif architecture == "fully_connected":
         model = VAE(
@@ -59,8 +71,11 @@ def reconstruction_errors(
             if not torch.isfinite(inputs).all():
                 raise ValueError(f"Non-finite input values in evaluation batch {batch_index}")
             inputs = inputs.to(device)
-            mu, _ = model.encode(inputs)
-            reconstruction = model.decode(mu)
+            if getattr(model, "architecture", None) == "recurrent_flow":
+                reconstruction = model(inputs).reconstruction.reshape(inputs.shape[0], -1)
+            else:
+                mu, _ = model.encode(inputs)
+                reconstruction = model.decode(mu)
             if not torch.isfinite(reconstruction).all():
                 raise ValueError(f"Non-finite reconstruction values in evaluation batch {batch_index}")
             batch_errors = torch.mean((reconstruction - inputs).pow(2), dim=1)
@@ -70,6 +85,23 @@ def reconstruction_errors(
     result = np.concatenate(errors) if errors else np.empty(0, dtype=np.float64)
     if not np.isfinite(result).all():
         raise ValueError("Evaluation produced non-finite reconstruction errors")
+    return result
+
+
+def _flow_dataset_scores(
+    model: RecurrentFlowVAE,
+    dataset: HAIWindowDataset,
+    *,
+    batch_size: int = 256,
+    device: str = "cpu",
+) -> np.ndarray:
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, drop_last=False)
+    scores: list[np.ndarray] = []
+    for inputs in loader:
+        scores.append(flow_anomaly_scores(model, inputs, device=device))
+    result = np.concatenate(scores) if scores else np.empty(0, dtype=np.float64)
+    if result.size == 0 or not np.isfinite(result).all():
+        raise ValueError("Flow evaluation produced no finite scores")
     return result
 
 
@@ -112,9 +144,18 @@ def combined_anomaly_scores(
     validation_latent_scores: np.ndarray,
     test_latent_scores: np.ndarray,
     *,
-    alpha: float = 0.5,
-) -> tuple[np.ndarray, np.ndarray, dict[str, float]]:
-    """Combine robustly normalized reconstruction and latent scores."""
+    alpha: float | None = 0.5,
+    reconstruction_auc: float | None = None,
+    latent_auc: float | None = None,
+) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
+    """Combine scores using explicit or validation-quality-derived weighting."""
+    if reconstruction_auc is not None or latent_auc is not None:
+        if reconstruction_auc is None or latent_auc is None or reconstruction_auc < 0 or latent_auc < 0:
+            raise ValueError("both validation AUC values must be non-negative")
+        total_auc = reconstruction_auc + latent_auc
+        alpha = 0.5 if total_auc <= 0 else float(latent_auc / total_auc)
+    if alpha is None:
+        raise ValueError("alpha or both validation AUC values must be provided")
     if not 0 <= alpha <= 1:
         raise ValueError("alpha must be between 0 and 1")
     def normalize(reference: np.ndarray, values: np.ndarray) -> tuple[np.ndarray, float, float]:
@@ -132,6 +173,8 @@ def combined_anomaly_scores(
     test_score = (1 - alpha) * normalized_test_error + alpha * normalized_test_latent
     return test_score, validation_score, {
         "alpha": alpha,
+        "reconstruction_auc": reconstruction_auc,
+        "latent_auc": latent_auc,
         "reconstruction_center": error_center,
         "reconstruction_iqr": error_scale,
         "latent_center": latent_center,
@@ -345,6 +388,7 @@ def evaluate_node(
     scaler_path: str | Path | None = None,
     bootstrap_samples: int = 200,
     seed: int = 42,
+    threshold_method: str = "quantile",
 ) -> dict[str, Any]:
     model, checkpoint = load_checkpoint_model(checkpoint_path, device=device)
     validation_dataset = HAIWindowDataset(
@@ -361,31 +405,49 @@ def evaluate_node(
     )
     validation_errors = reconstruction_errors(model, validation_dataset, batch_size=batch_size, device=device)
     test_errors = reconstruction_errors(model, test_dataset, batch_size=batch_size, device=device)
-    validation_latent_scores, latent_mean, latent_precision = latent_mahalanobis_scores(
-        model, validation_dataset, batch_size=batch_size, device=device
-    )
-    test_latent_scores, _, _ = latent_mahalanobis_scores(
-        model,
-        test_dataset,
-        reference_mu=latent_mean,
-        reference_precision=latent_precision,
-        batch_size=batch_size,
-        device=device,
-    )
-    combined_test_scores, combined_validation_scores, combined_parameters = combined_anomaly_scores(
-        validation_errors,
-        test_errors,
-        validation_latent_scores,
-        test_latent_scores,
-    )
-    threshold = float(np.quantile(validation_errors, validation_quantile))
+    if checkpoint.get("architecture") == "recurrent_flow":
+        validation_latent_scores = _flow_dataset_scores(model, validation_dataset, batch_size=batch_size, device=device)
+        test_latent_scores = _flow_dataset_scores(model, test_dataset, batch_size=batch_size, device=device)
+        primary_validation_scores = validation_latent_scores
+        primary_test_scores = test_latent_scores
+        combined_validation_scores = validation_latent_scores
+        combined_test_scores = test_latent_scores
+        combined_parameters = {"method": "flow_conditional_kl_log_det"}
+        score_method = "flow_conditional_kl_log_det"
+    else:
+        validation_latent_scores, latent_mean, latent_precision = latent_mahalanobis_scores(
+            model, validation_dataset, batch_size=batch_size, device=device
+        )
+        test_latent_scores, _, _ = latent_mahalanobis_scores(
+            model,
+            test_dataset,
+            reference_mu=latent_mean,
+            reference_precision=latent_precision,
+            batch_size=batch_size,
+            device=device,
+        )
+        combined_test_scores, combined_validation_scores, combined_parameters = combined_anomaly_scores(
+            validation_errors,
+            test_errors,
+            validation_latent_scores,
+            test_latent_scores,
+        )
+        primary_validation_scores = validation_errors
+        primary_test_scores = test_errors
+        score_method = "reconstruction_mse"
+    if threshold_method == "pot":
+        threshold = pot_threshold(primary_validation_scores, initial_quantile=validation_quantile)
+    elif threshold_method == "quantile":
+        threshold = float(np.quantile(primary_validation_scores, validation_quantile))
+    else:
+        raise ValueError("threshold_method must be quantile or pot")
     combined_threshold = float(np.quantile(combined_validation_scores, validation_quantile))
     labels = test_dataset.window_labels.astype(np.int8)
     if len(labels) != len(test_errors):
         raise ValueError("Test labels and reconstruction scores have different lengths")
-    metrics = evaluate_scores(test_errors, labels, threshold=threshold)
+    metrics = evaluate_scores(primary_test_scores, labels, threshold=threshold)
     if plot_path is not None:
-        plot_evaluation_curves(validation_errors, test_errors, labels, plot_path)
+        plot_evaluation_curves(primary_validation_scores, primary_test_scores, labels, plot_path)
     return {
         "checkpoint": {
             "path": str(checkpoint_path),
@@ -401,6 +463,8 @@ def evaluate_node(
             "total_normal_windows": int(len(validation_dataset) / 0.20),
             "threshold_windows": int(validation_errors.size),
             "threshold_quantile": validation_quantile,
+            "threshold_method": threshold_method,
+            "score_method": score_method,
             "threshold": threshold,
             "reconstruction_errors": error_distribution(validation_errors),
             "latent_mahalanobis": error_distribution(validation_latent_scores),
@@ -413,13 +477,13 @@ def evaluate_node(
             "metrics": metrics,
             "combined_metrics": evaluate_scores(combined_test_scores, labels, threshold=combined_threshold),
             "bootstrap_confidence_intervals": bootstrap_confidence_intervals(
-                test_errors, labels, threshold, seed=seed, samples=bootstrap_samples
+                primary_test_scores, labels, threshold, seed=seed, samples=bootstrap_samples
             ),
             "event_level_metrics": event_level_metrics(
                 test_dataset.labels,
                 test_dataset.window_starts,
                 test_dataset.window_size,
-                test_errors,
+                primary_test_scores,
                 threshold,
             ),
             "combined_event_level_metrics": event_level_metrics(
@@ -430,7 +494,7 @@ def evaluate_node(
                 combined_threshold,
             ),
             "fixed_fpr_operating_points": fixed_fpr_operating_points(
-                validation_errors, test_errors, labels
+                primary_validation_scores, primary_test_scores, labels
             ),
         },
     }

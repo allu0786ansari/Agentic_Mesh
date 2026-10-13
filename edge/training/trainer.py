@@ -86,6 +86,7 @@ class VAETrainer:
                 "architecture": getattr(self.model, "architecture", "fully_connected"),
                 "window_size": getattr(self.model, "window_size", None),
                 "feature_count": getattr(self.model, "feature_count", None),
+                "output_activation": getattr(self.model, "output_activation", None),
                 "loss": loss,
                 "variant": "non_private",
             },
