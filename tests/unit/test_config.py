@@ -133,3 +133,10 @@ def test_site_b_clients_must_match_modbus_devices() -> None:
     raw["data"]["partition"]["site_b"]["clients"]["b3"] = "ied4c"
     with pytest.raises(ValidationError, match="modbus devices"):
         Params.model_validate(raw)
+
+
+def test_llm_timeout_must_fit_the_full_mode_target() -> None:
+    raw = _raw()
+    raw["mesh"]["attribution"]["llm_timeout_s"] = 30
+    with pytest.raises(ValidationError, match="l_llm_s"):
+        Params.model_validate(raw)

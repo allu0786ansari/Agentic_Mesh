@@ -68,7 +68,7 @@ federated:
   round_timeout_s: 120
   stopping: {patience: 5, min_rel_delta: 0.005}
   rounds_to_target_tolerance: 0.02
-  client_resources: {num_cpus: 2}          # G0: confirmed from the Ray benchmark
+  client_resources: {num_cpus: 2}          # G0 decision 9: 2 concurrent clients, 3.8 s/round, 1.8 GB PSS
 
 privacy:
   target_epsilon: 10.0                     # sweep: [1, 3, 10, .inf]
@@ -100,12 +100,13 @@ mesh:
     mode: full                             # full | retrieval_only | llm_no_retrieval | rule_only
     top_k: 5
     min_confidence: 0.5
-    llm_timeout_s: 20                      # G0: replaced by L_LLM from the LLM benchmark
+    llm_timeout_s: 21                      # G0 decision 7: 1.5 x measured p95 (13.6 s) of the chosen model
+    l_llm_s: 24                            # G0 decision 7: full-mode incident-to-dispatch target = LLM timeout + 3 s non-LLM path
 
 llm:
   base_url: "http://127.0.0.1:11434"
-  model: "phi3.5:3.8b-mini-instruct-q4_K_M"  # G0: confirmed or swapped
-  alternative_model: "llama3.2:3b"
+  model: "llama3.2:3b"                     # G0 decision 6: p95 13.6 s, 100% schema-valid, 2.2 GB
+  alternative_model: "phi3.5:3.8b-mini-instruct-q4_K_M"  # p95 70.9 s, one timeout in 30 calls
   num_ctx: 2048
   temperature: 0
 

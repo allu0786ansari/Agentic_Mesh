@@ -17,8 +17,8 @@ the design reasons for leaving them behind are in Proposal Appendix A.
 
 | Phase | Weeks | Status |
 |---|---|---|
-| 0 — Feasibility | 1 | **Code done; data decisions accepted.** Both datasets analysed (v3.1); G0 data decisions 1–5 accepted in [ADR 0001](docs/adr/0001-g0-decisions.md). Waiting for the laptop runs ([runbook](docs/runbooks/phase0_week1.md)) for the LLM and Ray decisions 6–10 |
-| 1 — Data and evaluation first | 2–4 | Not started |
+| 0 — Feasibility | 1 | **Done.** 21/21 data checks matched on the laptop; Gate G0 closed ([ADR 0001](docs/adr/0001-g0-decisions.md)): Llama 3.2 3B, L_LLM 24 s, 2 CPUs per Ray client |
+| 1 — Data and evaluation first | 2–4 | Week 2 in progress |
 | 2 — Privacy-preserving federated detection | 5–7 | Not started |
 | 3 — Operations path and agentic attribution | 8–11 | Not started |
 | 4 — Experiments and systems evidence | 12–14 | Not started |

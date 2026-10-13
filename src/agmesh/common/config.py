@@ -248,6 +248,13 @@ class AttributionConfig(_Section):
     top_k: int = Field(gt=0)
     min_confidence: float = Field(ge=0, le=1)
     llm_timeout_s: float = Field(gt=0)
+    l_llm_s: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _llm_fits_target(self) -> AttributionConfig:
+        if self.llm_timeout_s > self.l_llm_s:
+            raise ValueError("llm_timeout_s must not exceed the full-mode target l_llm_s")
+        return self
 
 
 class MeshConfig(_Section):

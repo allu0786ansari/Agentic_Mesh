@@ -111,9 +111,9 @@ The "Measured" column is filled in during Week 1 (spikes) and Week 14 (X7 benchm
 
 | Stage | Components | Estimate | Measured (W1) | Measured (W14) |
 |---|---|---|---|---|
-| Training | Python, torch CPU, Ray with 2 client actors, MLflow local backend | 2.5–3.0 GB | | |
-| Operations | Edge runtime, 7 node APIs, mesh with MiniLM and Qdrant, Ollama with Phi-3.5-mini Q4, Phoenix | 4.5–5.0 GB | | |
-| Budget inside WSL2 | | ≤ 6.0 GB (swap 4 GB) | | |
+| Training | Python, torch CPU, Ray with 2 client actors, MLflow local backend | 2.5–3.0 GB | 1.8 GB PSS (Ray benchmark, 4 clients, 2 CPUs each; MLflow not included) | |
+| Operations | Edge runtime, 7 node APIs, mesh with MiniLM and Qdrant, Ollama with Llama 3.2 3B Q4, Phoenix | 4.5–5.0 GB | LLM alone: 2.2 GB model; system memory peaked near the limit during the benchmark | |
+| Budget inside WSL2 | | ≤ 6.0 GB (swap 4 GB) | 5.9 GB visible, 4 GB swap | |
 
 ---
 
@@ -267,11 +267,12 @@ mesh:
   max_retries: 1
   investigation_deadline_s: 3.0
   breaker: {failure_threshold: 2, open_seconds: 30}
-  attribution: {mode: full, top_k: 5, min_confidence: 0.5, llm_timeout_s: 20}   # timeout replaced by L_LLM at G0
+  attribution: {mode: full, top_k: 5, min_confidence: 0.5, llm_timeout_s: 21, l_llm_s: 24}   # G0 decision 7
 
 llm:
   base_url: "http://127.0.0.1:11434"
-  model: "phi3.5:3.8b-mini-instruct-q4_K_M"   # confirmed or swapped at G0
+  model: "llama3.2:3b"                        # G0 decision 6
+  alternative_model: "phi3.5:3.8b-mini-instruct-q4_K_M"
   num_ctx: 2048
   temperature: 0
 
