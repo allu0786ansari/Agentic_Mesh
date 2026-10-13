@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.0",
+  "kind": "feasibility.ray_bench",
+  "data_source": "synthetic",
+  "provenance": {
+    "created_at": "2026-10-13T22:35:58Z",
+    "git_sha": "46e1a03ee316839638266cdad4d22c9b4a780547",
+    "git_branch": "main",
+    "git_dirty": true,
+    "params_sha256": "d477bdabd050d014217d23a3df9c36a475feb985c6dec41c7b88e61017db521b",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "bef1a5c5d88135bb7fe2b281d0101339c5b701985a281e855e9a92867887a5fc",
+      "hostname_hash": "89a720d64995",
+      "pid": 151059
+    }
+  },
+  "settings": {
+    "clients": 4,
+    "rounds": 3,
+    "num_cpus_per_client": 2.0,
+    "total_cpus": 4,
+    "backend": "torch",
+    "input_dim": 4740,
+    "hidden": [
+      256,
+      128
+    ],
+    "latent": 16,
+    "samples_per_client": 2000,
+    "local_steps": 20,
+    "batch_size": 256,
+    "lr": 0.001,
+    "strategy": "fedavg",
+    "proximal_mu": 0.01,
+    "object_store_mb": 256,
+    "seed": 11,
+    "server_record_path": "/home/allu786ansari/Agentic_Mesh/results/feasibility/ray_bench.server.tmp"
+  },
+  "versions": {
+    "flwr": "1.39.0",
+    "ray": "2.55.1",
+    "torch": "2.14.1+cpu"
+  },
+  "completed": true,
+  "wall_time_s": 29.53,
+  "round_times_s": [
+    19.23,
+    3.878,
+    3.672
+  ],
+  "first_round_includes_actor_startup": true,
+  "steady_round_time_s": 3.775,
+  "estimated_50_round_run_s": 204.2,
+  "concurrent_clients": 2,
+  "model_parameters": 2502036,
+  "memory": {
+    "n_samples": 57,
+    "peak_rss_mb": 2389.0,
+    "peak_pss_mb": 1836.3,
+    "peak_processes": 14,
+    "peak_system_used_mb": 2123.6,
+    "peak_system_delta_mb": 1597.1
+  },
+  "server_record": {
+    "round_times_s": [
+      19.23,
+      3.878,
+      3.672
+    ],
+    "server_wall_s": 26.928,
+    "train_metrics_by_round": {
+      "1": {
+        "train-loss": 1.0087485872209072,
+        "train-time-s": 5.989310852999552,
+        "worker-rss-mb": 638.3583984375
+      },
+      "2": {
+        "train-loss": 1.0006063058972359,
+        "train-time-s": 1.593040663249667,
+        "worker-rss-mb": 681.63671875
+      },
+      "3": {
+        "train-loss": 0.9990822404623031,
+        "train-time-s": 1.5474644930000068,
+        "worker-rss-mb": 692.7998046875
+      }
+    }
+  }
+}
