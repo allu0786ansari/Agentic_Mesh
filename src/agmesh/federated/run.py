@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -100,6 +101,8 @@ def federate(
     dropout: float | None = None,
     privacy_root: Path = Path("results/privacy"),
     run_id: str | None = None,
+    backend: str = "inprocess",
+    params_path: Path = DEFAULT_PARAMS_PATH,
 ) -> tuple[str, str, FederationResult]:
     fed = params.federated
     n_rounds = rounds or fed.max_rounds
@@ -122,7 +125,6 @@ def federate(
         epochs=n_rounds * epochs_per_round,
         privacy_root=privacy_root,
     )
-    pool = InProcessPool(settings, nodes)
     cfg = ServerConfig(
         site=site,
         rounds=n_rounds,
@@ -139,7 +141,30 @@ def federate(
         metric_keys=DETECTION_KEYS,
     )
     registry = NodeRegistry(privacy_root / rid / "registry.db")
-    result = Server(pool, cfg, registry).run()
+    if backend == "flower":
+        from agmesh.federated import flower
+
+        fs = flower.FlowerSettings(
+            str(params_path),
+            site,
+            str(partitions),
+            rid,
+            epsilon,
+            seed,
+            h1c_eps,
+            n_rounds * epochs_per_round,
+            str(privacy_root),
+            nodes,
+        )
+        res = fed.client_resources
+        result = flower.run(
+            fs,
+            lambda pool: Server(pool, cfg, registry),
+            num_cpus_per_client=res.num_cpus,
+            total_cpus=max(int(res.num_cpus), os.cpu_count() or 2),
+        )
+    else:
+        result = Server(InProcessPool(settings, nodes), cfg, registry).run()
     return cid, rid, result
 
 
@@ -174,6 +199,7 @@ def record(
     started_at: str,
     data_source: str,
     params_path: Path,
+    backend: str = "inprocess",
 ) -> Path:
     val_losses = [r.val_loss for r in result.rounds]
     federation = {
@@ -191,7 +217,7 @@ def record(
         "pooled_auroc_bin_error": result.final["pooled_auroc_bin_error"],
         "seconds": round(result.seconds, 1),
         "seconds_per_round": round(result.seconds / max(1, len(result.rounds)), 2),
-        "backend": "inprocess",
+        "backend": backend,
     }
     privacy = _privacy_block(result)
     extra = {
@@ -261,6 +287,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--partitions", type=Path, default=None)
     parser.add_argument("--results", type=Path, default=Path("results"))
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--backend", choices=("inprocess", "flower"), default="inprocess")
     parser.add_argument("--fixture", action="store_true")
     args = parser.parse_args(argv)
     params = load_params(args.params)
@@ -282,6 +309,8 @@ def main(argv: list[str] | None = None) -> int:
             heterogeneous=args.heterogeneous,
             dropout=args.dropout,
             privacy_root=args.results / "privacy",
+            backend=args.backend,
+            params_path=args.params,
         )
         path = record(
             params,
@@ -298,6 +327,7 @@ def main(argv: list[str] | None = None) -> int:
             started_at=started_at,
             data_source="fixture" if args.fixture else "runtime",
             params_path=args.params,
+            backend=args.backend,
         )
         m = result.final["macro"]
         print(

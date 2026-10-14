@@ -20,7 +20,8 @@ class NodeRegistry:
     def __init__(self, path: Path | str = ":memory:", degrade_after: int = 3) -> None:
         if isinstance(path, Path):
             path.parent.mkdir(parents=True, exist_ok=True)
-        self.db = sqlite3.connect(str(path))
+        # the Flower simulation runs the server in its own thread
+        self.db = sqlite3.connect(str(path), check_same_thread=False)
         self.db.execute(SCHEMA)
         self.degrade_after = degrade_after
 

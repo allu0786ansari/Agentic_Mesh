@@ -7,7 +7,7 @@ PY := $(UV) run python
 .PHONY: help setup setup-fl lock lint format typecheck test check \
         checksums verify-checksums inspect-data bench-llm bench-ray feasibility \
         prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft \
-        training-budget summarise shift-selection dp-sanity
+        training-budget summarise shift-selection dp-sanity train
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -32,6 +32,7 @@ help:
 	@echo "summarise         seed CIs + event-level CIs and paired tests -> results/X1/summary_val.json"
 	@echo "shift-selection   ADR 0005: shift-robust scoring chosen on validation -> results/X1/shift_selection.json"
 	@echo "dp-sanity         Week 5: single-client DP training at eps 1, 3, 10, inf -> results/privacy/"
+	@echo "train             Week 6: one federated run, e.g. make train SITE=site_a [ROUNDS=5 smoke] [EPS=3] [STRATEGY=fedavg] [BACKEND=flower]"
 	@echo "scoring-selection ADR 0003: score aggregation chosen on validation -> results/X1/"
 	@echo "ground-truth-draft  first-pass attribution mapping (reads test labels, logged)"
 
@@ -125,3 +126,10 @@ shift-selection:
 
 dp-sanity:
 	$(PY) -m agmesh.experiments.dp_sanity
+
+SITE ?= site_a
+train:
+	$(PY) -m agmesh.federated.run --site $(SITE) \
+		$(if $(ROUNDS),--rounds $(ROUNDS) --smoke,) $(if $(EPS),--epsilon $(EPS),) \
+		$(if $(STRATEGY),--strategy $(STRATEGY),) $(if $(BACKEND),--backend $(BACKEND),) \
+		$(if $(SEEDS),--seeds $(SEEDS),) $(if $(H1C),--h1c,)
