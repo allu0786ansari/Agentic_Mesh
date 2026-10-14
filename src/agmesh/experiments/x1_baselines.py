@@ -305,8 +305,27 @@ def run(
     *,
     data_source: str = "runtime",
     params_path: Path = DEFAULT_PARAMS_PATH,
+    seeds: list[int] | None = None,
 ) -> list[dict[str, Any]]:
-    seed = params.project.seeds[0]
+    """Run every configuration for every seed (default: the first seed in params)."""
+    summary: list[dict[str, Any]] = []
+    for seed in seeds or params.project.seeds[:1]:
+        summary += _run_seed(
+            params, sites, models, partitions, results, seed, data_source, params_path
+        )
+    return summary
+
+
+def _run_seed(
+    params: Params,
+    sites: list[Site],
+    models: list[str] | None,
+    partitions: Path,
+    results: Path,
+    seed: int,
+    data_source: str,
+    params_path: Path,
+) -> list[dict[str, Any]]:
     summary: list[dict[str, Any]] = []
     for site in sites:
         data = _load(params, site, partitions)
@@ -362,6 +381,7 @@ def run(
                 )
                 row = {
                     "config_id": config_id,
+                    "seed": seed,
                     **{k: metrics.get(k) for k in DETECTION_METRICS},
                     "path": path.as_posix(),
                 }
@@ -384,7 +404,8 @@ def _format_row(row: dict[str, Any]) -> str:
         "ttd_median_s",
         "false_alarms_per_hour",
     )
-    return f"{row['config_id']:<34}" + " ".join(_fmt(row[k]) for k in keys)
+    label = f"{row['config_id']} s{row['seed']}"
+    return f"{label:<34}" + " ".join(_fmt(row[k]) for k in keys)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -397,6 +418,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--partitions", type=Path, default=None)
     parser.add_argument("--results", type=Path, default=Path("results"))
     parser.add_argument("--fixture", action="store_true", help="mark results as fixture data")
+    parser.add_argument(
+        "--seeds",
+        nargs="+",
+        type=int,
+        default=None,
+        help="seeds to run (default: all of project.seeds in params)",
+    )
     args = parser.parse_args(argv)
     params = load_params(args.params)
     print(
@@ -411,6 +439,7 @@ def main(argv: list[str] | None = None) -> int:
         args.results,
         data_source="fixture" if args.fixture else "runtime",
         params_path=args.params,
+        seeds=args.seeds or params.project.seeds,
     )
     return 0
 
