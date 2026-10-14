@@ -16,7 +16,7 @@ make check
 ```
 
 **Expected result:** ruff and mypy report no issues; pytest ends with about
-`126 passed, 1 skipped`.
+`125 passed, 1 skipped`.
 
 ## Step 2 — Refresh the partition check
 
