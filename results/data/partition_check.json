@@ -1,0 +1,950 @@
+{
+  "schema_version": "1.0",
+  "kind": "data.partition_check",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-14T07:47:24Z",
+    "git_sha": "cee876e36723487607cd767a3f4128ae7ebaf1ad",
+    "git_branch": "main",
+    "git_dirty": true,
+    "params_sha256": "efdffbeac7438f76fec4b2b969edbb88634575255240e45c460020fc611d4d3d",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "bef1a5c5d88135bb7fe2b281d0101339c5b701985a281e855e9a92867887a5fc",
+      "hostname_hash": "89a720d64995",
+      "pid": 1700
+    }
+  },
+  "passed": 37,
+  "total": 37,
+  "checks": [
+    {
+      "check": "site_a.no_label_column_is_a_feature",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.each_event_in_one_partition",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.a1.train_and_val_normal_unlabelled",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.a1.has_attack_segments",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.a1.val_normal_after_train",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.a2.train_and_val_normal_unlabelled",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.a2.has_attack_segments",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.a2.val_normal_after_train",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.a3.train_and_val_normal_unlabelled",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.a3.has_attack_segments",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.a3.val_normal_after_train",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.a4.train_and_val_normal_unlabelled",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.a4.has_attack_segments",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.a4.val_normal_after_train",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_a.n_features",
+      "ok": true,
+      "detail": {
+        "expected": 56,
+        "actual": 56
+      }
+    },
+    {
+      "check": "site_a.training_constant_features",
+      "ok": true,
+      "detail": {
+        "expected": 22,
+        "actual": 22
+      }
+    },
+    {
+      "check": "site_a.events_total",
+      "ok": true,
+      "detail": {
+        "expected": 50,
+        "actual": 50
+      }
+    },
+    {
+      "check": "site_a.events_val_attack",
+      "ok": true,
+      "detail": {
+        "expected": 15,
+        "actual": 15
+      }
+    },
+    {
+      "check": "site_a.events_test",
+      "ok": true,
+      "detail": {
+        "expected": 35,
+        "actual": 35
+      }
+    },
+    {
+      "check": "site_b.b1.train_and_val_normal_unlabelled",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_b.b1.partitions_in_time_order",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_b.b1.each_episode_in_one_partition",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_b.b1.no_attack_window_lost_at_boundary",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "check": "site_b.b2.train_and_val_normal_unlabelled",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_b.b2.partitions_in_time_order",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_b.b2.each_episode_in_one_partition",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_b.b2.no_attack_window_lost_at_boundary",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "check": "site_b.b3.train_and_val_normal_unlabelled",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_b.b3.partitions_in_time_order",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_b.b3.each_episode_in_one_partition",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_b.b3.no_attack_window_lost_at_boundary",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "check": "site_b.episodes",
+      "ok": true,
+      "detail": {
+        "expected": 7,
+        "actual": 7
+      }
+    },
+    {
+      "check": "site_b.val_attack_episodes",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "site_b.ied1a.attack_windows",
+      "ok": true,
+      "detail": {
+        "expected": 51,
+        "actual": 51
+      }
+    },
+    {
+      "check": "site_b.ied1b.attack_windows",
+      "ok": true,
+      "detail": {
+        "expected": 0,
+        "actual": 0
+      }
+    },
+    {
+      "check": "site_b.scada-hmi.attack_windows",
+      "ok": true,
+      "detail": {
+        "expected": 0,
+        "actual": 0
+      }
+    },
+    {
+      "check": "site_b.attack_windows_dropped_as_idle",
+      "ok": true,
+      "detail": {
+        "expected": 0,
+        "actual": 0
+      }
+    }
+  ],
+  "manifest_hashes": {
+    "site_a": {
+      "features": {
+        "dropped": [
+          "P4_HT_PS"
+        ],
+        "features": [
+          "P1_B2004",
+          "P1_B2016",
+          "P1_B3004",
+          "P1_B3005",
+          "P1_B4002",
+          "P1_B4005",
+          "P1_B400B",
+          "P1_B4022",
+          "P1_FCV01D",
+          "P1_FCV01Z",
+          "P1_FCV02D",
+          "P1_FCV02Z",
+          "P1_FCV03D",
+          "P1_FCV03Z",
+          "P1_FT01",
+          "P1_FT01Z",
+          "P1_FT02",
+          "P1_FT02Z",
+          "P1_FT03",
+          "P1_FT03Z",
+          "P1_LCV01D",
+          "P1_LCV01Z",
+          "P1_LIT01",
+          "P1_PCV01D",
+          "P1_PCV01Z",
+          "P1_PCV02Z",
+          "P1_PIT01",
+          "P1_PIT02",
+          "P1_TIT01",
+          "P1_TIT02",
+          "P2_24Vdc",
+          "P2_CO_rpm",
+          "P2_HILout",
+          "P2_SIT01",
+          "P2_SIT02",
+          "P2_VT01",
+          "P2_VXT02",
+          "P2_VXT03",
+          "P2_VYT02",
+          "P2_VYT03",
+          "P3_FIT01",
+          "P3_LCP01D",
+          "P3_LCV01D",
+          "P3_LIT01",
+          "P3_PIT01",
+          "P4_HT_FD",
+          "P4_HT_LD",
+          "P4_HT_PO",
+          "P4_LD",
+          "P4_ST_FD",
+          "P4_ST_GOV",
+          "P4_ST_LD",
+          "P4_ST_PO",
+          "P4_ST_PS",
+          "P4_ST_PT01",
+          "P4_ST_TT01"
+        ],
+        "n_features": 56,
+        "training_constant": {
+          "P1_PCV02D": 12.0,
+          "P1_PP01AD": 540833.0,
+          "P1_PP01AR": 540833.0,
+          "P1_PP01BD": 0.0,
+          "P1_PP01BR": 0.0,
+          "P1_PP02D": 1.0,
+          "P1_PP02R": 1.0,
+          "P1_STSP": 1.0,
+          "P2_ASD": 0.0,
+          "P2_AutoGO": 1.0,
+          "P2_Emerg": 0.0,
+          "P2_MSD": 763.1932373046875,
+          "P2_ManualGO": 0.0,
+          "P2_OnOff": 1.0,
+          "P2_RTR": 2880.0,
+          "P2_TripEx": 1.0,
+          "P2_VTR01": 10.0,
+          "P2_VTR02": 10.0,
+          "P2_VTR03": 10.0,
+          "P2_VTR04": 10.0,
+          "P3_LH": 70.0,
+          "P3_LL": 20.0
+        }
+      },
+      "sources": {
+        "test1": {
+          "end": "2020-07-08T03:00:00Z",
+          "file": "test1.csv",
+          "rows": 43201,
+          "sha256": "54abf91d7a7868a83fa85e2119d0554c9533430e9d73a24f7241fc16a4ea692b",
+          "start": "2020-07-07T15:00:00Z"
+        },
+        "test2": {
+          "end": "2020-07-11T00:00:00Z",
+          "file": "test2.csv",
+          "rows": 118801,
+          "sha256": "3c21f79fac3dee6b3ea3564bf752186cd954c0cafef27dbaeb7f202cbfdd771c",
+          "start": "2020-07-09T15:00:00Z"
+        },
+        "test3": {
+          "end": "2020-07-14T06:00:00Z",
+          "file": "test3.csv",
+          "rows": 108001,
+          "sha256": "de8dc561b742d8ebc1a9bd9fafd3599b29fa0fa4b200093ce01a86e9800c9394",
+          "start": "2020-07-13T00:00:00Z"
+        },
+        "test4": {
+          "end": "2020-07-28T23:00:00Z",
+          "file": "test4.csv",
+          "rows": 39601,
+          "sha256": "9eb534f9e7fac47f354ba64d32f82ebff108bc5488fa98a7b8a2c6ba76d3c934",
+          "start": "2020-07-28T12:00:00Z"
+        },
+        "test5": {
+          "end": "2020-07-31T12:30:00Z",
+          "file": "test5.csv",
+          "rows": 92401,
+          "sha256": "84761dbd942598f0af530c6e94ea79935eaa8814262919f8b444cdd833be4bb1",
+          "start": "2020-07-30T10:50:00Z"
+        },
+        "train1": {
+          "end": "2020-07-13T12:00:00Z",
+          "file": "train1.csv",
+          "rows": 216001,
+          "sha256": "aa2f54a179015e279fe9623eefab0fe67ed74e3926657a93b355c290baa1d5cb",
+          "start": "2020-07-11T00:00:00Z"
+        },
+        "train2": {
+          "end": "2020-08-03T13:00:00Z",
+          "file": "train2.csv",
+          "rows": 226801,
+          "sha256": "3f8f4652fc8762a0f7d1478e5596565e54f4e3f8d0838bb709953caa0142e3ed",
+          "start": "2020-07-31T22:00:00Z"
+        },
+        "train3": {
+          "end": "2020-08-10T11:00:00Z",
+          "file": "train3.csv",
+          "rows": 478801,
+          "sha256": "6849e7f41ad679bbf9afbbda2a14361a798e33d0a0a313a88334c6edbf4fb158",
+          "start": "2020-08-04T22:00:00Z"
+        }
+      }
+    },
+    "site_b": {
+      "features": {
+        "features": [
+          "req_sent",
+          "req_recv",
+          "req_read",
+          "req_write",
+          "req_other",
+          "resp_exception",
+          "peers",
+          "new_peers",
+          "unseen_addr",
+          "unseen_addr_write",
+          "oversized_qty",
+          "tcp_syn",
+          "tcp_rst",
+          "stacked_frames",
+          "malformed_frames",
+          "latency_median_ms",
+          "slow_responses",
+          "unanswered"
+        ],
+        "latency_features": [
+          "latency_median_ms",
+          "slow_responses"
+        ],
+        "n_features": 18
+      },
+      "sources": {
+        "attack": {
+          "ied1a": [
+            {
+              "file": "veth4edc015-0.pcap",
+              "packets": 943353,
+              "sha256": "919e99ca82b07a19f5c6ff4339a99aedf6fc04cebe98bdb9b11388651b0b27b5"
+            }
+          ],
+          "ied1b": [
+            {
+              "file": "vethd9e14c0-0.pcap",
+              "packets": 362953,
+              "sha256": "170fd8d3f6f3f10b875bc0349cbe65b6b2f88285893a0409a834e1fe45113b20"
+            }
+          ],
+          "scada-hmi": [
+            {
+              "file": "veth5bbeaa2-0.pcap",
+              "packets": 1154211,
+              "sha256": "3392675e6af725865d2ec0318eeaeb0183b8e01011ee839d44d4649739a53b24"
+            }
+          ]
+        },
+        "benign": {
+          "ied1a": [
+            {
+              "file": "veth4edc015-normal-4.pcap",
+              "packets": 1162524,
+              "sha256": "4d5ea7a2eb0ce02d585de76b7e514864cff68b710941d1fefac38b2eb0b201bd"
+            },
+            {
+              "file": "veth4edc015-normal-5.pcap",
+              "packets": 1160195,
+              "sha256": "549548e7e44309b2314278f447264eb061a0435bcd20423600c6a14950a94650"
+            },
+            {
+              "file": "veth4edc015-normal-6.pcap",
+              "packets": 1161806,
+              "sha256": "191012629bc9072ff54272dc9fe56f3fc286f3485b8e66bb55b8c2a2ef46ee91"
+            },
+            {
+              "file": "veth4edc015-normal-7.pcap",
+              "packets": 1159212,
+              "sha256": "7bb30ccb8d27706632f0042c1972c01fa068c64994b671cc23a78272a4e1bf0d"
+            },
+            {
+              "file": "veth4edc015-normal-8.pcap",
+              "packets": 1154434,
+              "sha256": "db52213783a4810d3a7504a804ea93b60e11cf0efb11fc7cb49f11b8d635b0ad"
+            },
+            {
+              "file": "veth4edc015-normal-9.pcap",
+              "packets": 1157312,
+              "sha256": "e000b1315d2e2edc00dc161ff49d18faeaa6b4a0d7f8bb180af57cabfcc2b07b"
+            },
+            {
+              "file": "veth4edc015-normal-10.pcap",
+              "packets": 1153294,
+              "sha256": "3c958940a4632bd46a93c8a6e973453e0b84163d8e792ca90abdd1aacbf5ba53"
+            },
+            {
+              "file": "veth4edc015-normal-11.pcap",
+              "packets": 288242,
+              "sha256": "7cffe241fb330285b901dfb020c06431b07510774cf26a0bdefa4d3bf4be43a4"
+            }
+          ],
+          "ied1b": [
+            {
+              "file": "vethd9e14c0-normal-4.pcap",
+              "packets": 1164784,
+              "sha256": "594cc4b98e2948335746437613cd7a0e590d6620801613cc1d8342d731b05bcc"
+            },
+            {
+              "file": "vethd9e14c0-normal-5.pcap",
+              "packets": 1164781,
+              "sha256": "5f7806e8a49a665a524cb3a8fe68f65898ca7bce2d1d274fe057e09c7c0ff8c3"
+            },
+            {
+              "file": "vethd9e14c0-normal-6.pcap",
+              "packets": 1164770,
+              "sha256": "6449ca85e65c963f5c7d1e622a8e0d68e31874b151469280216d4abce34135cb"
+            },
+            {
+              "file": "vethd9e14c0-normal-7.pcap",
+              "packets": 1164779,
+              "sha256": "c03df02a5c6fc9b43f99c5f729d7ee28d456903e47eda95892e2b7449f0f1911"
+            },
+            {
+              "file": "vethd9e14c0-normal-8.pcap",
+              "packets": 1164773,
+              "sha256": "d849fdf0a4bc88d83bef2604f111c7dd82e7854a504f482920eae24e9ecb34e4"
+            },
+            {
+              "file": "vethd9e14c0-normal-9.pcap",
+              "packets": 1164780,
+              "sha256": "a473b9076fe1eb8b7fa7bb336d836a41a271185e3e3c2719d0ac4d38c5ac02da"
+            },
+            {
+              "file": "vethd9e14c0-normal-10.pcap",
+              "packets": 34494,
+              "sha256": "1efab209fb48db0ef2751d320a79fe034aae14f0fcbaa27e17dd9e6606a80838"
+            }
+          ],
+          "scada-hmi": [
+            {
+              "file": "veth5bbeaa2-normal-13.pcap",
+              "packets": 1176355,
+              "sha256": "64d569e47bd9a4e0d03d34a426b57b2e3d07698daf7594f6499fafb0bcc22c18"
+            },
+            {
+              "file": "veth5bbeaa2-normal-14.pcap",
+              "packets": 1175307,
+              "sha256": "0792a25357f036e2d5349e0ff69b1b722cb8e99b2678bb0c7709aef586f9b161"
+            },
+            {
+              "file": "veth5bbeaa2-normal-15.pcap",
+              "packets": 1176591,
+              "sha256": "5968d38c5cc52c7e469d94abae41a542ed6f19065c5b845e2b4cc4e80f4d0333"
+            },
+            {
+              "file": "veth5bbeaa2-normal-16.pcap",
+              "packets": 1176552,
+              "sha256": "eb72855d4244ae04604cff1acc6165091d5196b458d3f7f74331631810a538b0"
+            },
+            {
+              "file": "veth5bbeaa2-normal-17.pcap",
+              "packets": 1176527,
+              "sha256": "4dcb9e8dcad706afe6a00f9523a311c96a2f5c94d1e880cfc55d9f2dace9db69"
+            },
+            {
+              "file": "veth5bbeaa2-normal-18.pcap",
+              "packets": 1176487,
+              "sha256": "aa2f042380664957286ba33d0fb43ef6c71e2246d58e68e155006c07b2c48820"
+            },
+            {
+              "file": "veth5bbeaa2-normal-19.pcap",
+              "packets": 1176527,
+              "sha256": "54b77f2897c27ad105e6ab16a247dbe97019387c8be7605c07178f1363ae5664"
+            },
+            {
+              "file": "veth5bbeaa2-normal-20.pcap",
+              "packets": 1176585,
+              "sha256": "c7b69bc0836b3bf50b59f95807c6dcca731691dc65a8acee388b7a3644e3ea15"
+            },
+            {
+              "file": "veth5bbeaa2-normal-21.pcap",
+              "packets": 1176558,
+              "sha256": "f6f6a227854a2be55c6e3274c8895aae7d21551329e7065c672a5c2ae9e688f2"
+            },
+            {
+              "file": "veth5bbeaa2-normal-22.pcap",
+              "packets": 1176583,
+              "sha256": "88d00bf1086de851316bd533b96ec9da9324b2ed6fce48b5523a8a35555be900"
+            },
+            {
+              "file": "veth5bbeaa2-normal-23.pcap",
+              "packets": 1176681,
+              "sha256": "378118a8df1dd235c23bc0100aa7217281e5d67c2df10ea56b898c1de2371e23"
+            },
+            {
+              "file": "veth5bbeaa2-normal-24.pcap",
+              "packets": 1176535,
+              "sha256": "53e72d9d12aae2f38e96e75caf2769821103120b04bc99f198d6c2d895f3d89b"
+            },
+            {
+              "file": "veth5bbeaa2-normal-25.pcap",
+              "packets": 1176565,
+              "sha256": "9f0d79289502255c6e8be4fbeb2276f36f63a58902263a4b7bc4edde539ad17e"
+            },
+            {
+              "file": "veth5bbeaa2-normal-26.pcap",
+              "packets": 1176549,
+              "sha256": "de1523e67c46b1acd1371678e30e16dd756f174831ec5fd9f14bdd1ed8c8d52d"
+            },
+            {
+              "file": "veth5bbeaa2-normal-27.pcap",
+              "packets": 1176544,
+              "sha256": "4e27d0b715c15a7827d86a07f61f03a8426b5195a3806ba01bed8a83dd39da3e"
+            },
+            {
+              "file": "veth5bbeaa2-normal-28.pcap",
+              "packets": 1176470,
+              "sha256": "1f5d374b1bf9c4246b991f3e87f9a5724eff23fb3f81d187e10a832ff005b112"
+            },
+            {
+              "file": "veth5bbeaa2-normal-29.pcap",
+              "packets": 1176518,
+              "sha256": "a012e61f9d4a9778640f477c52c7f5b2f376dd2cf307338744e69acea6afe8db"
+            },
+            {
+              "file": "veth5bbeaa2-normal-30.pcap",
+              "packets": 1176665,
+              "sha256": "574554570bcfd801012820e21af8fb574077fb2e1326091e11d64c86369c04d9"
+            },
+            {
+              "file": "veth5bbeaa2-normal-31.pcap",
+              "packets": 691382,
+              "sha256": "a4e7cd3038acaa2ff61ed9067fce292b0574155f1fa477bef254d8ae55b2b196"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "counts": {
+    "site_a": {
+      "a1": {
+        "test": {
+          "attack_rows": 1437,
+          "attack_windows": 31,
+          "end": "2020-07-31T12:30:00Z",
+          "events": [
+            "test1:e02",
+            "test1:e03",
+            "test2:e08",
+            "test2:e13",
+            "test4:e04",
+            "test5:e00",
+            "test5:e04",
+            "test5:e06",
+            "test5:e11"
+          ],
+          "rows": 61099,
+          "runs": 9,
+          "start": "2020-07-07T18:15:00Z",
+          "windows": 1015
+        },
+        "train": {
+          "attack_rows": 0,
+          "attack_windows": 0,
+          "end": "2020-07-13T03:00:00Z",
+          "rows": 183601,
+          "runs": 1,
+          "start": "2020-07-11T00:00:00Z",
+          "windows": 3060
+        },
+        "val_attack": {
+          "attack_rows": 310,
+          "attack_windows": 9,
+          "end": "2020-07-31T01:38:03Z",
+          "events": [
+            "test2:e15",
+            "test3:e04",
+            "test3:e06",
+            "test5:e07"
+          ],
+          "rows": 19400,
+          "runs": 4,
+          "start": "2020-07-10T15:27:20Z",
+          "windows": 320
+        },
+        "val_normal": {
+          "attack_rows": 0,
+          "attack_windows": 0,
+          "end": "2020-07-13T12:00:00Z",
+          "rows": 32340,
+          "runs": 1,
+          "start": "2020-07-13T03:01:01Z",
+          "windows": 539
+        }
+      },
+      "a2": {
+        "test": {
+          "attack_rows": 1848,
+          "attack_windows": 39,
+          "end": "2020-07-30T21:58:19Z",
+          "events": [
+            "test2:e05",
+            "test2:e06",
+            "test2:e07",
+            "test2:e12",
+            "test2:e14",
+            "test3:e02",
+            "test4:e03",
+            "test5:e01",
+            "test5:e05"
+          ],
+          "rows": 61650,
+          "runs": 9,
+          "start": "2020-07-09T22:10:01Z",
+          "windows": 1023
+        },
+        "train": {
+          "attack_rows": 0,
+          "attack_windows": 0,
+          "end": "2020-08-03T03:33:00Z",
+          "rows": 192781,
+          "runs": 1,
+          "start": "2020-07-31T22:00:00Z",
+          "windows": 3213
+        },
+        "val_attack": {
+          "attack_rows": 996,
+          "attack_windows": 20,
+          "end": "2020-07-31T11:00:58Z",
+          "events": [
+            "test1:e00",
+            "test2:e01",
+            "test4:e01",
+            "test5:e10"
+          ],
+          "rows": 19681,
+          "runs": 4,
+          "start": "2020-07-07T15:00:00Z",
+          "windows": 326
+        },
+        "val_normal": {
+          "attack_rows": 0,
+          "attack_windows": 0,
+          "end": "2020-08-03T13:00:00Z",
+          "rows": 33960,
+          "runs": 1,
+          "start": "2020-08-03T03:34:01Z",
+          "windows": 566
+        }
+      },
+      "a3": {
+        "test": {
+          "attack_rows": 1548,
+          "attack_windows": 32,
+          "end": "2020-07-31T05:59:05Z",
+          "events": [
+            "test1:e01",
+            "test1:e04",
+            "test2:e02",
+            "test2:e10",
+            "test2:e19",
+            "test3:e01",
+            "test3:e07",
+            "test4:e02",
+            "test5:e08"
+          ],
+          "rows": 87694,
+          "runs": 9,
+          "start": "2020-07-07T16:33:47Z",
+          "windows": 1457
+        },
+        "train": {
+          "attack_rows": 0,
+          "attack_windows": 0,
+          "end": "2020-08-07T06:31:29Z",
+          "rows": 203490,
+          "runs": 1,
+          "start": "2020-08-04T22:00:00Z",
+          "windows": 3391
+        },
+        "val_attack": {
+          "attack_rows": 664,
+          "attack_windows": 17,
+          "end": "2020-07-31T10:18:40Z",
+          "events": [
+            "test2:e16",
+            "test2:e17",
+            "test2:e18",
+            "test5:e09"
+          ],
+          "rows": 37530,
+          "runs": 4,
+          "start": "2020-07-10T16:02:07Z",
+          "windows": 623
+        },
+        "val_normal": {
+          "attack_rows": 0,
+          "attack_windows": 0,
+          "end": "2020-08-07T16:29:59Z",
+          "rows": 35850,
+          "runs": 1,
+          "start": "2020-08-07T06:32:30Z",
+          "windows": 597
+        }
+      },
+      "a4": {
+        "test": {
+          "attack_rows": 1546,
+          "attack_windows": 34,
+          "end": "2020-07-30T18:12:03Z",
+          "events": [
+            "test2:e00",
+            "test2:e03",
+            "test2:e04",
+            "test2:e09",
+            "test2:e11",
+            "test3:e00",
+            "test5:e02",
+            "test5:e03"
+          ],
+          "rows": 94000,
+          "runs": 8,
+          "start": "2020-07-09T15:00:00Z",
+          "windows": 1561
+        },
+        "train": {
+          "attack_rows": 0,
+          "attack_windows": 0,
+          "end": "2020-08-10T01:01:30Z",
+          "rows": 203491,
+          "runs": 1,
+          "start": "2020-08-07T16:30:00Z",
+          "windows": 3391
+        },
+        "val_attack": {
+          "attack_rows": 598,
+          "attack_windows": 13,
+          "end": "2020-07-28T13:15:37Z",
+          "events": [
+            "test3:e03",
+            "test3:e05",
+            "test4:e00"
+          ],
+          "rows": 18251,
+          "runs": 3,
+          "start": "2020-07-13T19:34:09Z",
+          "windows": 303
+        },
+        "val_normal": {
+          "attack_rows": 0,
+          "attack_windows": 0,
+          "end": "2020-08-10T11:00:00Z",
+          "rows": 35850,
+          "runs": 1,
+          "start": "2020-08-10T01:02:31Z",
+          "windows": 597
+        }
+      }
+    },
+    "site_b": {
+      "b1": {
+        "test": {
+          "attack_windows": 39,
+          "end": "2023-02-01T14:01:50Z",
+          "episodes": [
+            4,
+            5,
+            6
+          ],
+          "start": "2023-02-01T04:13:20Z",
+          "windows": 3532
+        },
+        "train": {
+          "attack_windows": 0,
+          "end": "2023-01-30T08:39:40Z",
+          "episodes": [],
+          "start": "2023-01-22T04:10:40Z",
+          "windows": 64792
+        },
+        "val_attack": {
+          "attack_windows": 12,
+          "end": "2023-02-01T04:13:00Z",
+          "episodes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "start": "2023-02-01T03:48:40Z",
+          "windows": 147
+        },
+        "val_normal": {
+          "attack_windows": 0,
+          "end": "2023-01-31T16:25:30Z",
+          "episodes": [],
+          "start": "2023-01-30T08:40:00Z",
+          "windows": 11433
+        }
+      },
+      "b2": {
+        "test": {
+          "attack_windows": 0,
+          "end": "2023-02-01T14:01:40Z",
+          "episodes": [],
+          "start": "2023-02-01T04:13:20Z",
+          "windows": 3531
+        },
+        "train": {
+          "attack_windows": 0,
+          "end": "2023-01-30T10:43:20Z",
+          "episodes": [],
+          "start": "2023-01-23T10:03:00Z",
+          "windows": 60596
+        },
+        "val_attack": {
+          "attack_windows": 0,
+          "end": "2023-02-01T04:13:00Z",
+          "episodes": [],
+          "start": "2023-02-01T03:48:40Z",
+          "windows": 147
+        },
+        "val_normal": {
+          "attack_windows": 0,
+          "end": "2023-01-31T16:25:40Z",
+          "episodes": [],
+          "start": "2023-01-30T10:43:40Z",
+          "windows": 10692
+        }
+      },
+      "b3": {
+        "test": {
+          "attack_windows": 0,
+          "end": "2023-02-01T14:01:50Z",
+          "episodes": [],
+          "start": "2023-02-01T04:13:20Z",
+          "windows": 3532
+        },
+        "train": {
+          "attack_windows": 0,
+          "end": "2023-01-30T11:17:30Z",
+          "episodes": [],
+          "start": "2023-01-23T13:52:10Z",
+          "windows": 59419
+        },
+        "val_attack": {
+          "attack_windows": 0,
+          "end": "2023-02-01T04:13:00Z",
+          "episodes": [],
+          "start": "2023-02-01T03:48:40Z",
+          "windows": 147
+        },
+        "val_normal": {
+          "attack_windows": 0,
+          "end": "2023-01-31T16:25:40Z",
+          "episodes": [],
+          "start": "2023-01-30T11:17:50Z",
+          "windows": 10485
+        }
+      }
+    }
+  }
+}

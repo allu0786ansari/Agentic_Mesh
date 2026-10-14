@@ -1,0 +1,137 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: uv run python -m agmesh.data.pipeline prepare
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 8e37f883c55eec3f9e7bf5722c32eb55.dir
+      size: 4119810242
+      nfiles: 45
+    - path: src/agmesh/data/modbus.py
+      hash: md5
+      md5: 60e1234dd44a2e2952eda038856c04df
+      size: 8701
+    - path: src/agmesh/data/site_b.py
+      hash: md5
+      md5: 5ac83f3d3fa7887d9163ad1410a195bd
+      size: 20243
+    - path: src/agmesh/feasibility/captures.py
+      hash: md5
+      md5: 0ea04f38c7b8914f5dfdb9bab4df874d
+      size: 8995
+    params:
+      configs/params.yaml:
+        data.modbus:
+          devices:
+            ied1a: 185.175.0.4
+            ied1b: 185.175.0.5
+            scada-hmi: 185.175.0.3
+          other_hosts:
+            ied4c: 185.175.0.8
+            central_agent: 185.175.0.6
+            docker_gateway: 185.175.0.1
+          attacker_ip: 185.175.0.7
+          label_source: attacker_address
+          idle_gap_s: 60
+          episode_gap_s: 125
+          attack_val_episodes: 4
+        paths.interim_dir: data/interim
+        paths.modbus_dir: data/raw/modbus2023
+    outs:
+    - path: data/interim/modbus
+      hash: md5
+      md5: a5223de9e7502f24389857788d0670af.dir
+      size: 108447728
+      nfiles: 112
+  partition:
+    cmd: uv run python -m agmesh.data.pipeline partition
+    deps:
+    - path: data/interim/modbus
+      hash: md5
+      md5: a5223de9e7502f24389857788d0670af.dir
+      size: 108447728
+      nfiles: 112
+    - path: data/raw
+      hash: md5
+      md5: 8e37f883c55eec3f9e7bf5722c32eb55.dir
+      size: 4119810242
+      nfiles: 45
+    - path: src/agmesh/data
+      hash: md5
+      md5: 33fca060537f2015b8d4a08dc6fc4226.dir
+      size: 198660
+      nfiles: 22
+    params:
+      configs/params.yaml:
+        data:
+          hai:
+            release: '21.03'
+            sample_rate_hz: 1
+            label_column: attack
+            process_label_columns:
+            - attack_P1
+            - attack_P2
+            - attack_P3
+            drop_train_constant_features: true
+            drop_features:
+            - P4_HT_PS
+            max_ffill_s: 5
+            scaling:
+              method: standard
+              clip_sd: 6.0
+          modbus:
+            devices:
+              ied1a: 185.175.0.4
+              ied1b: 185.175.0.5
+              scada-hmi: 185.175.0.3
+            other_hosts:
+              ied4c: 185.175.0.8
+              central_agent: 185.175.0.6
+              docker_gateway: 185.175.0.1
+            attacker_ip: 185.175.0.7
+            label_source: attacker_address
+            idle_gap_s: 60
+            episode_gap_s: 125
+            attack_val_episodes: 4
+          windows:
+            site_a:
+              length_s: 60
+              train_stride_s: 60
+              infer_stride_s: 10
+            site_b:
+              length_s: 10
+              train_stride_s: 10
+              infer_stride_s: 5
+          splits:
+            normal_val_fraction: 0.15
+            gap_windows: 1
+            attack_val_fraction: 0.3
+            seed: 2026
+          partition:
+            site_a:
+              clients:
+              - a1
+              - a2
+              - a3
+              - a4
+              block_hours: 6
+              scheme: time
+              period_assignment:
+                a1: train1
+                a2: train2
+                a3: train3:first_half
+                a4: train3:second_half
+            site_b:
+              clients:
+                b1: ied1a
+                b2: ied1b
+                b3: scada-hmi
+        paths.hai_dir: data/raw/hai/hai-21.03
+        paths.partitions_dir: data/partitions
+    outs:
+    - path: data/partitions
+      hash: md5
+      md5: 0c10c6204509ddae98d375d45ee5ec52.dir
+      size: 123107632
+      nfiles: 30
