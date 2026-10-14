@@ -28,7 +28,7 @@ data/raw/
     └── attack/{ied1a,ied1b,scada-hmi}/*.pcap
 ```
 
-Captures may be `.pcap`, `.pcapng` or `.cap`; the reader handles all three.
+Captures may be `.pcap`, `.pcapng` or `.cap`; the reader handles all three. HAI files may be `.csv` or `.csv.gz`. The development laptop holds them uncompressed, so its checksums (`data/raw_checksums.json`) differ from those of the compressed files analysed in v3.1; the contents are identical (same rows, same partition counts).
 
 ## HAI 21.03 (Site A)
 

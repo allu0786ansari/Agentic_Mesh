@@ -18,7 +18,7 @@ the design reasons for leaving them behind are in Proposal Appendix A.
 | Phase | Weeks | Status |
 |---|---|---|
 | 0 — Feasibility | 1 | **Done.** 21/21 data checks matched on the laptop; Gate G0 closed ([ADR 0001](docs/adr/0001-g0-decisions.md)): Llama 3.2 3B, L_LLM 24 s, 2 CPUs per Ray client |
-| 1 — Data and evaluation first | 2–4 | **Week 2 code done** and verified on the real data (37/37 partition checks); waiting for the laptop run ([runbook](docs/runbooks/phase1_week2.md)). Weeks 3–4 not started |
+| 1 — Data and evaluation first | 2–4 | **Week 2 done:** 37/37 partition checks on the laptop; labels spot-checked ([record](docs/spot_check_week2.md)). Week 3 (evaluation harness) in progress |
 | 2 — Privacy-preserving federated detection | 5–7 | Not started |
 | 3 — Operations path and agentic attribution | 8–11 | Not started |
 | 4 — Experiments and systems evidence | 12–14 | Not started |
