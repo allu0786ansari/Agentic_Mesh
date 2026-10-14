@@ -6,7 +6,7 @@ PY := $(UV) run python
 
 .PHONY: help setup setup-fl lock lint format typecheck test check \
         checksums verify-checksums inspect-data bench-llm bench-ray feasibility \
-        prepare partition check-data data fixture fixture-smoke
+        prepare partition check-data data fixture fixture-smoke check-results
 
 help:
 	@echo "setup             install core + dev dependencies (creates uv.lock on first run)"
@@ -25,6 +25,7 @@ help:
 	@echo "check-data        Week 2: partition checks            -> results/data/partition_check.json"
 	@echo "data              prepare + partition + check-data"
 	@echo "fixture-smoke     run the whole data pipeline on the synthetic fixture (what CI runs)"
+	@echo "check-results     validate every result artifact under results/X*/"
 
 setup:
 	$(UV) sync --group dev
@@ -91,3 +92,6 @@ fixture-smoke: fixture
 		--interim-dir $(FIXTURE)/interim --out $(FIXTURE)/partitions
 	$(PY) -m agmesh.data.pipeline check --out $(FIXTURE)/partitions --no-expectations --fixture \
 		--output $(FIXTURE)/partition_check.json
+
+check-results:
+	$(PY) -m agmesh.evaluation.checker

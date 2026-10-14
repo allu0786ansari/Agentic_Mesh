@@ -9,7 +9,7 @@ import pytest
 import yaml
 
 from agmesh.data import pipeline
-from tests.unit.data.conftest import REPO_PARAMS
+from tests.conftest import REPO_PARAMS
 
 
 def test_cli_runs_all_stages(fixture_paths: dict[str, Path], tmp_path: Path) -> None:

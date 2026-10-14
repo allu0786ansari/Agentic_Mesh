@@ -1,4 +1,4 @@
-"""Shared fixture data for the Week 2 pipeline tests (synthetic only)."""
+"""Shared synthetic fixture data for the pipeline, evaluation and contract tests."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from agmesh.common.config import Params, load_params
 from agmesh.data import site_a, site_b
 from agmesh.data.fixture import make_fixture
 
-REPO_PARAMS = Path(__file__).resolve().parents[3] / "configs" / "params.yaml"
+REPO_PARAMS = Path(__file__).resolve().parents[1] / "configs" / "params.yaml"
 
 
 @pytest.fixture(scope="session")

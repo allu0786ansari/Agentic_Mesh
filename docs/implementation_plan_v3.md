@@ -160,9 +160,10 @@ agentic-mesh/
 │   └── partitions/{site_a/{a1..a4},site_b/{b1..b3}}/{train,val_normal,val_attack,test}.parquet + manifest.json
 ├── fixtures/                     # small synthetic public fixture for CI (schema-identical)
 ├── src/agmesh/
-│   ├── common/                   # config loader, pydantic schemas, provenance, hashing, events
-│   ├── data/                     # hai.py, modbus.py, labeling.py, splits.py, windows.py, partition.py, manifest.py
-│   ├── models/                   # vae.py, autoencoder.py, baselines.py, scoring.py, calibration.py
+│   ├── common/                   # config loader, pydantic schemas, provenance, hashing, events, LabelFreeFrame
+│   ├── data/                     # hai.py, modbus.py, site_a.py, site_b.py, windows.py, events.py, manifest.py,
+│   │                             # checks.py, access.py (load_partition), fixture.py, pipeline.py
+│   ├── models/                   # vae.py, autoencoder.py, baselines.py, scoring.py
 │   ├── privacy/                  # calibrate.py, accountant_store.py, budget_guard.py, noisy_stats.py
 │   ├── federated/                # client.py, server.py, strategies.py, fed_eval.py, stragglers.py, secagg.py, run.py
 │   ├── edge/                     # replay.py, runtime.py, evidence.py, evidence_store.py
@@ -173,11 +174,10 @@ agentic-mesh/
 │   │                             # attribution.py, llm.py, dispatcher.py, sessions.py, runner.py, approvals.py
 │   ├── security/                 # ca.py, tls.py, jwt.py, egress.py, redaction.py
 │   └── observability/            # tracing.py, metrics.py
-├── evaluation/
-│   ├── metrics.py, events.py, thresholds.py, calibration_eval.py, stats.py
-│   ├── harness_detection.py, harness_fusion.py, harness_attribution.py, retrieval_eval.py
-│   ├── latency.py, resources.py, checker.py, figures.py
-│   └── ground_truth/             # mapping_site_a.json, mapping_site_b.json (frozen at G1)
+│   ├── evaluation/               # metrics.py, events.py, thresholds.py, calibration.py, stats.py, diagnostics.py,
+│   │                             # sealed.py, results.py, checker.py; later harness_*.py, retrieval_eval.py,
+│   │                             # latency.py, resources.py, figures.py
+├── evaluation/ground_truth/      # mapping_site_a.json, mapping_site_b.json (frozen at G1)
 ├── experiments/                  # x1_utility.py … x8_secagg.py (thin runners over src/)
 ├── results/                      # artifacts (DVC-tracked), test-access log
 ├── tests/{unit,contract,integration,security,chaos}/
@@ -476,18 +476,18 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 
 **Tasks**
 
-1. **Metrics** (`evaluation/metrics.py`, `evaluation/events.py`):
+1. **Metrics** (`agmesh/evaluation/metrics.py`, `agmesh/evaluation/events.py`; numpy only, so no new dependency):
    - AUROC and AUPRC.
    - Event recall with tolerance; range-based precision, recall and F1.
    - Time-to-detect; window FPR; false alarms per hour.
    - Pooled AUROC from histograms, with the binning error.
-2. **Thresholds** (`evaluation/thresholds.py`): an FPR-targeted threshold computed from normal validation scores.
-3. **Calibration:** `models/calibration.py` (isotonic) and `evaluation/calibration_eval.py` (reliability curve).
-4. **Statistics** (`evaluation/stats.py`): bootstrap CIs, paired bootstrap, Wilcoxon signed-rank, Holm correction.
-5. **Leakage guard** (`common/frames.py`): a `LabelFreeFrame` type with label columns stripped, which is the only type scoring functions accept. A test fails if any scoring path can reach a label column.
-6. **Sealed test:** `--final` flag handling and the `results/test_access.log` writer.
-7. **Artifact writer** with provenance (§6.5) and metric event logging (`observability/metrics.py`), including `data_source`.
-8. **Checker skeleton:** `evaluation/checker.py` with artifact validation and fixture rejection.
+2. **Thresholds** (`agmesh/evaluation/thresholds.py`): an FPR-targeted threshold computed from normal validation scores.
+3. **Calibration** (`agmesh/evaluation/calibration.py`): isotonic regression by pool-adjacent-violators, and the reliability curve with expected calibration error.
+4. **Statistics** (`agmesh/evaluation/stats.py`): bootstrap CIs, paired bootstrap, exact Wilcoxon signed-rank, Holm correction. With five seeds the smallest possible two-sided Wilcoxon p-value is 0.0625, so the paired bootstrap is the primary paired test and Wilcoxon is reported alongside it.
+5. **Leakage guard** (`agmesh/common/frames.py`, `agmesh/data/access.py`): a read-only `LabelFreeFrame` that refuses label columns, returned by `load_partition` with the labels in a separate object; it is the only type scoring functions accept. A contract test fails if any partition exposes a label column or a feature that copies the label. `agmesh/evaluation/diagnostics.py` also reports *label proxies*: features computed from traffic that reproduce the label by construction (Site B `new_peers`; see Proposal Appendix B, MB-15).
+6. **Sealed test** (`agmesh/evaluation/sealed.py`): `load_partition(..., "test")` needs a `FinalAccess`, created only by `--final` entry points; it requires the `g4-frozen` tag and appends every access to `results/test_access.log`.
+7. **Result artifacts** (`agmesh/evaluation/results.py`): `write_result` validates and writes the §6.5 schema with provenance; metric events use `common/artifacts.write_event`, including `data_source`.
+8. **Checker skeleton** (`agmesh/evaluation/checker.py`, `make check-results`): schema, `data_source = runtime`, provenance including the lock-file hash, a clean working tree, required detection metrics, and a matching access-log entry for every test-split result.
 9. **Tests:** hand-computed examples, plus a test demonstrating that point-adjusted F1 inflates scores (documents why it is excluded).
 
 **Deliverables:** the evaluation package with at least 90% test coverage; checker skeleton.
@@ -496,10 +496,11 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 
 | Check | Command | Expected |
 |---|---|---|
-| Metric unit tests | `pytest tests/unit/evaluation -q` | Pass; coverage ≥ 90% |
+| Metric unit tests | `pytest tests/unit/evaluation -q --cov=agmesh.evaluation` | Pass; coverage ≥ 90% |
 | Leakage guard | `pytest tests/contract/test_label_free.py` | Pass |
-| Checker rejects fixtures | `pytest tests/unit/test_checker.py` | Fixture artifact rejected |
-| Test access logged | `pytest tests/unit/test_sealed_test.py` | Access without `--final` raises; with it, logged |
+| Checker rejects fixtures | `pytest tests/unit/evaluation/test_sealed_results_checker.py -k checker` | Fixture artifact rejected |
+| Test access logged | `pytest tests/unit/evaluation/test_sealed_results_checker.py -k sealed` | Access without `--final` raises; without the tag raises; with both, logged |
+| Label proxies reported | `make check-data` | Notes `new_peers` (identical to the label) on b1 |
 
 **Resolves:** E2, E3, E4, E9, M4, S5; groundwork for CC1–CC3.
 

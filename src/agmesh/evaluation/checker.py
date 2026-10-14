@@ -1,0 +1,109 @@
+"""Check result artifacts before any number is reported (Implementation Plan §6.5).
+
+    python -m agmesh.evaluation.checker [--results results] [--experiments X1 X2]
+
+For every ``results/X*/<config_id>/seed_<n>.json`` the checker verifies that:
+
+1. it matches the :class:`~agmesh.evaluation.results.ResultArtifact` schema;
+2. ``data_source`` is ``runtime`` (fixture and synthetic results are rejected);
+3. the provenance fields are present and non-empty, including the lock-file hash;
+4. detection experiments (X1-X3) report every metric in ``DETECTION_METRICS``;
+5. a test-split result has a matching entry (config, seed, commit) in
+   ``results/test_access.log``.
+
+Success-criteria checks (CC1-CC8, PT1-PT7) are added in Weeks 12-14 on top of this.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+from pydantic import ValidationError
+
+from agmesh.evaluation.results import DETECTION_METRICS, REQUIRED_PROVENANCE, ResultArtifact
+from agmesh.evaluation.sealed import TEST_ACCESS_LOG, read_log
+
+DETECTION_EXPERIMENTS = ("X1", "X2", "X3")
+
+
+@dataclass
+class Finding:
+    path: str
+    ok: bool
+    problems: list[str] = field(default_factory=list)
+
+
+def check_file(path: Path, accesses: list[dict[str, Any]]) -> Finding:
+    finding = Finding(path.as_posix(), ok=True)
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        artifact = ResultArtifact.model_validate(raw)
+    except (OSError, json.JSONDecodeError, ValidationError) as exc:
+        return Finding(path.as_posix(), ok=False, problems=[f"invalid artifact: {exc}"])
+    problems = finding.problems
+    if artifact.data_source != "runtime":
+        problems.append(f"data_source is {artifact.data_source!r}; only runtime results count")
+    prov = artifact.provenance
+    for key in REQUIRED_PROVENANCE:
+        if not prov.get(key):
+            problems.append(f"provenance.{key} is missing")
+    if not (prov.get("environment") or {}).get("lockfile_sha256"):
+        problems.append("provenance.environment.lockfile_sha256 is missing")
+    if prov.get("git_dirty"):
+        problems.append("produced from a working tree with uncommitted changes")
+    if artifact.experiment in DETECTION_EXPERIMENTS:
+        missing = [m for m in DETECTION_METRICS if m not in artifact.metrics]
+        if missing:
+            problems.append(f"metrics missing: {missing}")
+    if path.parent.name != artifact.config_id or path.name != f"seed_{artifact.seed}.json":
+        problems.append("file path does not match config_id and seed")
+    if artifact.split == "test":
+        logged = any(
+            a.get("config_id") == artifact.config_id
+            and a.get("seed") == artifact.seed
+            and a.get("git_sha") == prov.get("git_sha")
+            for a in accesses
+        )
+        if not logged:
+            problems.append("test-split result has no matching entry in the test access log")
+    finding.ok = not problems
+    return finding
+
+
+def check(
+    results_root: Path, access_log: Path, experiments: list[str] | None = None
+) -> list[Finding]:
+    accesses = read_log(access_log)
+    selected = experiments or sorted(p.name for p in results_root.glob("X*") if p.is_dir())
+    findings: list[Finding] = []
+    for experiment in selected:
+        for path in sorted((results_root / experiment).glob("*/seed_*.json")):
+            findings.append(check_file(path, accesses))
+    return findings
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Validate result artifacts")
+    parser.add_argument("--results", type=Path, default=Path("results"))
+    parser.add_argument("--access-log", type=Path, default=TEST_ACCESS_LOG)
+    parser.add_argument("--experiments", nargs="*", default=None)
+    args = parser.parse_args(argv)
+    findings = check(args.results, args.access_log, args.experiments)
+    bad = [f for f in findings if not f.ok]
+    for f in bad:
+        print(f"REJECTED {f.path}")
+        for problem in f.problems:
+            print(f"  - {problem}")
+    print(f"{len(findings) - len(bad)}/{len(findings)} result artifacts accepted")
+    if not findings:
+        print("no result artifacts found", file=sys.stderr)
+    return 1 if bad else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

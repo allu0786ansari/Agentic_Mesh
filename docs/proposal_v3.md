@@ -665,7 +665,7 @@ Point-adjusted F1 is not used, because it is known to inflate time-series anomal
 **Statistics**
 - Five seeds per configuration (three for non-headline configurations if compute requires; see the Implementation Plan).
 - Results reported as mean ± 95% bootstrap CI.
-- Paired comparisons across seeds use paired bootstrap or a Wilcoxon signed-rank test.
+- Paired comparisons across seeds use the paired bootstrap as the primary test, with the exact Wilcoxon signed-rank test reported alongside. With five seeds the smallest two-sided Wilcoxon p-value is 0.0625, so Wilcoxon alone can never reject at 0.05.
 - When several comparisons are made, this is stated and Holm correction is applied.
 
 ### 10.7 Systems metrics
@@ -949,5 +949,6 @@ Findings come from the full analysis of HAI 21.03 and of the CIC Modbus 2023 att
 | MB-12 | Normal write bursts rarely coincide across devices | 2-of-3 fusion for false-alarm reduction (H2a) | §2, §10.6 |
 | MB-13 | The secure IEDs stall together on normal days | Latency excluded from fusion | §8.2; `fusion.site_b.exclude_latency` |
 | MB-14 | The HMI is a client; the IEDs are servers | Features from each node's own side; one schema | §4.1, §6.6 |
+| MB-15 | Week 3 diagnostics: on the attack day, `new_peers` reproduces the label exactly and `peers` separates it perfectly, because the label *is* the attacker's (new) address | **Open, decided at G1:** whether the Site B model sees identity features, or detects from behaviour only with a new-peer rule reported as a separate baseline | §6.6, §10.5; `evaluation/diagnostics.py` |
 
 The window figure in MB-6 counts IPv4 traffic only. An earlier count of 80 windows also included 29 windows containing only ARP frames from the attacker, which carry no Modbus content.

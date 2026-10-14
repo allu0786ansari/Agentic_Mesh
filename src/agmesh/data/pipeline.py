@@ -21,7 +21,9 @@ import yaml
 from agmesh.common.artifacts import write_artifact
 from agmesh.common.config import DEFAULT_PARAMS_PATH, Params, load_params
 from agmesh.data import checks, site_a, site_b
+from agmesh.data.access import load_partition
 from agmesh.data.manifest import read_manifest
+from agmesh.evaluation.diagnostics import label_proxies
 
 DEFAULT_EXPECTATIONS = Path("configs/partition_expectations.yaml")
 DEFAULT_CHECK_OUTPUT = Path("results/data/partition_check.json")
@@ -36,6 +38,21 @@ def _counts(manifest: dict[str, Any]) -> dict[str, Any]:
             for part, summary in node["partitions"].items()
         }
     return nodes
+
+
+def _label_proxies(
+    params: Params, root: Path, manifests: dict[str, dict[str, Any]]
+) -> dict[str, dict[str, list[dict[str, Any]]]]:
+    """Features that reproduce or perfectly separate the label, on attack validation only."""
+    out: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    for site, manifest in manifests.items():
+        out[site] = {}
+        for client in manifest["nodes"]:
+            part = load_partition(params, site, client, "val_attack", root=root)  # type: ignore[arg-type]
+            out[site][client] = [
+                p.to_dict() for p in label_proxies(part.features, part.labels.target)
+            ]
+    return out
 
 
 def cmd_prepare(params: Params, args: argparse.Namespace) -> int:
@@ -80,6 +97,7 @@ def cmd_check(params: Params, args: argparse.Namespace) -> int:
     if not args.no_expectations and args.expectations.is_file():
         expected = yaml.safe_load(args.expectations.read_text(encoding="utf-8"))
     results = checks.run_checks(manifests, params, expected)
+    proxies = _label_proxies(params, root, manifests)
     failed = [c for c in results if not c["ok"]]
     write_artifact(
         args.output,
@@ -94,10 +112,22 @@ def cmd_check(params: Params, args: argparse.Namespace) -> int:
                 for site, m in manifests.items()
             },
             "counts": {site: _counts(m) for site, m in manifests.items()},
+            "label_proxies_val_attack": proxies,
         },
         params_path=args.params,
     )
     print(f"Partition checks: {len(results) - len(failed)}/{len(results)} passed -> {args.output}")
+    for site, per_client in proxies.items():
+        for client, found in per_client.items():
+            exact = [p["feature"] for p in found if p["identical_to_label"]]
+            split = [
+                p["feature"] for p in found if p["perfect_split"] and not p["identical_to_label"]
+            ]
+            if exact or split:
+                print(
+                    f"  note: {site}/{client} label proxies: identical {exact}, "
+                    f"perfect split {split}"
+                )
     for c in failed:
         print(f"  FAILED {c['check']}: {c['detail']}")
     return 1 if failed else 0
