@@ -64,7 +64,7 @@ models:
     segments_per_window: 6                 # 60 s window -> six 10 s means per feature
     kl_weight: 1.0
     exclude_features: [P1_PCV02Z]          # ADR 0002 decision 2 (HAI-8): calibration offset, steps between periods
-    max_epochs: 100                        # non-private training; stops early on normal-validation loss
+    max_epochs: 200                        # ADR 0004: at 100 the cap ended 32% of runs; at 200 none
     patience: 10
   ae:
     hidden: [64, 32]

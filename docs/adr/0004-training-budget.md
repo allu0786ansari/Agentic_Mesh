@@ -1,7 +1,7 @@
 # ADR 0004 — Training budget for the non-private models
 
-**Status:** Protocol declared (committed before any run under it). Results and the
-decision are added below the line.
+**Status:** Accepted. The protocol was committed (ef6d574) before the run; results
+and the decision are below the line.
 **Date:** 14 October 2026
 
 ## Why
@@ -30,4 +30,21 @@ epoch, and the X1 detection metrics under each budget, as a sensitivity analysis
 
 ## Results and decision
 
-*(added after the run)*
+**Status after the run:** Accepted (14 October 2026; seeds 11, 23, 37, 41, 53;
+validation only).
+
+| Site | `max_epochs` | Runs ended by the cap | Mean best epoch | Local AUROC / FPR | Central AUROC / FPR |
+|---|---|---|---|---|---|
+| A (VAE) | 100 | **32%** of 25 | 69 | 0.843 / 0.261 | 0.915 / 0.044 |
+| A (VAE) | **200** | **0%** | 71 | 0.846 / 0.279 | 0.915 / 0.044 |
+| A (VAE) | 400 | 0% | 71 | 0.846 / 0.279 | 0.915 / 0.044 |
+| B (AE) | **30** | **0%** of 20 | 11 | 1.000 / 0.054 | 1.000 / 0.057 |
+| B (AE) | 60, 120 | 0% | 11 | identical | identical |
+
+**Decision.** Site A `models.vae.max_epochs` = **200**; Site B stays at **30**.
+
+**What it shows.** Longer training removes every capped run, but detection barely
+moves (local AUROC +0.003; local FPR within seed noise). The local models' high false
+alarm rate is therefore not under-training; it is the recording-period drift that
+federation is meant to address (RQ1, H1c). Training longer than 200 changes nothing
+because early stopping already ends every run.
