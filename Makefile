@@ -6,7 +6,7 @@ PY := $(UV) run python
 
 .PHONY: help setup setup-fl lock lint format typecheck test check \
         checksums verify-checksums inspect-data bench-llm bench-ray feasibility \
-        prepare partition check-data data fixture fixture-smoke check-results baselines
+        prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -27,6 +27,8 @@ help:
 	@echo "fixture-smoke     run the whole data pipeline on the synthetic fixture (what CI runs)"
 	@echo "check-results     validate every result artifact under results/X*/"
 	@echo "baselines         Week 4: X1 non-private baselines on validation -> results/X1/"
+	@echo "scoring-selection ADR 0003: score aggregation chosen on validation -> results/X1/"
+	@echo "ground-truth-draft  first-pass attribution mapping (reads test labels, logged)"
 
 setup:
 	$(UV) sync --group dev --group ml
@@ -99,3 +101,10 @@ check-results:
 
 baselines:
 	$(PY) -m agmesh.experiments.x1_baselines
+
+scoring-selection:
+	$(PY) -m agmesh.experiments.scoring_selection
+
+ground-truth-draft:
+	$(PY) -m agmesh.evaluation.ground_truth site_a
+	$(PY) -m agmesh.evaluation.ground_truth site_b
