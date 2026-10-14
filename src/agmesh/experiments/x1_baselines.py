@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -37,6 +38,7 @@ from agmesh.evaluation import events as ev
 from agmesh.evaluation.detection import evaluate_node, macro
 from agmesh.evaluation.results import DETECTION_METRICS, write_result
 from agmesh.models import inputs as mi
+from agmesh.models.scoring import ErrorReference, Scoring, causal_smooth, window_scores
 
 SITE_MODELS = {
     "site_a": ("vae", "vae_flat", "pca", "iforest"),
@@ -148,9 +150,37 @@ def _train_net(
     return model, info
 
 
+@dataclass
+class Fitted:
+    """A trained detector: per-input errors (reconstruction models) or raw scores."""
+
+    errors: Callable[[np.ndarray], np.ndarray] | None
+    raw_score: Callable[[np.ndarray], np.ndarray] | None
+    info: dict[str, Any]
+    reference: ErrorReference | None = None
+
+    def fit_reference(self, trains: list[mi.ModelInput]) -> None:
+        if self.errors is not None:
+            fn = self.errors
+            self.reference = ErrorReference.fit(
+                np.concatenate([mi.per_feature(fn(t.x), t) for t in trains])
+            )
+
+    def scores(self, inp: mi.ModelInput, scoring: Scoring) -> np.ndarray:
+        if self.errors is not None:
+            return window_scores(self.errors(inp.x), inp, scoring, self.reference)
+        assert self.raw_score is not None
+        return causal_smooth(self.raw_score(inp.x), inp.window_start, inp.stride_s, scoring.smooth)
+
+
+def site_scoring(site: Site, params: Params) -> Scoring:
+    cfg = params.models.scoring.site_a if site == "site_a" else params.models.scoring.site_b
+    return Scoring(cfg.aggregation, cfg.smooth, cfg.top_k)
+
+
 def _scorer(
     kind: str, site: Site, train: np.ndarray, val: np.ndarray, params: Params, seed: int
-) -> tuple[Any, dict[str, Any]]:
+) -> Fitted:
     from agmesh.models.baselines import IForestDetector, PcaDetector
 
     started = time.perf_counter()
@@ -159,17 +189,19 @@ def _scorer(
         model, info = _train_net(site, train, val, params, seed)
         from agmesh.models import nets
 
-        return (lambda x: nets.reconstruction_errors(model, x).mean(axis=1)), info
+        return Fitted(lambda x: nets.reconstruction_errors(model, x), None, info)
     if kind == "pca":
         pca = PcaDetector(b.pca_variance).fit(train)
         info = {
             "components": pca.n_components,
             "train_seconds": round(time.perf_counter() - started, 2),
         }
-        return pca.score, info
+        return Fitted(pca.errors, None, info)
     if kind == "iforest":
         forest = IForestDetector(b.iforest_trees, b.iforest_max_samples, seed).fit(train)
-        return forest.score, {"train_seconds": round(time.perf_counter() - started, 2)}
+        return Fitted(
+            None, forest.score, {"train_seconds": round(time.perf_counter() - started, 2)}
+        )
     raise ValueError(f"unknown model {kind!r}")
 
 
@@ -177,13 +209,14 @@ def _scorer(
 
 
 def _evaluate(
-    site: Site, node: NodeData, scaler: mi.Scaler, score: Any, params: Params, flat: bool
+    site: Site, node: NodeData, scaler: mi.Scaler, fitted: Fitted, params: Params, flat: bool
 ) -> dict[str, Any]:
     val_normal = _inputs(site, node.parts["val_normal"], scaler, params, evaluation=True, flat=flat)
     val_attack = _inputs(site, node.parts["val_attack"], scaler, params, evaluation=True, flat=flat)
+    scoring = site_scoring(site, params)
     return evaluate_node(
-        score(val_normal.x),
-        score(val_attack.x),
+        fitted.scores(val_normal, scoring),
+        fitted.scores(val_attack, scoring),
         val_attack.label,
         val_attack.window_start,
         window_length_s=val_attack.window_length_s,
@@ -204,10 +237,11 @@ def run_local(
         scaler = mi.Scaler.fit(_raw(site, node.parts["train"], params), _clip(site, params))
         train = _inputs(site, node.parts["train"], scaler, params, evaluation=False, flat=flat)
         val = _inputs(site, node.parts["val_normal"], scaler, params, evaluation=False, flat=flat)
-        score, info = _scorer(kind, site, train.x, val.x, params, seed)
-        info.update(train_windows=len(train), inputs=train.n_inputs)
-        training[client] = info
-        per_client[client] = _evaluate(site, node, scaler, score, params, flat)
+        fitted = _scorer(kind, site, train.x, val.x, params, seed)
+        fitted.fit_reference([train])
+        fitted.info.update(train_windows=len(train), inputs=train.n_inputs)
+        training[client] = fitted.info
+        per_client[client] = _evaluate(site, node, scaler, fitted, params, flat)
     return per_client, training
 
 
@@ -226,12 +260,14 @@ def run_central(
     ]
     x_train = np.concatenate([t.x for t in trains])
     x_val = np.concatenate([v.x for v in vals])
-    score, info = _scorer(kind, site, x_train, x_val, params, seed)
-    info.update(train_windows=int(x_train.shape[0]), inputs=int(x_train.shape[1]))
+    fitted = _scorer(kind, site, x_train, x_val, params, seed)
+    fitted.fit_reference(trains)
+    fitted.info.update(train_windows=int(x_train.shape[0]), inputs=int(x_train.shape[1]))
     per_client = {
-        client: _evaluate(site, node, scaler, score, params, False) for client, node in data.items()
+        client: _evaluate(site, node, scaler, fitted, params, False)
+        for client, node in data.items()
     }
-    return per_client, {"pooled": info}
+    return per_client, {"pooled": fitted.info}
 
 
 def run_rule(
@@ -314,6 +350,7 @@ def run(
                         "per_client": per_client,
                         "training": training,
                         "wall_seconds": round(time.perf_counter() - clock, 2),
+                        "scoring": site_scoring(site, params).__dict__,
                         "evaluation": {
                             "threshold_from": "val_normal",
                             "evaluated_on": "val_attack",

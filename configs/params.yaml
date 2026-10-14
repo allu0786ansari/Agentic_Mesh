@@ -75,6 +75,9 @@ models:
     transform: log1p                       # counts and latency are heavy-tailed
     clip_sd: 6.0
     exclude_features: [peers, new_peers]   # ADR 0002 decision 1 (MB-15): identity features reproduce the label
+  scoring:                                 # ADR 0003: chosen on validation with a grid declared in advance
+    site_a: {aggregation: mean, smooth: 1, top_k: 3}
+    site_b: {aggregation: norm_top3, smooth: 1, top_k: 3}
   baselines:
     pca_variance: 0.95                     # components kept for the PCA reconstruction baseline
     iforest_trees: 200

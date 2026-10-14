@@ -1,7 +1,7 @@
 # ADR 0003 — Anomaly-score aggregation, selected on validation before G1
 
-**Status:** Protocol declared (this section was committed before any variant was run).
-Results and the decision are added below the line once the run is complete.
+**Status:** Accepted. The protocol section was committed (9081602) before any variant
+was run; results and the decision are below the line.
 **Date:** 14 October 2026
 
 ## Why
@@ -56,4 +56,43 @@ and reported as a sensitivity analysis in the paper, whichever wins.
 
 ## Results and decision
 
-*(added after the run)*
+**Status after the run:** Accepted. Run on 14 October 2026 with the G1 inputs
+(ADR 0002), seed 11, validation only.
+
+**Site A (VAE).** AUPRC local / central, and realised window FPR local / central:
+
+| Variant | AUPRC | FPR |
+|---|---|---|
+| `mean`, no smoothing | **0.664 / 0.750** | 0.304 / 0.030 |
+| `mean`, 3 windows | 0.642 / 0.727 | 0.362 / 0.033 |
+| `mean`, 6 windows | 0.597 / 0.676 | 0.405 / 0.037 |
+| `norm_mean`, no smoothing | 0.467 / 0.682 | 0.291 / 0.030 |
+| `norm_mean`, 3 / 6 windows | 0.454 / 0.666; 0.422 / 0.617 | ≈0.29 / 0.03 |
+| `norm_top3`, no smoothing | 0.303 / 0.624 | 0.319 / 0.035 |
+| `norm_top3`, 3 / 6 windows | 0.303 / 0.612; 0.283 / 0.572 | ≈0.33 / 0.04 |
+
+Chosen: **`mean`, no smoothing** (criterion 0.707). Normalising feature errors by
+their training spread hurts on HAI: features that are almost still in training get a
+tiny IQR, so ordinary between-period drift in them is amplified.
+
+**Site B (autoencoder).**
+
+| Variant | AUPRC | FPR |
+|---|---|---|
+| `mean`, no smoothing | 0.994 / 1.000 | 0.059 / 0.052 |
+| `norm_mean`, no smoothing | 0.994 / 1.000 | 0.053 / 0.052 |
+| `norm_top3`, no smoothing | **0.994 / 1.000** | **0.052 / 0.049** |
+| any variant with 3 windows | 0.36–0.42 | 0.10–0.12 |
+| any variant with 6 windows | 0.31–0.34 | 0.17–0.21 |
+
+Chosen: **`norm_top3`, no smoothing**. It ties `mean` on AUPRC (within 0.005) and has
+the lower FPR. Smoothing is harmful on Site B because most attacker episodes touch
+only one or two 10-second windows, so averaging dilutes them.
+
+**Effect on the X1 baselines** (re-run with the G1 inputs and these choices). The
+largest change is Site B PCA: local FPR 0.142 → 0.009 and AUROC 0.993 → 1.000.
+Site A numbers equal the "without `P1_PCV02Z`" rows of ADR 0002.
+
+**Consequences.** `models.scoring` in `configs/params.yaml` records the choice; the
+grid is closed. All nine variants per site are kept in
+`results/X1/scoring_selection.json` for the sensitivity analysis.

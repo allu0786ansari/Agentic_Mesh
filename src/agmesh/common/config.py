@@ -178,6 +178,17 @@ class AeConfig(_Section):
     exclude_features: list[str]
 
 
+class ScoringSite(_Section):
+    aggregation: Literal["mean", "norm_mean", "norm_top3"]
+    smooth: int = Field(ge=1)
+    top_k: int = Field(ge=1)
+
+
+class ScoringConfig(_Section):
+    site_a: ScoringSite
+    site_b: ScoringSite
+
+
 class BaselinesConfig(_Section):
     pca_variance: float = Field(gt=0, lt=1)
     iforest_trees: int = Field(gt=0)
@@ -187,6 +198,7 @@ class BaselinesConfig(_Section):
 class ModelsConfig(_Section):
     vae: VaeConfig
     ae: AeConfig
+    scoring: ScoringConfig
     baselines: BaselinesConfig
 
 
