@@ -46,11 +46,30 @@ per-node thresholds, at event recall within 0.05. Tested in X1 at ε = 10, five 
 paired bootstrap. Motivation: validation local VAE FPR 0.30 against central 0.03
 (ADR 0003); `docs/research_agenda.md`, Paper B.
 
+*Update (ADR 0005, before any test access).* Site A now uses R3, a label-free local
+adaptive threshold. It brings the local VAE validation FPR to 0.021. H1c is
+therefore tested against two comparators: per-node fixed thresholds on R0 scores,
+and R3. Both comparisons are reported, and Holm correction is applied across them.
+
 ## 4. Statistical analysis
 
-- Results as mean ± 95% bootstrap CI over seeds.
-- Paired comparisons (same seeds) by paired bootstrap; the exact Wilcoxon signed-rank test is reported alongside (with five seeds it cannot reach p < 0.05 on its own).
-- Holm correction across the comparisons within each RQ: RQ1 (PT1, PT2 per site), RQ2 (H2a, H2b), RQ3 (`full` against each ablation).
+Updated at G1 by ADR 0005 (accepted 14 October 2026, before any test access).
+
+- **Primary:** event-level inference. A two-stage stratified block bootstrap
+  resamples attack events and 30-minute normal blocks (60 minutes on Site B) within
+  each node, with B = 10 000. The same draws are used for every configuration
+  (paired), and seeds are averaged inside each draw. Results are reported as the
+  observed value with its 95% percentile CI; a comparison is reported as the
+  difference, its CI, and a one-sided p-value.
+- **Secondary:** mean ± 95% CI over seeds, which shows training variance, and the
+  exact Wilcoxon signed-rank test over seeds. With five seeds it cannot reach
+  p < 0.05.
+- Holm correction across the comparisons within each RQ: RQ1 (PT1, PT2 per site),
+  RQ2 (H2a, H2b), RQ3 (`full` against each ablation).
+- **Sensitivity metric:** window FPR excluding the 15 minutes after each attack (TaPR
+  ambiguous section), always reported next to plain FPR and never used for a claim.
+- **Scoring:** Site A scores use the robust adaptive threshold R3 (ADR 0005) in
+  every model and mode; Site B uses R0.
 
 ## 5. Test-set access
 

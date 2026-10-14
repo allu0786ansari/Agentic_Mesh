@@ -1,5 +1,8 @@
 # Phase 1, Gate G1 — Laptop Runbook (five seeds, training budget)
 
+> **Superseded by [`phase1_g1_shift.md`](phase1_g1_shift.md)** (ADR 0005). Run that one
+> instead; it includes every step below.
+
 The Week 4 baselines were run with one seed. This round re-runs them with all five
 project seeds (11, 23, 37, 41, 53) under the training budget chosen in ADR 0004
 (VAE `max_epochs` 200). It also writes the seed summary (mean and 95% CI, paired

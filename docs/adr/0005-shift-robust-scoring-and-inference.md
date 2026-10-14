@@ -263,3 +263,41 @@ Site B stays at R0.
    sensitivity check only.
 
 The confirmatory test of all of this is the sealed test set at G4.
+
+### X1 under R3: event-level inference (five seeds, validation)
+
+Re-run of all 14 X1 configurations with R3 on Site A, from commit 8647837 (70/70
+artifacts accepted, each with its score file). Event-level 95% CIs come from
+B = 10 000 resamples.
+
+| Site A | AUROC | AUPRC | Event recall | Window FPR |
+|---|---|---|---|---|
+| Local VAE | 0.922 [0.869, 0.961] | 0.741 [0.603, 0.846] | 0.938 [0.850, 1.000] | 0.021 [0.010, 0.036] |
+| Central VAE | 0.948 [0.923, 0.972] | 0.792 [0.690, 0.876] | 1.000 [1.000, 1.000] | 0.016 [0.009, 0.024] |
+| Local PCA | 0.935 [0.888, 0.970] | 0.760 [0.641, 0.866] | 0.938 [0.812, 1.000] | 0.013 [0.005, 0.023] |
+| Central PCA | 0.924 [0.870, 0.967] | 0.758 [0.641, 0.860] | 0.938 [0.812, 1.000] | 0.013 [0.007, 0.018] |
+
+| Pre-declared comparison | Difference [95% CI] | p | p (Holm) |
+|---|---|---|---|
+| Federation headroom (central − local VAE, AUROC) | +0.026 [+0.004, +0.061] | 0.005 | **0.020** |
+| FPR transfer (local − central VAE, FPR) | +0.005 [−0.001, +0.013] | 0.069 | 0.139 |
+| VAE − PCA, central (AUROC) | +0.024 [−0.002, +0.065] | 0.045 | 0.136 |
+| VAE − PCA, local (AUROC) | −0.013 [−0.053, +0.014] | 0.828 | 0.828 |
+| AE − PCA, Site B local (FPR) | +0.045 | not estimable | — |
+
+**Reading.**
+
+- The event-level intervals are about seven times wider than the seed intervals.
+  Uncertainty about which attacks were recorded dominates training noise, as
+  expected with 15 validation events.
+- After Holm correction, only the federation AUROC headroom is significant.
+- The FPR gap between local and central is now within noise. The VAE is not shown
+  to beat PCA in either mode.
+- Seed-level tests had called all five comparisons "significant" (paired seed
+  bootstrap p < 0.001). That is the overstatement this ADR was written to prevent.
+
+**Site B.** Each node's validation-attack segment holds one 60-minute normal block,
+so FPR and false alarms per hour cannot be resampled. They are reported as point
+values marked "n/e" (not estimable), never as zero-width intervals. Site B's
+validation data cannot support an FPR claim; only the test set, with its longer
+segments, can.

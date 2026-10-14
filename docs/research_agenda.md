@@ -63,6 +63,15 @@ transfers better than per-plant thresholds.
   per-node thresholds, at equal event recall, for the same federated model.
 - Validation baseline motivating it: local VAE realised FPR 0.30 vs central 0.03 at
   a 1% target (ADR 0003).
+- **Revised at ADR 0005 (validation; changes the paper's framing).** The local FPR
+  came from operating-point shift between recordings. A label-free local robust
+  adaptive threshold (R3, median + k·MAD over the last 30 minutes) brings the local
+  VAE to FPR 0.021 and AUROC 0.922. That leaves central +0.026 AUROC
+  [+0.004, +0.061] (event-level, Holm p = 0.020) and +0.005 FPR (not significant).
+  Federation must now beat R3, not the broken local baseline. The claim has to rest
+  on the AUROC/AUPRC gap and on H1c against R3. If the test set confirms the small
+  headroom, "local adaptive scoring closes most of the federation gap under
+  operating-point shift" is itself a publishable negative-result finding.
 
 **Evidence.** X1 (utility over ε ∈ {1, 3, 10, ∞}), X2 (heterogeneity, FedAvg vs
 FedProx), H1c arm added to X1; five seeds.
@@ -70,7 +79,9 @@ FedProx), H1c arm added to X1; five seeds.
 **Novelty check.** FL with DP for industrial anomaly detection is crowded (§5), so the
 novelty is not "FL + DP". It is (i) a realistic period-drift partition of a public
 ICS dataset with event-level, sealed-test evaluation and persistent per-client
-accounting; (ii) DP federated threshold calibration evaluated on that drift. The
+accounting; (ii) DP federated threshold calibration evaluated on that drift; (iii) a
+fair local baseline: a preregistered, label-free shift-robust local scorer, and
+event- and block-level inference instead of seed-level tests. The
 closest threshold work (Laridi et al.) aggregates summary statistics without DP and
 on non-ICS data.
 
