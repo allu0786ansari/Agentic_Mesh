@@ -31,6 +31,10 @@ def test_variable_types_follow_hai_naming() -> None:
         "P4_ST_PT01": "sensor",
         "P4_HT_PO": "sensor",
         "P4_HT_FD": "unknown",
+        "P2_ASD": "setpoint",  # auto speed demand (P2_AutoSD)
+        "P2_RTR": "setpoint",  # RPM trip rate
+        "P2_VTR01": "setpoint",  # vibration trip limit
+        "P2_CO_rpm": "command",  # speed-controller output (P2_SCO)
     }
     assert {name: gt.variable_type(name) for name in cases} == cases
 
@@ -74,8 +78,36 @@ def test_site_a_draft_is_logged_and_site_b_complete(
     assert {e["config_id"] for e in entries} == {"ground_truth_site_a"} and len(entries) == 4
     for event in doc["events"].values():
         assert set(event["tactics"]) <= {t for ts in gt.TACTICS.values() for t in ts}
+        assert event["documented"] is None and event["basis"].startswith("inferred only")
+        assert event["primary"] == event["inferred"]["primary"] and event["start"]
     b = gt.site_b(tmp_path / "gt")
     assert sorted(b["events"]) == [str(i) for i in range(7)]
     saved = json.loads((tmp_path / "gt" / "mapping_site_b.json").read_text(encoding="utf-8"))
     assert saved["events"]["5"]["primary"] == "T0806"
     assert "events" in gt.summary(b)
+
+
+def test_documented_timetable_and_rule() -> None:
+    from collections import Counter
+    from datetime import datetime
+
+    from agmesh.evaluation import hai_attacks as ha
+
+    assert len(ha.TIMETABLE) == 50
+    assert Counter(len(a.primitives) for a in ha.TIMETABLE) == {1: 25, 2: 25}
+    assert len({a.attack_id for a in ha.TIMETABLE}) == 50
+    by_id = {a.attack_id: a for a in ha.TIMETABLE}
+    assert ha.techniques(by_id["A101"]) == ("T0836", ["T0836"])  # setpoint
+    assert ha.techniques(by_id["A103"]) == ("T0855", ["T0855", "T0831"])  # control output
+    assert ha.techniques(by_id["A202"]) == ("T0836", ["T0836", "T0856"])  # setpoint, sensor hidden
+    assert ha.techniques(by_id["A203"]) == ("T0855", ["T0855", "T0831", "T0806"])  # short-term
+    primary, acceptable = ha.techniques(by_id["A301"])  # CO-ST + SP: the setpoint leads
+    assert primary == "T0836" and set(acceptable) == {"T0855", "T0831", "T0806", "T0836"}
+    assert by_id["A220"].primitives[0].columns == ("P3_LCV01D",)  # erratum corrected
+    assert by_id["A104"].primitives[0].columns == ("P2_CO_rpm",)
+    assert by_id["A402"].processes == ["P1", "P3"]
+    assert max(ha.constant_baseline().values()) <= 0.65  # no constant answer wins
+    hit = ha.match(datetime(2020, 7, 10, 3, 3, 11), ["P1"])
+    assert hit is not None and hit.attack_id == "A209"
+    assert ha.match(datetime(2020, 7, 10, 3, 3, 11), ["P2"]) is None  # processes must agree
+    assert ha.match(datetime(2020, 7, 10, 3, 10, 0), ["P1"]) is None  # too far

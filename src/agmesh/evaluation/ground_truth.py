@@ -1,17 +1,20 @@
-"""First-pass attribution ground truth (docs/mapping_protocol.md).
+"""Attribution ground truth (docs/mapping_protocol.md, v1.0).
 
     python -m agmesh.evaluation.ground_truth site_a   # reads HAI test events (logged)
-    python -m agmesh.evaluation.ground_truth site_b   # writes the 7-episode candidate mapping
+    python -m agmesh.evaluation.ground_truth site_b   # writes the 7-episode mapping
 
-Site A: for every HAI attack event (validation and test), the tool finds which
-variables deviate during the event relative to the normal rows before it in the same
-segment, classifies them by type from the HAI naming convention, and applies the
-protocol's rule to propose a primary technique and an acceptable set. Reading the
-test events is a labelling step: it goes through the sealed-test gate with the
-configuration ``ground_truth_site_a`` and is logged. No model or threshold is involved.
+Site A: every HAI attack event (validation and test) is matched by its start time and
+labelled processes to the attack timetable published with the dataset
+(:mod:`agmesh.evaluation.hai_attacks`). Its techniques follow from the documented
+target points by the rule in that module. That is the ground truth.
 
-The output is a **draft** (``pass: 1, reviewed: false``). The author reviews it twice
-and edits it before it is frozen at G1.
+Independently, the tool also infers a technique from the data alone: which variables
+deviate during the event relative to the normal rows before it, typed by the HAI
+point list, with the earliest deviation as root. That inference is kept under
+``inferred`` as a cross-check and as a measure of how much of the truth is visible in
+the data. Reading the test events is a labelling step: it goes through the
+sealed-test gate with the configuration ``ground_truth_site_a`` and is logged. No
+model or threshold is involved.
 """
 
 from __future__ import annotations
@@ -29,9 +32,10 @@ import pandas as pd
 from agmesh.common.config import DEFAULT_PARAMS_PATH, Params, load_params
 from agmesh.common.provenance import git_state, utc_now_iso
 from agmesh.data.manifest import read_manifest
+from agmesh.evaluation import hai_attacks as ha
 from agmesh.evaluation.sealed import FinalAccess, authorise
 
-PROTOCOL_VERSION = "draft-1"
+PROTOCOL_VERSION = "1.0"
 OUT_DIR = Path("evaluation/ground_truth")
 
 #: Technique -> tactics (ATT&CK for ICS; checked against the STIX bundle in Week 9).
@@ -49,12 +53,18 @@ TACTICS = {
     "T0814": ["Inhibit Response Function"],  # Denial of Service
 }
 
-_SETPOINT = re.compile(r"^P1_B\d|^P1_STSP$|^P3_L[HL]$|_LD$|^P4_ST_PS$")
+# Typed from the HAI point list (technical details, pp. 12-14). P2_ASD/P2_MSD are the
+# auto/manual speed demands, P2_RTR and P2_VTR* the trip limits (setpoints);
+# P2_CO_rpm is the speed controller's output (P2_SCO), i.e. a command.
+_SETPOINT = re.compile(
+    r"^P1_B\d|^P1_STSP$|^P3_L[HL]|_LD$|^P4_(ST|HT)_PS$|^P2_(ASD|MSD|RTR|VTR\d+)$"
+)
 _COMMAND = re.compile(
-    r"^P\d_(FCV|LCV|PCV|PP|LCP)\w*D$|^P2_(AutoGO|ManualGO|OnOff|Emerg|ASD|MSD|TripEx|RTR)$|^P4_ST_GOV$"
+    r"^P\d_(FCV|LCV|PCV|PP|LCP)\w*D$|^P2_(AutoGO|ManualGO|OnOff|Emerg|TripEx|CO_rpm)$"
+    r"|^P4_ST_GOV$"
 )
 _SENSOR = re.compile(
-    r"Z$|_(FT|LIT|PIT|TIT|SIT|VT|VXT|VYT|FIT|PT|TT)\d|_PO$|_CO_rpm$|_24Vdc$|_HILout$|_FT\d+Z?$"
+    r"Z$|_(FT|LIT|PIT|TIT|SIT|VT|VXT|VYT|FIT|PT|TT)\d|_PO$|_24Vdc$|_HILout$|_FT\d+Z?$"
 )
 
 
@@ -141,7 +151,14 @@ def rule(devs: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def site_a(params: Params, root: Path, out: Path, log_path: Path) -> dict[str, Any]:
+def site_a(
+    params: Params,
+    root: Path,
+    out: Path,
+    log_path: Path,
+    *,
+    require_documented: bool = False,
+) -> dict[str, Any]:
     manifest = read_manifest(root / "site_a")
     features = list(manifest["features"]["features"]) + list(
         manifest["features"]["training_constant"]
@@ -172,17 +189,58 @@ def site_a(params: Params, root: Path, out: Path, log_path: Path) -> dict[str, A
                     if c in seg.columns and (not procs or c.split("_")[0] in procs)
                 ]
                 devs = deviations(context, event, candidates)
-                decision = rule(devs)
-                events[str(segment_id)] = {
+                inferred = rule(devs)
+                start = pd.Timestamp(event["time"].iloc[0]).to_pydatetime()
+                attack = ha.match(start, procs)
+                record: dict[str, Any] = {
                     "partition": part,
                     "client": client,
                     "processes": procs,
-                    **decision,
-                    "tactics": sorted(
-                        {t for tech in decision["acceptable"] for t in TACTICS[tech]}
-                    ),
+                    "start": str(event["time"].iloc[0]),
+                    "labelled_s": int(label.sum()),
+                    "inferred": inferred,
                     "evidence": devs[:8],
                 }
+                if attack is not None:
+                    primary, acceptable = ha.techniques(attack)
+                    record.update(
+                        attack_id=attack.attack_id,
+                        documented={
+                            "source": ha.SOURCE,
+                            "start": attack.start,
+                            "duration_s": attack.duration_s,
+                            "primitives": [
+                                {
+                                    "code": p.code,
+                                    "points": list(p.points),
+                                    "columns": list(p.columns),
+                                }
+                                for p in attack.primitives
+                            ],
+                        },
+                        primary=primary,
+                        acceptable=acceptable,
+                        basis="documented attack "
+                        + attack.attack_id
+                        + ": "
+                        + " + ".join(
+                            f"{p.code} ({', '.join(p.columns)})" for p in attack.primitives
+                        ),
+                    )
+                elif require_documented:
+                    raise ValueError(f"{segment_id}: no documented HAI 21.03 attack matches")
+                else:
+                    record.update(
+                        attack_id=None,
+                        documented=None,
+                        primary=inferred["primary"],
+                        acceptable=inferred["acceptable"],
+                        basis="inferred only: " + inferred["basis"],
+                    )
+                record["tactics"] = sorted(
+                    {t for tech in record["acceptable"] for t in TACTICS[tech]}
+                )
+                events[str(segment_id)] = record
     doc = _document("site_a", events)
     _write(doc, out / "mapping_site_a.json")
     return doc
@@ -190,11 +248,15 @@ def site_a(params: Params, root: Path, out: Path, log_path: Path) -> dict[str, A
 
 def site_b(out: Path) -> dict[str, Any]:
     table = {
-        "0": ("Two reads, one asking for 65,535 values", "T0888", ["T0888", "T0861", "T0846"]),
+        "0": (
+            "Two reads, one asking for 65,535 values (a malformed length)",
+            "T0888",
+            ["T0888", "T0861", "T0846", "T0814"],
+        ),
         "1": (
             "About 20 input-register reads; a stacked 23-frame packet",
             "T0861",
-            ["T0861", "T0888"],
+            ["T0861", "T0888", "T0814"],
         ),
         "2": ("Five reads across all four read function codes", "T0861", ["T0861", "T0888"]),
         "3": ("Two coil reads", "T0861", ["T0861", "T0801"]),
@@ -243,10 +305,28 @@ def _write(doc: dict[str, Any], path: Path) -> None:
     path.write_text(json.dumps(doc, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def agreement(doc: dict[str, Any]) -> dict[str, Any]:
+    """How often the data-only inference agrees with the documented ground truth."""
+    rows = [e for e in doc["events"].values() if e.get("documented") and "inferred" in e]
+    if not rows:
+        return {}
+    same = sum(e["inferred"]["primary"] == e["primary"] for e in rows)
+    inside = sum(e["inferred"]["primary"] in e["acceptable"] for e in rows)
+    return {
+        "events": len(rows),
+        "inferred_primary_equals_documented": same,
+        "inferred_primary_in_acceptable": inside,
+    }
+
+
 def summary(doc: dict[str, Any]) -> str:
     primary = Counter(str(e.get("primary")) for e in doc["events"].values())
     tactics = Counter(t for e in doc["events"].values() for t in e["tactics"])
-    return f"{len(doc['events'])} events; primary {dict(primary)}; tactics {dict(tactics)}"
+    text = f"{len(doc['events'])} events; primary {dict(primary)}; tactics {dict(tactics)}"
+    agree = agreement(doc)
+    if agree:
+        text += f"; data-only inference vs documented: {agree}"
+    return text
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -256,11 +336,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--partitions", type=Path, default=None)
     parser.add_argument("--out", type=Path, default=OUT_DIR)
     parser.add_argument("--access-log", type=Path, default=Path("results/test_access.log"))
+    parser.add_argument(
+        "--allow-undocumented",
+        action="store_true",
+        help="keep events with no documented attack (fixture data); real runs must match all",
+    )
     args = parser.parse_args(argv)
     params = load_params(args.params)
     if args.site == "site_a":
         doc = site_a(
-            params, args.partitions or params.paths.partitions_dir, args.out, args.access_log
+            params,
+            args.partitions or params.paths.partitions_dir,
+            args.out,
+            args.access_log,
+            require_documented=not args.allow_undocumented,
         )
     else:
         doc = site_b(args.out)
