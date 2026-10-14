@@ -203,4 +203,63 @@ selection or for a primary claim.
 
 ## Results and decision
 
-*(Filled in after the run.)*
+**Run.** One run, 14 October 2026, from commit 7f9ea93 (clean tree); Site A, seeds
+11, 23, 37, 41, 53, ADR 0004 budget, validation only. Output:
+`results/X1/shift_selection.json`.
+
+**Implementation details fixed while coding, before the run.**
+
+- Warm-up is the 2-minute gap plus the 5-minute minimum history. R2 and R3 therefore
+  abstain for the first **7 minutes** of each segment, not 5.
+- The MAD in R3 is floored at 0.001 times the node's median training score, so a
+  perfectly flat history cannot divide by zero.
+- Abstention measured: **7.2%** of validation-attack windows.
+- Time to detect is resampled as the mean, and range F1 is not resampled (see
+  `evaluation/inference.py`).
+
+**Neural model (VAE), mean over seeds and the two modes; this is the rule's input:**
+
+| Candidate | AUPRC | Event recall | Window FPR | FPR excl. recovery | Eligible |
+|---|---|---|---|---|---|
+| R0 current | 0.707 | 0.994 | 0.162 | 0.157 | yes (reference) |
+| R1 bounded evidence | 0.472 | 0.950 | 0.074 | 0.070 | **no**: AUPRC guard |
+| R2 causal detrending | 0.759 | 0.975 | 0.021 | 0.009 | yes |
+| R3 adaptive threshold | 0.767 | 0.969 | **0.019** | 0.010 | yes |
+
+**Decision: R3, the robust adaptive threshold** (`models.scoring.site_a.shift: r3`).
+It has the lowest FPR among the eligible candidates. R2 is within the 0.01 tie
+margin, and R3 comes before R2 in the simplicity order, so the tie-break agrees.
+Site B stays at R0.
+
+**By mode** (mean over five seeds):
+
+| Model, mode | AUROC R0 → R3 | AUPRC R0 → R3 | Event recall R0 → R3 | Window FPR R0 → R3 | False alarms/h R0 → R3 |
+|---|---|---|---|---|---|
+| VAE local | 0.846 → **0.922** | 0.667 → 0.741 | 1.000 → 0.938 | 0.279 → **0.021** | 11.2 → 1.3 |
+| VAE central | 0.915 → **0.948** | 0.748 → 0.792 | 0.988 → 1.000 | 0.044 → 0.016 | 3.1 → 1.0 |
+| PCA local | 0.887 → 0.935 | 0.694 → 0.760 | 0.938 → 0.938 | 0.053 → 0.013 | 6.4 → 1.2 |
+| PCA central | 0.903 → 0.924 | 0.754 → 0.758 | 0.938 → 0.938 | 0.008 → 0.013 | 0.9 → 1.4 |
+| Isolation Forest local | 0.723 → 0.809 | 0.162 → 0.237 | 0.337 → 0.558 | 0.005 → 0.017 | 0.7 → 1.1 |
+
+**What it means.**
+
+1. **The broken local baseline is fixed.** The local VAE's false-alarm rate falls
+   from 0.279 to 0.021, near the 0.01 target. Its AUROC rises by 0.076. The cost is
+   one missed validation event in local mode on average (recall 1.000 → 0.938). The
+   paper must report that.
+2. **The federation headroom shrinks a lot.** Central minus local VAE goes from
+   +0.069 to about +0.026 AUROC, and from 0.235 to about 0.005 in FPR. Most of the
+   earlier "federation gain" was operating-point shift, which a label-free local
+   adaptive threshold removes. RQ1 and H1c must now be argued against R3, not R0.
+   This is the honest framing, and it makes the federated paper's claim harder but
+   more credible.
+3. **The VAE-versus-PCA question remains open.** Under R3, PCA beats the VAE locally
+   (0.935 against 0.922 AUROC), and the VAE beats PCA centrally (0.948 against
+   0.924). The event-level tests will show whether either gap is real.
+4. **R1 fails its guard.** Bounding each feature's evidence also bounds a real
+   single-variable attack, so AUPRC drops by 0.24.
+5. **Recovery accounts for about half of R2's and R3's remaining false alarms.**
+   Excluding the 15 minutes after each attack, the FPR is 0.009–0.010. This is a
+   sensitivity check only.
+
+The confirmatory test of all of this is the sealed test set at G4.
