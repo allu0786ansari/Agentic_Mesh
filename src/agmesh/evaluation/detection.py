@@ -20,6 +20,18 @@ from agmesh.evaluation import metrics as m
 from agmesh.evaluation.thresholds import fpr_threshold
 
 Interval = tuple[float, float]
+#: The headline detection metrics, in report order.
+DETECTION_KEYS = (
+    "auroc",
+    "auprc",
+    "event_recall",
+    "range_f1",
+    "window_fpr",
+    "window_fpr_excl_recovery",
+    "ttd_median_s",
+    "false_alarms_per_hour",
+    "abstained_share",
+)
 
 
 @dataclass(frozen=True)

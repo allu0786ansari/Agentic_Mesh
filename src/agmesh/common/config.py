@@ -245,13 +245,21 @@ class FederatedConfig(_Section):
     client_resources: ClientResources
 
 
+class SiteBins(_Section):
+    site_a: int = Field(gt=1)
+    site_b: int = Field(gt=1)
+
+
 class PrivacyConfig(_Section):
     target_epsilon: float = Field(gt=0)  # math.inf means non-private reference runs
     delta_cap: float = Field(gt=0, lt=1)
     delta_divisor: float = Field(gt=1)
     max_grad_norm: float = Field(gt=0)
     accountant: Literal["rdp", "prv", "gdp"]
+    # ε of the normalisation release on its own; it is composed with DP-SGD in RDP
     normalisation_stats_epsilon: float = Field(gt=0)
+    normalisation_bins: SiteBins = SiteBins(site_a=50, site_b=200)
+    normalisation_threshold_sd: float = Field(default=3.0, ge=0)
 
     @property
     def is_private(self) -> bool:
