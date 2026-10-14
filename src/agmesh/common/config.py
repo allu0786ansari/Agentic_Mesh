@@ -182,11 +182,27 @@ class ScoringSite(_Section):
     aggregation: Literal["mean", "norm_mean", "norm_top3"]
     smooth: int = Field(ge=1)
     top_k: int = Field(ge=1)
+    shift: Literal["r0", "r1", "r2", "r3"] = "r0"  # ADR 0005
+
+
+class ShiftWindow(_Section):
+    """Causal history used by the ADR 0005 shift candidates R2 and R3."""
+
+    history_s: float = Field(default=1800.0, gt=0)
+    gap_s: float = Field(default=120.0, ge=0)
+    min_history_s: float = Field(default=300.0, gt=0)
+
+    @model_validator(mode="after")
+    def _fits(self) -> ShiftWindow:
+        if self.gap_s + self.min_history_s > self.history_s:
+            raise ValueError("gap_s + min_history_s must not exceed history_s")
+        return self
 
 
 class ScoringConfig(_Section):
     site_a: ScoringSite
     site_b: ScoringSite
+    shift_window: ShiftWindow = ShiftWindow()
 
 
 class BaselinesConfig(_Section):

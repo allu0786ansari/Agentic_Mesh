@@ -12,10 +12,11 @@ import re
 from pathlib import Path
 from typing import Any, Literal
 
+import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from agmesh.common.artifacts import DataSource, write_artifact
-from agmesh.common.provenance import utc_now_iso
+from agmesh.common.provenance import sha256_file, utc_now_iso
 
 RESULT_SCHEMA_VERSION = "1.0"
 #: Metrics every detection result (X1-X3) must report.
@@ -60,6 +61,17 @@ def result_path(root: Path, experiment: str, config_id: str, seed: int) -> Path:
     return root / experiment / config_id / f"seed_{seed}.json"
 
 
+def scores_path(result: Path) -> Path:
+    """The per-window score file that sits beside a result artifact (ADR 0005)."""
+    return result.with_name(result.stem + ".scores.npz")
+
+
+def write_scores(path: Path, arrays: dict[str, np.ndarray]) -> dict[str, str]:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(path, **arrays)  # type: ignore[arg-type]
+    return {"path": path.name, "sha256": sha256_file(path)}
+
+
 def write_result(
     root: Path,
     *,
@@ -76,8 +88,13 @@ def write_result(
     federation: dict[str, Any] | None = None,
     extra: dict[str, Any] | None = None,
     params_path: Path = Path("configs/params.yaml"),
+    scores: dict[str, np.ndarray] | None = None,
 ) -> Path:
-    """Validate and write one result artifact; returns its path."""
+    """Validate and write one result artifact; returns its path.
+
+    ``scores`` (per-window arrays) is written first to ``seed_<n>.scores.npz`` and its
+    hash recorded under ``scores_file``, so event-level inference can be re-run.
+    """
     payload: dict[str, Any] = {
         "experiment": experiment,
         "config_id": config_id,
@@ -91,6 +108,9 @@ def write_result(
         payload["federation"] = federation
     if extra:
         payload.update(extra)
+    if scores is not None:
+        target = result_path(root, experiment, config_id, seed)
+        payload["scores_file"] = write_scores(scores_path(target), scores)
     provenance = {
         "manifest_sha256": manifest_sha256,
         "checkpoint_sha256": checkpoint_sha256,

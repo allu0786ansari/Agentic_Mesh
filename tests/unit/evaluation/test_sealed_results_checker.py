@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pytest
 
 from agmesh.common.config import Params
@@ -58,6 +59,7 @@ def _write(root: Path, **overrides: Any) -> Path:
         "manifest_sha256": "abc",
         "started_at": utc_now_iso(),
         "params_path": REPO_PARAMS,
+        "scores": {"nodes": np.array(["a1"]), "a1__scores": np.zeros(3, np.float32)},
     }
     args.update(overrides)
     return write_result(root, **args)
@@ -98,6 +100,22 @@ def test_checker_accepts_runtime_and_rejects_the_rest(
         assert good_problems[0].startswith("produced from a working tree with uncommitted")
     else:
         assert good_problems == []
+
+
+def test_checker_verifies_score_files(tmp_path: Path) -> None:
+    results = tmp_path / "results"
+    log = tmp_path / "log"
+    _write(results, config_id="none", scores=None)
+    tampered = _write(results, config_id="tampered")
+    gone = _write(results, config_id="gone")
+    tampered.with_name("seed_11.scores.npz").write_bytes(b"changed")
+    gone.with_name("seed_11.scores.npz").unlink()
+    findings = checker.check(results, log)
+    assert any("no per-window score file" in p for p in _problems(findings, "none"))
+    assert any("does not match its recorded hash" in p for p in _problems(findings, "tampered"))
+    assert any("is missing" in p for p in _problems(findings, "gone"))
+    doc = json.loads((results / "X1" / "none" / "seed_11.json").read_text(encoding="utf-8"))
+    assert "scores_file" not in doc
 
 
 def test_checker_matches_the_access_log(tmp_path: Path) -> None:

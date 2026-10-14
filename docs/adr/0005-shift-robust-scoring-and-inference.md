@@ -1,8 +1,8 @@
 # ADR 0005 — Operating-point shift in the local baselines, and event-level inference
 
-**Status:** Proposed (14 October 2026). This protocol is committed before any
-candidate is implemented or run. Once the author accepts it, it is implemented, run
-once on validation, and the result and decision are added below the line.
+**Status:** Accepted by the author (14 October 2026). The protocol was committed
+(fc19946) before any candidate was implemented or run; the result and the decision
+are added below the line after the single validation run.
 **Depends on:** ADR 0002 (G1 inputs), ADR 0003 (scoring), ADR 0004 (training budget).
 
 ## Why

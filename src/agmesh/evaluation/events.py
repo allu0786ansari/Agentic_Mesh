@@ -51,6 +51,8 @@ class EventScores:
     detected: int
     recall: float
     ttd_s: list[float]
+    flags: tuple[bool, ...] = ()  # per event, in input order
+    ttd_by_event_s: tuple[float, ...] = ()  # per event; NaN if missed
 
     @property
     def ttd_median_s(self) -> float:
@@ -69,6 +71,8 @@ def event_scores(events: list[Interval], alerts: list[Interval], tolerance_s: fl
     alert_starts = np.array([a for a, _ in ordered], dtype=np.float64)
     detected = 0
     ttd: list[float] = []
+    flags: list[bool] = []
+    by_event: list[float] = []
     for start, end in events:
         reach = (start, end + tolerance_s)
         # only alerts starting before the reach ends can overlap it
@@ -77,7 +81,11 @@ def event_scores(events: list[Interval], alerts: list[Interval], tolerance_s: fl
         if hits:
             detected += 1
             ttd.append(max(0.0, min(b for _, b in hits) - start))
-    return EventScores(len(events), detected, detected / len(events), ttd)
+        flags.append(bool(hits))
+        by_event.append(ttd[-1] if hits else float("nan"))
+    return EventScores(
+        len(events), detected, detected / len(events), ttd, tuple(flags), tuple(by_event)
+    )
 
 
 def _gamma(count: int) -> float:

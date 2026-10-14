@@ -31,14 +31,15 @@ from typing import Any
 
 import numpy as np
 
-from agmesh.common.config import DEFAULT_PARAMS_PATH, Params, load_params
+from agmesh.common.config import DEFAULT_PARAMS_PATH, Params, ShiftWindow, load_params
 from agmesh.common.provenance import sha256_bytes, sha256_file, utc_now_iso
 from agmesh.data.access import Partition, Site, load_partition
 from agmesh.evaluation import events as ev
-from agmesh.evaluation.detection import evaluate_node, macro
+from agmesh.evaluation.detection import NodeArrays, evaluate_node_full, macro, node_arrays_npz
 from agmesh.evaluation.results import DETECTION_METRICS, write_result
 from agmesh.models import inputs as mi
 from agmesh.models.scoring import ErrorReference, Scoring, causal_smooth, window_scores
+from agmesh.models.shift import Shifted, ShiftReference, apply_shift
 
 SITE_MODELS = {
     "site_a": ("vae", "vae_flat", "pca", "iforest"),
@@ -158,12 +159,29 @@ class Fitted:
     raw_score: Callable[[np.ndarray], np.ndarray] | None
     info: dict[str, Any]
     reference: ErrorReference | None = None
+    shift_reference: ShiftReference | None = None
 
-    def fit_reference(self, trains: list[mi.ModelInput]) -> None:
+    def fit_reference(self, trains: list[mi.ModelInput], scoring: Scoring | None = None) -> None:
+        """Training-error references for ADR 0003 normalisation and ADR 0005 shifts."""
         if self.errors is not None:
             fn = self.errors
-            self.reference = ErrorReference.fit(
-                np.concatenate([mi.per_feature(fn(t.x), t) for t in trains])
+            errs = [fn(t.x) for t in trains]
+            feats = np.concatenate(
+                [mi.per_feature(e, t) for e, t in zip(errs, trains, strict=True)]
+            )
+            self.reference = ErrorReference.fit(feats)
+            if scoring is not None:
+                base = np.concatenate(
+                    [
+                        window_scores(e, t, scoring, self.reference)
+                        for e, t in zip(errs, trains, strict=True)
+                    ]
+                )
+                self.shift_reference = ShiftReference.fit(feats, base)
+        elif self.raw_score is not None and scoring is not None:
+            fn_raw = self.raw_score
+            self.shift_reference = ShiftReference.fit(
+                None, np.concatenate([fn_raw(t.x) for t in trains])
             )
 
     def scores(self, inp: mi.ModelInput, scoring: Scoring) -> np.ndarray:
@@ -172,10 +190,35 @@ class Fitted:
         assert self.raw_score is not None
         return causal_smooth(self.raw_score(inp.x), inp.window_start, inp.stride_s, scoring.smooth)
 
+    def shifted(
+        self, inp: mi.ModelInput, scoring: Scoring, shift: str, window: ShiftWindow
+    ) -> Shifted:
+        """Window scores after an ADR 0005 shift candidate (``r0`` = unchanged)."""
+        if shift != "r0" and scoring.smooth != 1:
+            raise ValueError("shift candidates are defined for unsmoothed scores (ADR 0005)")
+        if shift != "r0" and self.shift_reference is None:
+            raise ValueError("fit_reference(..., scoring) must run before a shift candidate")
+        if self.errors is not None:
+            err = self.errors(inp.x)
+            base = window_scores(err, inp, scoring, self.reference)
+            feats: np.ndarray | None = mi.per_feature(err, inp)
+            if shift == "r2" and scoring.aggregation != "mean":
+                raise ValueError("r2 detrends per-feature errors and needs the 'mean' aggregation")
+        else:
+            base = self.scores(inp, scoring)
+            feats = None
+        ref = self.shift_reference or ShiftReference(None, float(np.median(base)))
+        return apply_shift(shift, base, feats, inp.window_start, inp.stride_s, ref, window)
+
 
 def site_scoring(site: Site, params: Params) -> Scoring:
     cfg = params.models.scoring.site_a if site == "site_a" else params.models.scoring.site_b
     return Scoring(cfg.aggregation, cfg.smooth, cfg.top_k)
+
+
+def site_shift(site: Site, params: Params) -> str:
+    cfg = params.models.scoring.site_a if site == "site_a" else params.models.scoring.site_b
+    return cfg.shift
 
 
 def _scorer(
@@ -208,15 +251,37 @@ def _scorer(
 # ------------------------------------------------------------------------------- runs
 
 
+@dataclass
+class NodeFit:
+    """One node's trained detector and the scaler its inputs went through."""
+
+    client: str
+    node: NodeData
+    scaler: mi.Scaler
+    fitted: Fitted
+    flat: bool = False
+
+
 def _evaluate(
-    site: Site, node: NodeData, scaler: mi.Scaler, fitted: Fitted, params: Params, flat: bool
-) -> dict[str, Any]:
-    val_normal = _inputs(site, node.parts["val_normal"], scaler, params, evaluation=True, flat=flat)
-    val_attack = _inputs(site, node.parts["val_attack"], scaler, params, evaluation=True, flat=flat)
+    site: Site,
+    fit: NodeFit,
+    params: Params,
+    shift: str | None = None,
+) -> tuple[dict[str, Any], NodeArrays]:
+    def inputs(part: str) -> mi.ModelInput:
+        return _inputs(
+            site, fit.node.parts[part], fit.scaler, params, evaluation=True, flat=fit.flat
+        )
+
+    val_normal, val_attack = inputs("val_normal"), inputs("val_attack")
     scoring = site_scoring(site, params)
-    return evaluate_node(
-        fitted.scores(val_normal, scoring),
-        fitted.scores(val_attack, scoring),
+    chosen = shift or site_shift(site, params)
+    window = params.models.scoring.shift_window
+    normal = fit.fitted.shifted(val_normal, scoring, chosen, window)
+    attack = fit.fitted.shifted(val_attack, scoring, chosen, window)
+    return evaluate_node_full(
+        normal.scores,
+        attack.scores,
         val_attack.label,
         val_attack.window_start,
         window_length_s=val_attack.window_length_s,
@@ -224,30 +289,33 @@ def _evaluate(
         events=_events(site, val_attack),
         target_fpr=params.evaluation.target_window_fpr,
         tolerance_s=params.evaluation.event_tolerance_s,
+        normal_val_scored=normal.scored,
+        scored=attack.scored,
     )
 
 
-def run_local(
+def fit_local(
     site: Site, kind: str, data: dict[str, NodeData], params: Params, seed: int
-) -> tuple[dict[str, Any], dict[str, Any]]:
+) -> tuple[list[NodeFit], dict[str, Any]]:
     flat = kind == "vae_flat"
-    per_client: dict[str, Any] = {}
+    scoring = site_scoring(site, params)
+    fits: list[NodeFit] = []
     training: dict[str, Any] = {}
     for client, node in data.items():
         scaler = mi.Scaler.fit(_raw(site, node.parts["train"], params), _clip(site, params))
         train = _inputs(site, node.parts["train"], scaler, params, evaluation=False, flat=flat)
         val = _inputs(site, node.parts["val_normal"], scaler, params, evaluation=False, flat=flat)
         fitted = _scorer(kind, site, train.x, val.x, params, seed)
-        fitted.fit_reference([train])
+        fitted.fit_reference([train], scoring)
         fitted.info.update(train_windows=len(train), inputs=train.n_inputs)
         training[client] = fitted.info
-        per_client[client] = _evaluate(site, node, scaler, fitted, params, flat)
-    return per_client, training
+        fits.append(NodeFit(client, node, scaler, fitted, flat))
+    return fits, training
 
 
-def run_central(
+def fit_central(
     site: Site, kind: str, data: dict[str, NodeData], params: Params, seed: int
-) -> tuple[dict[str, Any], dict[str, Any]]:
+) -> tuple[list[NodeFit], dict[str, Any]]:
     scaler = mi.Scaler.pooled(
         [_raw(site, n.parts["train"], params) for n in data.values()], _clip(site, params)
     )
@@ -261,26 +329,55 @@ def run_central(
     x_train = np.concatenate([t.x for t in trains])
     x_val = np.concatenate([v.x for v in vals])
     fitted = _scorer(kind, site, x_train, x_val, params, seed)
-    fitted.fit_reference(trains)
+    fitted.fit_reference(trains, site_scoring(site, params))
     fitted.info.update(train_windows=int(x_train.shape[0]), inputs=int(x_train.shape[1]))
-    per_client = {
-        client: _evaluate(site, node, scaler, fitted, params, False)
-        for client, node in data.items()
-    }
-    return per_client, {"pooled": fitted.info}
+    fits = [NodeFit(client, node, scaler, fitted) for client, node in data.items()]
+    return fits, {"pooled": fitted.info}
+
+
+def evaluate_fits(
+    site: Site, fits: list[NodeFit], params: Params, shift: str | None = None
+) -> tuple[dict[str, Any], dict[str, NodeArrays]]:
+    per_client: dict[str, Any] = {}
+    arrays: dict[str, NodeArrays] = {}
+    for fit in fits:
+        per_client[fit.client], arrays[fit.client] = _evaluate(site, fit, params, shift)
+    return per_client, arrays
+
+
+def run_local(
+    site: Site, kind: str, data: dict[str, NodeData], params: Params, seed: int
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    fits, training = fit_local(site, kind, data, params, seed)
+    return evaluate_fits(site, fits, params)[0], training
+
+
+def run_central(
+    site: Site, kind: str, data: dict[str, NodeData], params: Params, seed: int
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    fits, training = fit_central(site, kind, data, params, seed)
+    return evaluate_fits(site, fits, params)[0], training
 
 
 def run_rule(
     site: Site, data: dict[str, NodeData], params: Params
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """The new-peer rule: alert when a window has a peer never seen in training."""
+    per_client, _arrays, info = run_rule_full(site, data, params)
+    return per_client, info
+
+
+def run_rule_full(
+    site: Site, data: dict[str, NodeData], params: Params
+) -> tuple[dict[str, Any], dict[str, NodeArrays], dict[str, Any]]:
     length = float(params.data.windows.site_b.length_s)
     per_client: dict[str, Any] = {}
+    arrays: dict[str, NodeArrays] = {}
     for client, node in data.items():
         normal, attack = node.parts["val_normal"], node.parts["val_attack"]
         col = attack.features.columns.index("new_peers")
         starts = attack.labels.time_s
-        per_client[client] = evaluate_node(
+        per_client[client], arrays[client] = evaluate_node_full(
             normal.features.values[:, col],
             attack.features.values[:, col],
             attack.labels.target,
@@ -293,7 +390,8 @@ def run_rule(
             target_fpr=params.evaluation.target_window_fpr,
             tolerance_s=params.evaluation.event_tolerance_s,
         )
-    return per_client, {"rule": "score = new_peers (peers never seen in training); no training"}
+    info = {"rule": "score = new_peers (peers never seen in training); no training"}
+    return per_client, arrays, info
 
 
 def run(
@@ -338,11 +436,13 @@ def _run_seed(
                 started_at = utc_now_iso()
                 clock = time.perf_counter()
                 if kind == "rule_new_peer":
-                    per_client, training = run_rule(site, data, params)
-                elif mode == "local":
-                    per_client, training = run_local(site, kind, data, params, seed)
+                    per_client, arrays, training = run_rule_full(site, data, params)
+                    shift = "r0"
                 else:
-                    per_client, training = run_central(site, kind, data, params, seed)
+                    fit = fit_local if mode == "local" else fit_central
+                    fits, training = fit(site, kind, data, params, seed)
+                    per_client, arrays = evaluate_fits(site, fits, params)
+                    shift = site_shift(site, params)
                 config_id = f"{site}__{mode}__{kind}"
                 metrics = macro(per_client, (*DETECTION_METRICS, *EXTRA_METRICS))
                 shas = {
@@ -369,7 +469,7 @@ def _run_seed(
                         "per_client": per_client,
                         "training": training,
                         "wall_seconds": round(time.perf_counter() - clock, 2),
-                        "scoring": site_scoring(site, params).__dict__,
+                        "scoring": {**site_scoring(site, params).__dict__, "shift": shift},
                         "evaluation": {
                             "threshold_from": "val_normal",
                             "evaluated_on": "val_attack",
@@ -378,6 +478,7 @@ def _run_seed(
                         },
                     },
                     params_path=params_path,
+                    scores=node_arrays_npz(arrays),
                 )
                 row = {
                     "config_id": config_id,

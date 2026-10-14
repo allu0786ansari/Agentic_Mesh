@@ -7,7 +7,7 @@ PY := $(UV) run python
 .PHONY: help setup setup-fl lock lint format typecheck test check \
         checksums verify-checksums inspect-data bench-llm bench-ray feasibility \
         prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft \
-        training-budget summarise
+        training-budget summarise shift-selection
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -29,7 +29,8 @@ help:
 	@echo "check-results     validate every result artifact under results/X*/"
 	@echo "baselines         X1 non-private baselines, all project seeds, validation -> results/X1/"
 	@echo "training-budget   ADR 0004: label-free max_epochs check -> results/X1/training_budget.json"
-	@echo "summarise         mean and 95% CI over seeds + paired tests -> results/X1/summary_val.json"
+	@echo "summarise         seed CIs + event-level CIs and paired tests -> results/X1/summary_val.json"
+	@echo "shift-selection   ADR 0005: shift-robust scoring chosen on validation -> results/X1/shift_selection.json"
 	@echo "scoring-selection ADR 0003: score aggregation chosen on validation -> results/X1/"
 	@echo "ground-truth-draft  first-pass attribution mapping (reads test labels, logged)"
 
@@ -117,3 +118,6 @@ training-budget:
 
 summarise:
 	$(PY) -m agmesh.experiments.summarise X1
+
+shift-selection:
+	$(PY) -m agmesh.experiments.shift_selection

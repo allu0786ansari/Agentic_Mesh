@@ -7,7 +7,8 @@ For every ``results/X*/<config_id>/seed_<n>.json`` the checker verifies that:
 1. it matches the :class:`~agmesh.evaluation.results.ResultArtifact` schema;
 2. ``data_source`` is ``runtime`` (fixture and synthetic results are rejected);
 3. the provenance fields are present and non-empty, including the lock-file hash;
-4. detection experiments (X1-X3) report every metric in ``DETECTION_METRICS``;
+4. detection experiments (X1-X3) report every metric in ``DETECTION_METRICS`` and
+   have their per-window score file, with the recorded hash (ADR 0005);
 5. a test-split result has a matching entry (config, seed, commit) in
    ``results/test_access.log``.
 
@@ -25,7 +26,13 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from agmesh.evaluation.results import DETECTION_METRICS, REQUIRED_PROVENANCE, ResultArtifact
+from agmesh.common.provenance import sha256_file
+from agmesh.evaluation.results import (
+    DETECTION_METRICS,
+    REQUIRED_PROVENANCE,
+    ResultArtifact,
+    scores_path,
+)
 from agmesh.evaluation.sealed import TEST_ACCESS_LOG, read_log
 
 DETECTION_EXPERIMENTS = ("X1", "X2", "X3")
@@ -36,6 +43,19 @@ class Finding:
     path: str
     ok: bool
     problems: list[str] = field(default_factory=list)
+
+
+def _score_file_problems(path: Path, record: Any) -> list[str]:
+    if not isinstance(record, dict) or not record.get("path") or not record.get("sha256"):
+        return ["no per-window score file recorded (needed for event-level inference)"]
+    target = path.with_name(str(record["path"]))
+    if target != scores_path(path):
+        return ["score file name does not match the artifact"]
+    if not target.is_file():
+        return [f"score file {target.name} is missing"]
+    if sha256_file(target) != record["sha256"]:
+        return [f"score file {target.name} does not match its recorded hash"]
+    return []
 
 
 def check_file(path: Path, accesses: list[dict[str, Any]]) -> Finding:
@@ -61,6 +81,7 @@ def check_file(path: Path, accesses: list[dict[str, Any]]) -> Finding:
         missing = [m for m in DETECTION_METRICS if m not in artifact.metrics]
         if missing:
             problems.append(f"metrics missing: {missing}")
+        problems.extend(_score_file_problems(path, raw.get("scores_file")))
     if path.parent.name != artifact.config_id or path.name != f"seed_{artifact.seed}.json":
         problems.append("file path does not match config_id and seed")
     if artifact.split == "test":

@@ -4,8 +4,13 @@
 
 Reads every ``results/<experiment>/<config_id>/seed_<n>.json`` of one split, groups by
 configuration, and reports for each metric the mean over seeds, a percentile
-bootstrap CI and the per-seed values. Selected paired comparisons (same seeds) use
-the paired bootstrap and the exact Wilcoxon signed-rank test (Proposal §10.6).
+bootstrap CI and the per-seed values (training variance; secondary).
+
+**Primary inference (ADR 0005).** When the per-window score files are present, every
+configuration also gets an event-level 95% CI, and the pre-declared comparisons are
+tested with the two-stage block bootstrap over attack events and normal blocks
+(:mod:`agmesh.evaluation.inference`), with Holm correction across the family. The
+seed-level paired bootstrap and exact Wilcoxon test are kept as secondary columns.
 """
 
 from __future__ import annotations
@@ -20,6 +25,9 @@ import numpy as np
 
 from agmesh.common.artifacts import write_artifact
 from agmesh.common.config import DEFAULT_PARAMS_PATH
+from agmesh.evaluation import inference as inf
+from agmesh.evaluation.detection import NodeArrays, load_node_arrays
+from agmesh.evaluation.results import scores_path
 from agmesh.evaluation.stats import bootstrap_ci, paired_bootstrap, wilcoxon_signed_rank
 
 METRICS = (
@@ -103,10 +111,101 @@ def compare(runs: dict[str, dict[int, dict[str, Any]]]) -> list[dict[str, Any]]:
     return out
 
 
+def _records(
+    results: Path, experiment: str, config: str, by_seed: dict[int, dict[str, Any]]
+) -> dict[int, dict[str, NodeArrays]] | None:
+    out: dict[int, dict[str, NodeArrays]] = {}
+    for seed in sorted(by_seed):
+        path = scores_path(results / experiment / config / f"seed_{seed}.json")
+        if not path.is_file():
+            return None
+        with np.load(path, allow_pickle=False) as data:
+            out[seed] = load_node_arrays(data)
+    return out
+
+
+def event_level(
+    results: Path,
+    experiment: str,
+    runs: dict[str, dict[int, dict[str, Any]]],
+    *,
+    resamples: int = 10_000,
+    seed: int = 0,
+) -> dict[str, Any]:
+    """Event-level CIs per configuration and the pre-declared paired comparisons."""
+    records = {c: _records(results, experiment, c, s) for c, s in runs.items()}
+    available = {c: r for c, r in records.items() if r}
+    plans: dict[str, inf.EventBootstrap] = {}
+    draws: dict[str, dict[str, np.ndarray]] = {}
+    observed: dict[str, dict[str, float]] = {}
+    for config in sorted(available):
+        recs = available[config]
+        site = str(next(iter(runs[config].values()))["site"])
+        if site not in plans:
+            plans[site] = inf.EventBootstrap(
+                next(iter(recs.values())), block_s=inf.BLOCK_S[site], b=resamples, seed=seed
+            )
+        draws[config] = plans[site].draws(recs)
+        observed[config] = plans[site].observed(recs)
+    cis: dict[str, Any] = {}
+    for config, d in draws.items():
+        cis[config] = {}
+        for metric, values in d.items():
+            finite = values[np.isfinite(values)]
+            cis[config][metric] = {
+                "observed": observed[config][metric],
+                "low": float(np.quantile(finite, 0.025)) if finite.size else None,
+                "high": float(np.quantile(finite, 0.975)) if finite.size else None,
+            }
+    tests = []
+    for label, a, b, metric in COMPARISONS:
+        if a not in draws or b not in draws:
+            continue
+        c = inf.difference(draws[a], draws[b], observed[a], observed[b], metric)
+        tests.append({"comparison": label, "a": a, "b": b, **c.as_dict()})
+    for t, adj in zip(tests, inf.holm([t["p_one_sided"] for t in tests]), strict=True):
+        t["p_holm"] = adj
+    return {
+        "method": "two-stage stratified block bootstrap (ADR 0005)",
+        "resamples": resamples,
+        "block_s": inf.BLOCK_S,
+        "configs": cis,
+        "comparisons": tests,
+        "missing_score_files": sorted(c for c, r in records.items() if not r),
+    }
+
+
 def _cell(entry: dict[str, Any] | None) -> str:
     if entry is None:
         return "-"
     return f"{entry['mean']:.3f} [{entry['low']:.3f}, {entry['high']:.3f}]"
+
+
+def markdown_event_level(ev: dict[str, Any]) -> str:
+    keys = ("auroc", "auprc", "event_recall", "window_fpr", "false_alarms_per_hour")
+    lines = [
+        "| Config (event-level 95% CI) | " + " | ".join(keys) + " |",
+        "|---" * (len(keys) + 1) + "|",
+    ]
+    for config, entry in ev["configs"].items():
+        cells = []
+        for k in keys:
+            e = entry.get(k)
+            if e is None or e["low"] is None or not np.isfinite(e["observed"]):
+                cells.append("-")
+            else:
+                cells.append(f"{e['observed']:.3f} [{e['low']:.3f}, {e['high']:.3f}]")
+        lines.append(f"| {config} | " + " | ".join(cells) + " |")
+    if ev["comparisons"]:
+        lines += ["", "| Comparison (H1: A - B > 0) | metric | diff [95% CI] | p | p (Holm) |"]
+        lines.append("|---|---|---|---|---|")
+        for c in ev["comparisons"]:
+            lines.append(
+                f"| {c['comparison']} | {c['metric']} | {c['observed_difference']:+.3f} "
+                f"[{c['ci'][0]:+.3f}, {c['ci'][1]:+.3f}] | {c['p_one_sided']:.4f} | "
+                f"{c['p_holm']:.4f} |"
+            )
+    return "\n".join(lines)
 
 
 def markdown(table: dict[str, Any], comparisons: list[dict[str, Any]]) -> str:
@@ -133,6 +232,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--split", default="val", choices=("val", "test"))
     parser.add_argument("--results", type=Path, default=Path("results"))
     parser.add_argument("--params", type=Path, default=DEFAULT_PARAMS_PATH)
+    parser.add_argument("--resamples", type=int, default=10_000)
     args = parser.parse_args(argv)
     runs = load(args.results, args.experiment, args.split)
     if not runs:
@@ -140,15 +240,27 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     table = summarise(runs)
     comparisons = compare(runs)
+    ev = event_level(args.results, args.experiment, runs, resamples=args.resamples)
     sources = {r["data_source"] for by_seed in runs.values() for r in by_seed.values()}
     write_artifact(
         args.results / args.experiment / f"summary_{args.split}.json",
         kind=f"{args.experiment}.summary",
         data_source="runtime" if sources == {"runtime"} else "fixture",
-        payload={"split": args.split, "configs": table, "comparisons": comparisons},
+        payload={
+            "split": args.split,
+            "configs": table,
+            "comparisons": comparisons,
+            "event_level": ev,
+        },
         params_path=args.params,
     )
+    print("Seed-level (training variance; secondary)")
     print(markdown(table, comparisons))
+    print("\nEvent-level (primary, ADR 0005)")
+    if ev["configs"]:
+        print(markdown_event_level(ev))
+    if ev["missing_score_files"]:
+        print(f"no score files for: {', '.join(ev['missing_score_files'])}")
     return 0
 
 
