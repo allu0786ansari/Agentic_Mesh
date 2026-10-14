@@ -131,7 +131,7 @@ def _train_torch(
             proximal = sum((p - g).pow(2).sum() for p, g in zip(params, global_params, strict=True))
             loss = loss + 0.5 * mu * proximal
         optimiser.zero_grad()
-        loss.backward()
+        loss.backward()  # type: ignore[no-untyped-call]  # torch leaves backward() unannotated
         optimiser.step()
         losses.append(float(loss.detach()))
     return [p.detach().numpy().copy() for p in params], float(np.mean(losses))
