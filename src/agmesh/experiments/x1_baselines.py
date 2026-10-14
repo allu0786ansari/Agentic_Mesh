@@ -267,6 +267,7 @@ def _evaluate(
     fit: NodeFit,
     params: Params,
     shift: str | None = None,
+    threshold_value: float | None = None,
 ) -> tuple[dict[str, Any], NodeArrays]:
     def inputs(part: str) -> mi.ModelInput:
         return _inputs(
@@ -291,6 +292,7 @@ def _evaluate(
         tolerance_s=params.evaluation.event_tolerance_s,
         normal_val_scored=normal.scored,
         scored=attack.scored,
+        threshold_value=threshold_value,
     )
 
 

@@ -32,34 +32,19 @@ import numpy as np
 from agmesh.common.artifacts import write_artifact
 from agmesh.common.config import DEFAULT_PARAMS_PATH, Params, load_params
 from agmesh.data.access import Partition, Site
-from agmesh.data.windows import gather, window_starts
 from agmesh.evaluation.detection import DETECTION_KEYS
 from agmesh.experiments import x1_baselines as x1
-from agmesh.models import inputs as mi
 from agmesh.privacy import bounds, client_budget, noisy_stats
 from agmesh.privacy.accountant_store import ROOT
+from agmesh.privacy.units import training_units
 
 EPSILONS = (1.0, 3.0, 10.0, math.inf)
 KIND = {"site_a": "vae", "site_b": "ae"}
 
 
 def units(site: Site, part: Partition, params: Params) -> tuple[np.ndarray, list[str]]:
-    """One row per privacy unit (training window) and the feature names.
-
-    Site A: each non-overlapping 60 s training window, as its (60, features) raw rows.
-    Site B: the 10 s windows themselves (``log1p`` already applied).
-    """
-    raw = x1._raw(site, part, params)
-    if site == "site_b":
-        names = [part.features.columns[i] for i in mi.site_b_columns(part, params)]
-        return np.asarray(raw, dtype=np.float64), names
-    win = params.data.windows.site_a
-    if win.train_stride_s != win.length_s:
-        raise ValueError("the privacy unit needs non-overlapping training windows (P4)")
-    length = win.length_s * params.data.hai.sample_rate_hz
-    starts = window_starts(part.labels.time_s, part.labels.group, length, win.train_stride_s)
-    names = [part.features.columns[i] for i in mi.site_a_columns(part, params)]
-    return gather(raw, starts, length).astype(np.float64), names
+    """See :func:`agmesh.privacy.units.training_units`."""
+    return training_units(site, part, params)
 
 
 def _lr(params: Params, site: Site) -> float:

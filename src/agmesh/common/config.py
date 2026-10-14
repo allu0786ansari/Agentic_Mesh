@@ -260,6 +260,9 @@ class PrivacyConfig(_Section):
     normalisation_stats_epsilon: float = Field(gt=0)
     normalisation_bins: SiteBins = SiteBins(site_a=50, site_b=200)
     normalisation_threshold_sd: float = Field(default=3.0, ge=0)
+    # H1c: ε of the noisy normal-score histogram on its own; composed in RDP (ADR 0007)
+    threshold_epsilon: float = Field(default=0.5, gt=0)
+    threshold_bins: int = Field(default=100, gt=1)
 
     @property
     def is_private(self) -> bool:

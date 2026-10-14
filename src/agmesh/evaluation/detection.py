@@ -17,7 +17,7 @@ import numpy.typing as npt
 
 from agmesh.evaluation import events as ev
 from agmesh.evaluation import metrics as m
-from agmesh.evaluation.thresholds import fpr_threshold
+from agmesh.evaluation.thresholds import Threshold, fpr_threshold
 
 Interval = tuple[float, float]
 #: The headline detection metrics, in report order.
@@ -171,6 +171,7 @@ def evaluate_node_full(
     tolerance_s: float,
     normal_val_scored: npt.ArrayLike | None = None,
     scored: npt.ArrayLike | None = None,
+    threshold_value: float | None = None,
 ) -> tuple[dict[str, Any], NodeArrays]:
     """Metrics at the operating point, and the per-window record behind them.
 
@@ -184,6 +185,9 @@ def evaluate_node_full(
         np.ones(nv.size, bool) if normal_val_scored is None else np.asarray(normal_val_scored, bool)
     )
     threshold = fpr_threshold(nv[nv_ok], target_fpr)
+    if threshold_value is not None:  # a threshold set elsewhere (H1c); report its val FPR
+        achieved = float((nv[nv_ok] > threshold_value).mean()) if nv_ok.any() else float("nan")
+        threshold = Threshold(threshold_value, target_fpr, achieved, int(nv_ok.sum()))
     s = np.asarray(scores, dtype=np.float64)
     ok = np.ones(s.size, bool) if scored is None else np.asarray(scored, bool)
     y = np.asarray(labels).astype(bool)

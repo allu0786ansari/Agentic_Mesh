@@ -37,12 +37,15 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import numpy as np
 import numpy.typing as npt
 
-from agmesh.models.inputs import Scaler
 from agmesh.privacy.calibrate import Mechanism
+
+if TYPE_CHECKING:
+    from agmesh.models.inputs import Scaler
 
 F64 = npt.NDArray[np.float64]
 IQR_TO_SD = 1.349
@@ -177,5 +180,7 @@ def median_iqr(h: Histograms) -> tuple[F64, F64]:
 
 
 def scaler(h: Histograms, clip: float) -> Scaler:
+    from agmesh.models.inputs import Scaler  # lazy: the server imports this module
+
     centre, scale = centre_scale(h)
     return Scaler(centre, scale, clip)

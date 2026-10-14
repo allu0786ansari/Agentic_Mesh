@@ -69,8 +69,17 @@ def fit_private(
     seed: int,
     kl_weight: float = 1.0,
     log_every: int = 0,
+    steps: int | None = None,
+    proximal_mu: float = 0.0,
 ) -> DpTrainResult:
-    """Train ``model`` in place with DP-SGD (Adam update) for ``plan.steps`` steps."""
+    """Train ``model`` in place with DP-SGD (Adam update).
+
+    ``steps`` defaults to the whole plan; a federated client passes one round's
+    share and calls again next round (the guard and store carry the budget across).
+    ``proximal_mu > 0`` adds FedProx's term mu * (w - w_round_start) to the update
+    **after** clipping and noise: the term does not depend on the data, so it is
+    post-processing and costs no privacy, and it is not distorted by clipping.
+    """
     from opacus import GradSampleModule
     from opacus.optimizers import DPOptimizer
 
@@ -82,6 +91,7 @@ def fit_private(
     sampler = torch.Generator().manual_seed(seed)
     noise = torch.Generator().manual_seed(seed + 1)
     data = torch.from_numpy(np.ascontiguousarray(x_train))
+    anchor = [p.detach().clone() for p in model.parameters()] if proximal_mu > 0 else []
     gsm = GradSampleModule(model)
     optimiser = DPOptimizer(
         torch.optim.Adam(gsm.parameters(), lr=lr),
@@ -98,8 +108,9 @@ def fit_private(
     started = time.perf_counter()
     batch_sizes: list[int] = []
     running = 0.0
+    n_steps = plan.steps if steps is None else steps
     gsm.train()
-    for i in range(plan.steps):
+    for i in range(n_steps):
         guard.spend(step)  # checked and recorded before the update exists (conservative)
         mask = torch.rand(data.shape[0], generator=sampler) < plan.sample_rate
         xb = data[mask]
@@ -111,10 +122,16 @@ def fit_private(
             loss, _mse = loss_terms(gsm, xb, kl_weight)
             batch_loss = loss.mean() if xb.shape[0] else loss.sum()
             batch_loss.backward()  # type: ignore[no-untyped-call]
-        optimiser.step()
+        if optimiser.pre_step():  # clip, add noise, average
+            if anchor:
+                with torch.no_grad():
+                    for param, ref in zip(gsm.parameters(), anchor, strict=True):
+                        if param.grad is not None:
+                            param.grad.add_(param.detach() - ref, alpha=proximal_mu)
+            optimiser.original_optimizer.step()
         if xb.shape[0]:
             running += float(batch_loss.detach())
-        if (i + 1) % per_epoch == 0 or i + 1 == plan.steps:
+        if (i + 1) % per_epoch == 0 or i + 1 == n_steps:
             done = (i + 1) // per_epoch if (i + 1) % per_epoch == 0 else (i + 1) / per_epoch
             history.append({"epoch": float(done), "train_loss": running / per_epoch})
             running = 0.0
@@ -123,7 +140,7 @@ def fit_private(
     gsm.remove_hooks()  # the trained ``model`` is scored as a plain module
     model.eval()
     return DpTrainResult(
-        steps=plan.steps,
+        steps=n_steps,
         epsilon=guard.store.epsilon(),
         train_seconds=time.perf_counter() - started,
         mean_batch=float(np.mean(batch_sizes)) if batch_sizes else 0.0,
@@ -146,6 +163,7 @@ def fit_reference(
     lr: float,
     seed: int,
     kl_weight: float = 1.0,
+    proximal_mu: float = 0.0,
 ) -> DpTrainResult:
     """The ε = ∞ reference: the same Poisson batches and step count, no clipping, no noise.
 
@@ -156,6 +174,7 @@ def fit_reference(
     sampler = torch.Generator().manual_seed(seed)
     data = torch.from_numpy(np.ascontiguousarray(x_train))
     optimiser = torch.optim.Adam(model.parameters(), lr=lr)
+    anchor = [p.detach().clone() for p in model.parameters()] if proximal_mu > 0 else []
     per_epoch = max(1, round(1.0 / sample_rate))
     history: list[dict[str, float]] = []
     started = time.perf_counter()
@@ -169,9 +188,14 @@ def fit_reference(
             loss, _ = loss_terms(model, xb, kl_weight)
             batch_loss = loss.mean()
             batch_loss.backward()  # type: ignore[no-untyped-call]
+            if anchor:
+                with torch.no_grad():
+                    for param, ref in zip(model.parameters(), anchor, strict=True):
+                        if param.grad is not None:
+                            param.grad.add_(param.detach() - ref, alpha=proximal_mu)
             optimiser.step()
             running += float(batch_loss.detach())
-        if (i + 1) % per_epoch == 0:
+        if (i + 1) % per_epoch == 0 or i + 1 == steps:
             history.append(
                 {"epoch": float((i + 1) // per_epoch), "train_loss": running / per_epoch}
             )

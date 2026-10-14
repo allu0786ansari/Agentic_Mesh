@@ -105,6 +105,8 @@ privacy:
   normalisation_stats_epsilon: 0.3         # ADR 0006: ε of the histogram release alone; composed with DP-SGD in RDP
   normalisation_bins: {site_a: 50, site_b: 200}   # ADR 0006: bins over each feature's public range
   normalisation_threshold_sd: 3.0          # ADR 0006: noisy counts below 3 noise SDs are zeroed (post-processing)
+  threshold_epsilon: 0.5                   # ADR 0007: H1c score-histogram release, standalone ε; composed in RDP
+  threshold_bins: 100                      # ADR 0007: H1c histogram bins (groups of 10 of the 1,000-bin score grid)
 
 evaluation:
   target_window_fpr: 0.01

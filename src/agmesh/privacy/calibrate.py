@@ -171,6 +171,7 @@ class PrivacyPlan:
         }
 
 
+@functools.lru_cache(maxsize=256)
 def calibrate(
     *,
     target_epsilon: float,
