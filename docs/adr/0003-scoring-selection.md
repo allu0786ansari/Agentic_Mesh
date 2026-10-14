@@ -72,8 +72,9 @@ and reported as a sensitivity analysis in the paper, whichever wins.
 | `norm_top3`, 3 / 6 windows | 0.303 / 0.612; 0.283 / 0.572 | ≈0.33 / 0.04 |
 
 Chosen: **`mean`, no smoothing** (criterion 0.707). Normalising feature errors by
-their training spread hurts on HAI: features that are almost still in training get a
-tiny IQR, so ordinary between-period drift in them is amplified.
+their training spread hurts on HAI. A likely reason, not yet tested: features that are
+almost still in training get a tiny IQR, so ordinary between-period drift in them is
+amplified.
 
 **Site B (autoencoder).**
 
