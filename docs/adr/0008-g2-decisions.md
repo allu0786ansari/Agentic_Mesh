@@ -51,4 +51,15 @@ not fixed by tuning.
 
 ## Results and decisions
 
-*(Filled in after the runs.)*
+### Addendum to the protocol (written after the grid finished, before the run it governs)
+
+The grid's best learning rate, 3e-3, is its **upper edge**. A best value at the edge
+of a grid is not known to be the best, so one boundary extension is declared here,
+before it is run:
+
+- **lr = 1e-2 with C = 1.0**: FedAvg, ε = 3, seed 11.
+- It replaces the grid's choice only if its AUPRC is higher by **more than 0.01**,
+  the tie margin.
+- No further extension is made either way.
+
+*(Results and decisions follow below.)*
