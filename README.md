@@ -18,7 +18,7 @@ the design reasons for leaving them behind are in Proposal Appendix A.
 | Phase | Weeks | Status |
 |---|---|---|
 | 0 — Feasibility | 1 | **Done.** 21/21 data checks matched on the laptop; Gate G0 closed ([ADR 0001](docs/adr/0001-g0-decisions.md)): Llama 3.2 3B, L_LLM 24 s, 2 CPUs per Ray client |
-| 1 — Data and evaluation first | 2–4 | **Weeks 2–4 done; Gate G1 in review.** Decisions accepted ([ADR 0002](docs/adr/0002-g1-proposals.md)), scoring chosen on validation ([ADR 0003](docs/adr/0003-scoring-selection.md)), training budget fixed label-free ([ADR 0004](docs/adr/0004-training-budget.md)), baselines on five seeds with CIs ([runbook](docs/runbooks/phase1_g1_seeds.md)), first-pass ground truth awaiting the author's reviews ([runbook](docs/runbooks/phase1_g1.md)). Publication plan: [research agenda](docs/research_agenda.md) |
+| 1 — Data and evaluation first | 2–4 | **Weeks 2–4 done; Gate G1 in review.** Decisions accepted ([ADR 0002](docs/adr/0002-g1-proposals.md)), scoring chosen on validation ([ADR 0003](docs/adr/0003-scoring-selection.md)), training budget fixed label-free ([ADR 0004](docs/adr/0004-training-budget.md)), baselines on five seeds with CIs ([runbook](docs/runbooks/phase1_g1_seeds.md)), shift-robust local baseline and event-level inference proposed ([ADR 0005](docs/adr/0005-shift-robust-scoring-and-inference.md)), first-pass ground truth awaiting the author's reviews ([runbook](docs/runbooks/phase1_g1.md)). Publication plan: [research agenda](docs/research_agenda.md) |
 | 2 — Privacy-preserving federated detection | 5–7 | Not started |
 | 3 — Operations path and agentic attribution | 8–11 | Not started |
 | 4 — Experiments and systems evidence | 12–14 | Not started |
