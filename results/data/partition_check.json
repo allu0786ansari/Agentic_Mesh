@@ -3,10 +3,10 @@
   "kind": "data.partition_check",
   "data_source": "runtime",
   "provenance": {
-    "created_at": "2026-10-14T07:47:24Z",
-    "git_sha": "cee876e36723487607cd767a3f4128ae7ebaf1ad",
+    "created_at": "2026-10-14T08:27:24Z",
+    "git_sha": "7b1b1732081aae6550915176499e45d1a50c594d",
     "git_branch": "main",
-    "git_dirty": true,
+    "git_dirty": false,
     "params_sha256": "efdffbeac7438f76fec4b2b969edbb88634575255240e45c460020fc611d4d3d",
     "environment": {
       "python": "3.12.15",
@@ -20,7 +20,7 @@
       "swap_total_mb": 4096,
       "lockfile_sha256": "bef1a5c5d88135bb7fe2b281d0101339c5b701985a281e855e9a92867887a5fc",
       "hostname_hash": "89a720d64995",
-      "pid": 1700
+      "pid": 2693
     }
   },
   "passed": 37,
@@ -945,6 +945,56 @@
           "windows": 10485
         }
       }
+    }
+  },
+  "label_proxies_val_attack": {
+    "site_a": {
+      "a1": [],
+      "a2": [],
+      "a3": [],
+      "a4": []
+    },
+    "site_b": {
+      "b1": [
+        {
+          "feature": "peers",
+          "identical_to_label": false,
+          "perfect_split": true,
+          "attack_min": 2.0,
+          "attack_max": 2.0,
+          "normal_min": 0.0,
+          "normal_max": 1.0
+        },
+        {
+          "feature": "new_peers",
+          "identical_to_label": true,
+          "perfect_split": true,
+          "attack_min": 1.0,
+          "attack_max": 1.0,
+          "normal_min": 0.0,
+          "normal_max": 0.0
+        },
+        {
+          "feature": "unseen_addr",
+          "identical_to_label": true,
+          "perfect_split": true,
+          "attack_min": 1.0,
+          "attack_max": 40.0,
+          "normal_min": 0.0,
+          "normal_max": 0.0
+        },
+        {
+          "feature": "oversized_qty",
+          "identical_to_label": true,
+          "perfect_split": true,
+          "attack_min": 1.0,
+          "attack_max": 40.0,
+          "normal_min": 0.0,
+          "normal_max": 0.0
+        }
+      ],
+      "b2": [],
+      "b3": []
     }
   }
 }
