@@ -263,6 +263,8 @@ class PrivacyConfig(_Section):
     # H1c: ε of the noisy normal-score histogram on its own; composed in RDP (ADR 0007)
     threshold_epsilon: float = Field(default=0.5, gt=0)
     threshold_bins: int = Field(default=100, gt=1)
+    # DP-SGD learning rate per site; a site not listed uses the model's lr (ADR 0008)
+    dp_lr: dict[str, float] = Field(default_factory=dict)
 
     @property
     def is_private(self) -> bool:

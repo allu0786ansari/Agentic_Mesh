@@ -103,11 +103,13 @@ def federate(
     run_id: str | None = None,
     backend: str = "inprocess",
     params_path: Path = DEFAULT_PARAMS_PATH,
+    suffix: str = "",
 ) -> tuple[str, str, FederationResult]:
     fed = params.federated
     n_rounds = rounds or fed.max_rounds
     drop = fed.dropout_prob if dropout is None else dropout
     cid = config_id(site, strategy, epsilon, h1c=h1c, heterogeneous=heterogeneous, dropout=drop)
+    cid += suffix
     rid = run_id or f"{cid}__seed{seed}__{time.strftime('%Y%m%dT%H%M%S')}"
     epochs_per_round = max(HETEROGENEOUS_EPOCHS) if heterogeneous else fed.local_epochs
     if h1c:
@@ -195,7 +197,7 @@ def record(
     epsilon: float,
     partitions: Path,
     results: Path,
-    smoke: bool,
+    smoke: bool | str,
     started_at: str,
     data_source: str,
     params_path: Path,
@@ -238,10 +240,11 @@ def record(
         "model_spec": result.spec.__dict__,
     }
     if smoke:
-        out = results / "federated" / "smoke" / f"{cid}__seed{seed}.json"
+        tag = smoke if isinstance(smoke, str) else "smoke"
+        out = results / "federated" / tag / f"{cid}__seed{seed}.json"
         return write_artifact(
             out,
-            kind="federated.smoke",
+            kind=f"federated.{tag}",
             data_source=data_source,  # type: ignore[arg-type]
             payload={
                 "config_id": cid,
@@ -287,10 +290,25 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--partitions", type=Path, default=None)
     parser.add_argument("--results", type=Path, default=Path("results"))
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument(
+        "--tag", default=None, help="write to results/federated/<tag>/ (e.g. g2_tuning)"
+    )
+    parser.add_argument("--lr", type=float, default=None, help="override the DP learning rate")
+    parser.add_argument("--clip", type=float, default=None, help="override max_grad_norm")
     parser.add_argument("--backend", choices=("inprocess", "flower"), default="inprocess")
     parser.add_argument("--fixture", action="store_true")
     args = parser.parse_args(argv)
     params = load_params(args.params)
+    if args.backend == "flower" and (args.lr is not None or args.clip is not None):
+        parser.error(
+            "--lr/--clip overrides are in-process only (Flower clients read the params file)"
+        )
+    raw = params.model_dump()
+    if args.lr is not None:
+        raw["privacy"]["dp_lr"] = {**raw["privacy"]["dp_lr"], args.site: args.lr}
+    if args.clip is not None:
+        raw["privacy"]["max_grad_norm"] = args.clip
+    params = Params.model_validate(raw)
     strategy = args.strategy or params.federated.strategy
     epsilon = params.privacy.target_epsilon if args.epsilon is None else args.epsilon
     partitions = args.partitions or params.paths.partitions_dir
@@ -311,6 +329,8 @@ def main(argv: list[str] | None = None) -> int:
             privacy_root=args.results / "privacy",
             backend=args.backend,
             params_path=args.params,
+            suffix=(f"__lr{args.lr:g}" if args.lr is not None else "")
+            + (f"__clip{args.clip:g}" if args.clip is not None else ""),
         )
         path = record(
             params,
@@ -323,7 +343,7 @@ def main(argv: list[str] | None = None) -> int:
             epsilon=epsilon,
             partitions=partitions,
             results=args.results,
-            smoke=args.smoke,
+            smoke=args.tag or args.smoke,
             started_at=started_at,
             data_source="fixture" if args.fixture else "runtime",
             params_path=args.params,

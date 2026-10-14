@@ -208,7 +208,7 @@ class FederatedClient:
                     x,
                     plan=self.budget.plan,
                     guard=self.budget.guard,
-                    lr=cfg.lr,
+                    lr=self.params.privacy.dp_lr.get(self.site, cfg.lr),
                     seed=ins.seed,
                     kl_weight=kl,
                     steps=steps,
