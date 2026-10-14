@@ -105,7 +105,7 @@ def compare(runs: dict[str, dict[int, dict[str, Any]]]) -> list[dict[str, Any]]:
 
 def _cell(entry: dict[str, Any] | None) -> str:
     if entry is None:
-        return "–"
+        return "-"
     return f"{entry['mean']:.3f} [{entry['low']:.3f}, {entry['high']:.3f}]"
 
 
