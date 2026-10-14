@@ -73,6 +73,14 @@ transfers better than per-plant thresholds.
   headroom, "local adaptive scoring closes most of the federation gap under
   operating-point shift" is itself a publishable negative-result finding.
 
+- **G2 pilot (ADR 0008, validation, one seed).** After tuning the DP learning rate
+  under a declared rule, federated Site A at ε = 3 reaches AUROC 0.888 and AUPRC 0.703.
+  A single client reaches 0.832 and 0.520; non-private local and central reach 0.922
+  and 0.948. SecAgg+ (X8) aggregates within one quantisation step and survives a
+  dropout, at ×1.84 bytes and no measurable time cost. An untuned DP baseline would
+  have understated private utility by 0.17 AUPRC; the paper reports the tuning
+  protocol.
+
 **Evidence.** X1 (utility over ε ∈ {1, 3, 10, ∞}), X2 (heterogeneity, FedAvg vs
 FedProx), H1c arm added to X1; five seeds.
 **Venue type.** ICS/CPS security or applied ML-for-security conference or journal.
