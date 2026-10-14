@@ -7,7 +7,7 @@ PY := $(UV) run python
 .PHONY: help setup setup-fl lock lint format typecheck test check \
         checksums verify-checksums inspect-data bench-llm bench-ray feasibility \
         prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft \
-        training-budget summarise shift-selection dp-sanity train
+        training-budget summarise shift-selection dp-sanity train x8 g2-pilot g2-tuning
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -32,6 +32,9 @@ help:
 	@echo "summarise         seed CIs + event-level CIs and paired tests -> results/X1/summary_val.json"
 	@echo "shift-selection   ADR 0005: shift-robust scoring chosen on validation -> results/X1/shift_selection.json"
 	@echo "dp-sanity         Week 5: single-client DP training at eps 1, 3, 10, inf -> results/privacy/"
+	@echo "x8                Week 7: SecAgg+ systems experiment on Fed-A -> results/X8/"
+	@echo "g2-pilot          Week 7: FedAvg and FedProx at eps 10, both sites, 50 rounds -> results/X1/"
+	@echo "g2-tuning         Week 7: ADR 0008 DP lr x clip grid and FedProx mu grid -> results/federated/g2_*"
 	@echo "train             Week 6: one federated run, e.g. make train SITE=site_a [ROUNDS=5 smoke] [EPS=3] [STRATEGY=fedavg] [BACKEND=flower]"
 	@echo "scoring-selection ADR 0003: score aggregation chosen on validation -> results/X1/"
 	@echo "ground-truth-draft  first-pass attribution mapping (reads test labels, logged)"
@@ -133,3 +136,21 @@ train:
 		$(if $(ROUNDS),--rounds $(ROUNDS) --smoke,) $(if $(EPS),--epsilon $(EPS),) \
 		$(if $(STRATEGY),--strategy $(STRATEGY),) $(if $(BACKEND),--backend $(BACKEND),) \
 		$(if $(SEEDS),--seeds $(SEEDS),) $(if $(H1C),--h1c,)
+
+x8:
+	$(UV) run --group fl python -m agmesh.experiments.x8_secagg
+
+g2-pilot:
+	for site in site_b site_a; do for st in fedavg fedprox; do \
+		$(PY) -m agmesh.federated.run --site $$site --strategy $$st --epsilon 10 || exit 1; \
+	done; done
+
+g2-tuning:
+	for lr in 0.001 0.003; do for c in 0.5 1 2; do \
+		$(PY) -m agmesh.federated.run --site site_a --strategy fedavg --epsilon 3 \
+			--lr $$lr --clip $$c --tag g2_tuning || exit 1; \
+	done; done
+	for mu in 0.001 0.1; do \
+		$(PY) -m agmesh.federated.run --site site_a --strategy fedprox --epsilon 10 \
+			--mu $$mu --tag g2_mu || exit 1; \
+	done

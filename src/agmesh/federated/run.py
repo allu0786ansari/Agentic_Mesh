@@ -295,6 +295,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--lr", type=float, default=None, help="override the DP learning rate")
     parser.add_argument("--clip", type=float, default=None, help="override max_grad_norm")
+    parser.add_argument("--mu", type=float, default=None, help="override FedProx's mu")
     parser.add_argument("--backend", choices=("inprocess", "flower"), default="inprocess")
     parser.add_argument("--fixture", action="store_true")
     args = parser.parse_args(argv)
@@ -308,6 +309,8 @@ def main(argv: list[str] | None = None) -> int:
         raw["privacy"]["dp_lr"] = {**raw["privacy"]["dp_lr"], args.site: args.lr}
     if args.clip is not None:
         raw["privacy"]["max_grad_norm"] = args.clip
+    if args.mu is not None:
+        raw["federated"]["proximal_mu"] = args.mu
     params = Params.model_validate(raw)
     strategy = args.strategy or params.federated.strategy
     epsilon = params.privacy.target_epsilon if args.epsilon is None else args.epsilon
@@ -330,7 +333,8 @@ def main(argv: list[str] | None = None) -> int:
             backend=args.backend,
             params_path=args.params,
             suffix=(f"__lr{args.lr:g}" if args.lr is not None else "")
-            + (f"__clip{args.clip:g}" if args.clip is not None else ""),
+            + (f"__clip{args.clip:g}" if args.clip is not None else "")
+            + (f"__mu{args.mu:g}" if args.mu is not None else ""),
         )
         path = record(
             params,
