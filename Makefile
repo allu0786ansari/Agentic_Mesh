@@ -33,7 +33,7 @@ help:
 	@echo "shift-selection   ADR 0005: shift-robust scoring chosen on validation -> results/X1/shift_selection.json"
 	@echo "dp-sanity         Week 5: single-client DP training at eps 1, 3, 10, inf -> results/privacy/"
 	@echo "x8                Week 7: SecAgg+ systems experiment on Fed-A -> results/X8/"
-	@echo "g2-pilot          Week 7: FedAvg and FedProx at eps 10, both sites, 50 rounds -> results/X1/"
+	@echo "g2-pilot          Week 7: FedAvg and FedProx at eps 10, both sites, 50 rounds -> results/federated/g2_pilot/"
 	@echo "g2-tuning         Week 7: ADR 0008 DP lr x clip grid and FedProx mu grid -> results/federated/g2_*"
 	@echo "train             Week 6: one federated run, e.g. make train SITE=site_a [ROUNDS=5 smoke] [EPS=3] [STRATEGY=fedavg] [BACKEND=flower]"
 	@echo "scoring-selection ADR 0003: score aggregation chosen on validation -> results/X1/"
@@ -140,17 +140,21 @@ train:
 x8:
 	$(UV) run --group fl python -m agmesh.experiments.x8_secagg
 
+# Reproduces the ADR 0008 pilots with the settings in force before G2 (Site A DP lr 1e-3).
 g2-pilot:
-	for site in site_b site_a; do for st in fedavg fedprox; do \
-		$(PY) -m agmesh.federated.run --site $$site --strategy $$st --epsilon 10 || exit 1; \
-	done; done
+	for st in fedavg fedprox; do \
+		$(PY) -m agmesh.federated.run --site site_b --strategy $$st --epsilon 10 --tag g2_pilot || exit 1; \
+		$(PY) -m agmesh.federated.run --site site_a --strategy $$st --epsilon 10 --lr 0.001 --tag g2_pilot || exit 1; \
+	done
 
 g2-tuning:
 	for lr in 0.001 0.003; do for c in 0.5 1 2; do \
 		$(PY) -m agmesh.federated.run --site site_a --strategy fedavg --epsilon 3 \
 			--lr $$lr --clip $$c --tag g2_tuning || exit 1; \
 	done; done
+	$(PY) -m agmesh.federated.run --site site_a --strategy fedavg --epsilon 3 \
+		--lr 0.01 --clip 1 --tag g2_tuning
 	for mu in 0.001 0.1; do \
 		$(PY) -m agmesh.federated.run --site site_a --strategy fedprox --epsilon 10 \
-			--mu $$mu --tag g2_mu || exit 1; \
+			--mu $$mu --lr 0.001 --tag g2_mu || exit 1; \
 	done
