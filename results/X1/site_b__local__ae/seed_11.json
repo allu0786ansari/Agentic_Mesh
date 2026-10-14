@@ -3,12 +3,12 @@
   "kind": "result",
   "data_source": "runtime",
   "provenance": {
-    "created_at": "2026-10-14T10:53:33Z",
-    "git_sha": "ab6ddc46d9a338cbe2bd0b0ac55394e2c4ca3ddf",
+    "created_at": "2026-10-14T14:11:17Z",
+    "git_sha": "a018b7069f61b0696d28595f8e53a0070643ebd4",
     "git_branch": "main",
     "git_dirty": false,
     "git_dirty_paths": [],
-    "params_sha256": "4e41991670173e3f638c08e25bbf0ff9c66e3ecbab65b29c3ad6e29579f6b3c5",
+    "params_sha256": "3e9e8bd72c4d1cbbc0a0c3368cf5451e70794e0620d6c9d3b3e964334a2fa5fc",
     "environment": {
       "python": "3.12.15",
       "implementation": "CPython",
@@ -21,12 +21,12 @@
       "swap_total_mb": 4096,
       "lockfile_sha256": "1184348c146123880a7ab77f83475c9870121b808073f7e027c33cc71fc89380",
       "hostname_hash": "89a720d64995",
-      "pid": 5672
+      "pid": 7550
     },
     "manifest_sha256": "193bf797926efed5c5c9d7e407e1f1bdf8f1ec8b4eac7a963ab26b4dd0c27905",
     "checkpoint_sha256": "163679c160579bcb1b464e4d606b3328e21f6bc95467d564e92ab7f079bde1ee",
-    "started_at": "2026-10-14T10:53:21Z",
-    "finished_at": "2026-10-14T10:53:33Z"
+    "started_at": "2026-10-14T14:11:05Z",
+    "finished_at": "2026-10-14T14:11:17Z"
   },
   "experiment": "X1",
   "config_id": "site_b__local__ae",
@@ -68,7 +68,10 @@
       "threshold": 282.64427992508155,
       "threshold_val_fpr": 0.009971136184728419,
       "windows": 147,
-      "attack_windows": 12
+      "attack_windows": 12,
+      "window_fpr_excl_recovery": 0.29411764705882354,
+      "abstained_share": 0.0,
+      "abstained_attack_windows": 0
     },
     "b2": {
       "auroc": "nan",
@@ -88,7 +91,10 @@
       "threshold": 130.56130928191106,
       "threshold_val_fpr": 0.009913954358398803,
       "windows": 147,
-      "attack_windows": 0
+      "attack_windows": 0,
+      "window_fpr_excl_recovery": 0.0,
+      "abstained_share": 0.0,
+      "abstained_attack_windows": 0
     },
     "b3": {
       "auroc": "nan",
@@ -108,7 +114,10 @@
       "threshold": 189.82890475674685,
       "threshold_val_fpr": 0.009918931807343824,
       "windows": 147,
-      "attack_windows": 0
+      "attack_windows": 0,
+      "window_fpr_excl_recovery": 0.06802721088435375,
+      "abstained_share": 0.0,
+      "abstained_attack_windows": 0
     }
   },
   "training": {
@@ -127,7 +136,7 @@
       "epochs_run": 17,
       "best_epoch": 12,
       "best_val_loss": 1.8177344089215764e-05,
-      "train_seconds": 3.03,
+      "train_seconds": 3.28,
       "state_sha256": "9bca07dd04878060b3c3fcffaa51fdb2ae2960e0358206a86a4b63b2d7d9aa7a",
       "train_windows": 60596,
       "inputs": 16
@@ -137,22 +146,27 @@
       "epochs_run": 15,
       "best_epoch": 10,
       "best_val_loss": 3.3821081000961574e-05,
-      "train_seconds": 2.88,
+      "train_seconds": 3.21,
       "state_sha256": "4f9e137d2f727580d78f850cb47959a04c03a0ede685c83de5f9cea59197e8d4",
       "train_windows": 59419,
       "inputs": 16
     }
   },
-  "wall_seconds": 11.41,
+  "wall_seconds": 12.1,
   "scoring": {
     "aggregation": "norm_top3",
     "smooth": 1,
-    "top_k": 3
+    "top_k": 3,
+    "shift": "r0"
   },
   "evaluation": {
     "threshold_from": "val_normal",
     "evaluated_on": "val_attack",
     "target_window_fpr": 0.01,
     "event_tolerance_s": 60
+  },
+  "scores_file": {
+    "path": "seed_11.scores.npz",
+    "sha256": "b1449907be8dcc0bc68a3d62662dce9b8f12e63c180ed91939f0b1d34700d0b6"
   }
 }

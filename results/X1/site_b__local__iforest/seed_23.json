@@ -1,0 +1,157 @@
+{
+  "schema_version": "1.0",
+  "kind": "result",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-14T14:16:15Z",
+    "git_sha": "a018b7069f61b0696d28595f8e53a0070643ebd4",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "3e9e8bd72c4d1cbbc0a0c3368cf5451e70794e0620d6c9d3b3e964334a2fa5fc",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "1184348c146123880a7ab77f83475c9870121b808073f7e027c33cc71fc89380",
+      "hostname_hash": "89a720d64995",
+      "pid": 7550
+    },
+    "manifest_sha256": "193bf797926efed5c5c9d7e407e1f1bdf8f1ec8b4eac7a963ab26b4dd0c27905",
+    "checkpoint_sha256": null,
+    "started_at": "2026-10-14T14:16:13Z",
+    "finished_at": "2026-10-14T14:16:15Z"
+  },
+  "experiment": "X1",
+  "config_id": "site_b__local__iforest",
+  "seed": 23,
+  "split": "val",
+  "metrics": {
+    "auroc": 0.8938271604938272,
+    "auprc": 0.28641416737907965,
+    "event_recall": 0.25,
+    "range_f1": 0.02531645569620253,
+    "window_fpr": 0.023885109599395313,
+    "ttd_median_s": 140.0,
+    "false_alarms_per_hour": 5.115646258503401,
+    "range_precision": 0.3333333333333333,
+    "range_recall": 0.013157894736842105,
+    "window_precision": 0.0,
+    "ttd_mean_s": 140.0
+  },
+  "site": "site_b",
+  "mode": "local",
+  "model": "iforest",
+  "private": false,
+  "per_client": {
+    "b1": {
+      "auroc": 0.8938271604938272,
+      "auprc": 0.28641416737907965,
+      "event_recall": 0.25,
+      "events": 4,
+      "events_detected": 1,
+      "range_precision": 0.3333333333333333,
+      "range_recall": 0.013157894736842105,
+      "range_f1": 0.02531645569620253,
+      "window_fpr": 0.044444444444444446,
+      "window_precision": 0.0,
+      "window_recall": 0.0,
+      "ttd_median_s": 140.0,
+      "ttd_mean_s": 140.0,
+      "false_alarms_per_hour": 8.0,
+      "threshold": 0.6893408894538879,
+      "threshold_val_fpr": 0.009971136184728419,
+      "windows": 147,
+      "attack_windows": 12,
+      "window_fpr_excl_recovery": 0.23529411764705882,
+      "abstained_share": 0.0,
+      "abstained_attack_windows": 0
+    },
+    "b2": {
+      "auroc": "nan",
+      "auprc": "nan",
+      "event_recall": "nan",
+      "events": 0,
+      "events_detected": 0,
+      "range_precision": "nan",
+      "range_recall": "nan",
+      "range_f1": "nan",
+      "window_fpr": 0.0,
+      "window_precision": "nan",
+      "window_recall": "nan",
+      "ttd_median_s": "nan",
+      "ttd_mean_s": "nan",
+      "false_alarms_per_hour": 0.0,
+      "threshold": 0.7148975133895874,
+      "threshold_val_fpr": 0.009913954358398803,
+      "windows": 147,
+      "attack_windows": 0,
+      "window_fpr_excl_recovery": 0.0,
+      "abstained_share": 0.0,
+      "abstained_attack_windows": 0
+    },
+    "b3": {
+      "auroc": "nan",
+      "auprc": "nan",
+      "event_recall": "nan",
+      "events": 0,
+      "events_detected": 0,
+      "range_precision": "nan",
+      "range_recall": "nan",
+      "range_f1": "nan",
+      "window_fpr": 0.027210884353741496,
+      "window_precision": 0.0,
+      "window_recall": "nan",
+      "ttd_median_s": "nan",
+      "ttd_mean_s": "nan",
+      "false_alarms_per_hour": 7.346938775510204,
+      "threshold": 0.6419739723205566,
+      "threshold_val_fpr": 0.009918931807343824,
+      "windows": 147,
+      "attack_windows": 0,
+      "window_fpr_excl_recovery": 0.027210884353741496,
+      "abstained_share": 0.0,
+      "abstained_attack_windows": 0
+    }
+  },
+  "training": {
+    "b1": {
+      "train_seconds": 0.36,
+      "train_windows": 64792,
+      "inputs": 16
+    },
+    "b2": {
+      "train_seconds": 0.31,
+      "train_windows": 60596,
+      "inputs": 16
+    },
+    "b3": {
+      "train_seconds": 0.27,
+      "train_windows": 59419,
+      "inputs": 16
+    }
+  },
+  "wall_seconds": 2.16,
+  "scoring": {
+    "aggregation": "norm_top3",
+    "smooth": 1,
+    "top_k": 3,
+    "shift": "r0"
+  },
+  "evaluation": {
+    "threshold_from": "val_normal",
+    "evaluated_on": "val_attack",
+    "target_window_fpr": 0.01,
+    "event_tolerance_s": 60
+  },
+  "scores_file": {
+    "path": "seed_23.scores.npz",
+    "sha256": "30d0cf7b87e9e0318ce8cc1758265af3c36d656df6deb08c997c531ed2cfb6ed"
+  }
+}
