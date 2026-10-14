@@ -7,7 +7,7 @@ PY := $(UV) run python
 .PHONY: help setup setup-fl lock lint format typecheck test check \
         checksums verify-checksums inspect-data bench-llm bench-ray feasibility \
         prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft \
-        training-budget summarise shift-selection
+        training-budget summarise shift-selection dp-sanity
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -31,6 +31,7 @@ help:
 	@echo "training-budget   ADR 0004: label-free max_epochs check -> results/X1/training_budget.json"
 	@echo "summarise         seed CIs + event-level CIs and paired tests -> results/X1/summary_val.json"
 	@echo "shift-selection   ADR 0005: shift-robust scoring chosen on validation -> results/X1/shift_selection.json"
+	@echo "dp-sanity         Week 5: single-client DP training at eps 1, 3, 10, inf -> results/privacy/"
 	@echo "scoring-selection ADR 0003: score aggregation chosen on validation -> results/X1/"
 	@echo "ground-truth-draft  first-pass attribution mapping (reads test labels, logged)"
 
@@ -121,3 +122,6 @@ summarise:
 
 shift-selection:
 	$(PY) -m agmesh.experiments.shift_selection
+
+dp-sanity:
+	$(PY) -m agmesh.experiments.dp_sanity
