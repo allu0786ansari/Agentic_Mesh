@@ -6,7 +6,8 @@ PY := $(UV) run python
 
 .PHONY: help setup setup-fl lock lint format typecheck test check \
         checksums verify-checksums inspect-data bench-llm bench-ray feasibility \
-        prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft
+        prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft \
+        training-budget summarise
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -26,7 +27,9 @@ help:
 	@echo "data              prepare + partition + check-data"
 	@echo "fixture-smoke     run the whole data pipeline on the synthetic fixture (what CI runs)"
 	@echo "check-results     validate every result artifact under results/X*/"
-	@echo "baselines         Week 4: X1 non-private baselines on validation -> results/X1/"
+	@echo "baselines         X1 non-private baselines, all project seeds, validation -> results/X1/"
+	@echo "training-budget   ADR 0004: label-free max_epochs check -> results/X1/training_budget.json"
+	@echo "summarise         mean and 95% CI over seeds + paired tests -> results/X1/summary_val.json"
 	@echo "scoring-selection ADR 0003: score aggregation chosen on validation -> results/X1/"
 	@echo "ground-truth-draft  first-pass attribution mapping (reads test labels, logged)"
 
@@ -108,3 +111,9 @@ scoring-selection:
 ground-truth-draft:
 	$(PY) -m agmesh.evaluation.ground_truth site_a
 	$(PY) -m agmesh.evaluation.ground_truth site_b
+
+training-budget:
+	$(PY) -m agmesh.experiments.training_budget
+
+summarise:
+	$(PY) -m agmesh.experiments.summarise X1

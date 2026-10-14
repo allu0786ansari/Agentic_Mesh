@@ -97,3 +97,19 @@ Site A numbers equal the "without `P1_PCV02Z`" rows of ADR 0002.
 **Consequences.** `models.scoring` in `configs/params.yaml` records the choice; the
 grid is closed. All nine variants per site are kept in
 `results/X1/scoring_selection.json` for the sensitivity analysis.
+
+### Robustness across seeds (after ADR 0004; `results/X1/scoring_stability.json`)
+
+The rule was repeated on every project seed with the ADR 0004 budget (VAE 200
+epochs). It is a check of the decision, not a new selection; the configuration is not
+changed by it.
+
+- **Site A:** the rule picks `mean`, no smoothing, on **5/5** seeds and on the seed-mean
+  criterion. The choice is stable.
+- **Site B:** the rule picks `norm_top3` on 2/5 seeds and `mean` on 3/5. The three
+  unsmoothed variants differ by at most 0.003 in AUPRC (0.997–0.999) and 0.003 in FPR
+  (0.052–0.056), so the tie-break follows seed noise. Site B validation cannot tell
+  these aggregations apart. The declared choice stays; the paper reports that the
+  Site B aggregation is immaterial on validation and shows all three in the
+  sensitivity table. The firm finding on both sites is that smoothing hurts, which
+  holds on every seed.

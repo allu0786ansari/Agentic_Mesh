@@ -118,3 +118,29 @@ def test_selection_runner_on_fixture(
     assert report["site_a"]["chosen"] in {s.name for s in GRID}
     doc = json.loads(out.read_text(encoding="utf-8"))
     assert doc["data_source"] == "fixture" and len(doc["sites"]["site_a"]["variants"]) == 9
+
+
+def test_stability_check_on_fixture(
+    params: Params, site_a_run: tuple[dict[str, Any], Path], tmp_path: Path
+) -> None:
+    pytest.importorskip("torch")
+    from agmesh.experiments import scoring_selection
+
+    raw = params.model_dump()
+    raw["models"]["vae"]["max_epochs"] = 2
+    out = tmp_path / "stability.json"
+    report = scoring_selection.stability(
+        Params.model_validate(raw),
+        ["site_a"],
+        site_a_run[1].parent,
+        [11, 23],
+        out,
+        data_source="fixture",
+        params_path=REPO_PARAMS,
+    )
+    site = report["site_a"]
+    assert site["configured"] == "mean__s1" and site["seeds"] == 2
+    assert 0 <= site["seeds_agreeing"] <= 2 and set(site["per_seed"]) == {"11", "23"}
+    assert site["chosen_on_mean_criterion"] in {s.name for s in GRID}
+    assert len(site["mean_over_seeds"]) == 9
+    assert json.loads(out.read_text(encoding="utf-8"))["kind"] == "X1.scoring_stability"

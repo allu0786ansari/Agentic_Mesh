@@ -8,6 +8,13 @@ Trains the neural model of each site once per node (local) and once on pooled da
 validation at the target FPR and is evaluated on attack validation. The selection
 rule is the one declared in ADR 0003 before this ran. Everything is written to
 ``results/X1/scoring_selection.json``; the test split is never read.
+
+    python -m agmesh.experiments.scoring_selection --stability
+
+repeats the selection for every project seed under the current training budget and
+writes ``results/X1/scoring_stability.json``: which variant each seed would pick and
+the criterion averaged over seeds. It is a robustness check of the ADR 0003 decision,
+not a second selection; the configured scoring is not changed by it.
 """
 
 from __future__ import annotations
@@ -124,6 +131,108 @@ def select(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return tied[0]
 
 
+def _site_rows(
+    site: Site, data: dict[str, x1.NodeData], params: Params, seed: int, *, verbose: bool
+) -> list[dict[str, Any]]:
+    bundles = {mode: _bundles(site, mode, data, params, seed) for mode in ("local", "central")}
+    rows = []
+    for scoring in GRID:
+        entry: dict[str, Any] = {
+            "variant": scoring.name,
+            "aggregation": scoring.aggregation,
+            "smooth": scoring.smooth,
+        }
+        for mode, b in bundles.items():
+            per_client = _evaluate(b, scoring, params)
+            entry[mode] = {"metrics": macro(per_client, KEYS), "per_client": per_client}
+        auprcs = [entry[m]["metrics"]["auprc"] for m in ("local", "central")]
+        fprs = [entry[m]["metrics"]["window_fpr"] for m in ("local", "central")]
+        entry["criterion"] = float(np.mean([a for a in auprcs if a is not None]))
+        entry["mean_fpr"] = float(np.mean([f for f in fprs if f is not None]))
+        rows.append(entry)
+        if verbose:
+            lm, cm = entry["local"]["metrics"], entry["central"]["metrics"]
+            pairs = " | ".join(
+                f"{k} {lm[k]:.3f}/{cm[k]:.3f}"
+                for k in ("auprc", "auroc", "window_fpr", "event_recall")
+            )
+            print(f"{site} {scoring.name:<16} local/central {pairs}", flush=True)
+    return rows
+
+
+def stability(
+    params: Params,
+    sites: list[Site],
+    partitions: Path,
+    seeds: list[int],
+    out: Path,
+    *,
+    data_source: str,
+    params_path: Path,
+) -> dict[str, Any]:
+    """Repeat the ADR 0003 rule per seed; report agreement with the configured scoring."""
+    report: dict[str, Any] = {}
+    for site in sites:
+        data = x1._load(params, site, partitions)
+        configured = getattr(params.models.scoring, site)
+        configured_name = Scoring(
+            aggregation=configured.aggregation, smooth=configured.smooth, top_k=configured.top_k
+        ).name
+        per_seed: dict[str, Any] = {}
+        criteria: dict[str, list[float]] = {}
+        fprs: dict[str, list[float]] = {}
+        for seed in seeds:
+            rows = _site_rows(site, data, params, seed, verbose=False)
+            choice = select(rows)["variant"]
+            per_seed[str(seed)] = {
+                "chosen": choice,
+                "criterion": {r["variant"]: r["criterion"] for r in rows},
+                "mean_fpr": {r["variant"]: r["mean_fpr"] for r in rows},
+            }
+            for r in rows:
+                criteria.setdefault(r["variant"], []).append(r["criterion"])
+                fprs.setdefault(r["variant"], []).append(r["mean_fpr"])
+            print(f"{site} seed {seed}: rule picks {choice}", flush=True)
+        mean_rows = [
+            {
+                "variant": v,
+                "aggregation": next(g.aggregation for g in GRID if g.name == v),
+                "smooth": next(g.smooth for g in GRID if g.name == v),
+                "criterion": float(np.mean(c)),
+                "mean_fpr": float(np.mean(fprs[v])),
+            }
+            for v, c in criteria.items()
+        ]
+        pooled = select(mean_rows)["variant"]
+        agree = sum(e["chosen"] == configured_name for e in per_seed.values())
+        report[site] = {
+            "configured": configured_name,
+            "seeds_agreeing": agree,
+            "seeds": len(seeds),
+            "chosen_on_mean_criterion": pooled,
+            "mean_over_seeds": sorted(mean_rows, key=lambda r: -r["criterion"]),
+            "per_seed": per_seed,
+        }
+        print(
+            f"{site}: configured {configured_name}; {agree}/{len(seeds)} seeds agree; "
+            f"rule on the seed-mean criterion picks {pooled}",
+            flush=True,
+        )
+    write_artifact(
+        out,
+        kind="X1.scoring_stability",
+        data_source=data_source,  # type: ignore[arg-type]
+        payload={
+            "protocol": "docs/adr/0003-scoring-selection.md (robustness check)",
+            "seeds": seeds,
+            "split": "val",
+            "sites": report,
+        },
+        params_path=params_path,
+    )
+    return report
+
+
 def run(
     params: Params,
     sites: list[Site],
@@ -137,28 +246,7 @@ def run(
     report: dict[str, Any] = {}
     for site in sites:
         data = x1._load(params, site, partitions)
-        bundles = {mode: _bundles(site, mode, data, params, seed) for mode in ("local", "central")}
-        rows = []
-        for scoring in GRID:
-            entry: dict[str, Any] = {
-                "variant": scoring.name,
-                "aggregation": scoring.aggregation,
-                "smooth": scoring.smooth,
-            }
-            for mode, b in bundles.items():
-                per_client = _evaluate(b, scoring, params)
-                entry[mode] = {"metrics": macro(per_client, KEYS), "per_client": per_client}
-            auprcs = [entry[m]["metrics"]["auprc"] for m in ("local", "central")]
-            fprs = [entry[m]["metrics"]["window_fpr"] for m in ("local", "central")]
-            entry["criterion"] = float(np.mean([a for a in auprcs if a is not None]))
-            entry["mean_fpr"] = float(np.mean([f for f in fprs if f is not None]))
-            rows.append(entry)
-            lm, cm = entry["local"]["metrics"], entry["central"]["metrics"]
-            pairs = " | ".join(
-                f"{k} {lm[k]:.3f}/{cm[k]:.3f}"
-                for k in ("auprc", "auroc", "window_fpr", "event_recall")
-            )
-            print(f"{site} {scoring.name:<16} local/central {pairs}", flush=True)
+        rows = _site_rows(site, data, params, seed, verbose=True)
         chosen = select(rows)
         report[site] = {"model": KIND[site], "variants": rows, "chosen": chosen["variant"]}
         print(
@@ -188,8 +276,22 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--partitions", type=Path, default=None)
     parser.add_argument("--output", type=Path, default=Path("results/X1/scoring_selection.json"))
     parser.add_argument("--fixture", action="store_true")
+    parser.add_argument("--stability", action="store_true", help="per-seed robustness check")
+    parser.add_argument("--seeds", nargs="+", type=int, default=None)
     args = parser.parse_args(argv)
     params = load_params(args.params)
+    if args.stability:
+        out = args.output.with_name("scoring_stability.json")
+        stability(
+            params,
+            args.sites,
+            args.partitions or params.paths.partitions_dir,
+            args.seeds or params.project.seeds,
+            out,
+            data_source="fixture" if args.fixture else "runtime",
+            params_path=args.params,
+        )
+        return 0
     run(
         params,
         args.sites,
