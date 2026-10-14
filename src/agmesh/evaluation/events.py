@@ -141,15 +141,22 @@ def events_from_rows(
 
 
 def events_from_episodes(
-    window_start_s: npt.ArrayLike, episode: npt.ArrayLike, length_s: float
+    window_start_s: npt.ArrayLike,
+    episode: npt.ArrayLike,
+    length_s: float,
+    label: npt.ArrayLike | None = None,
 ) -> list[Interval]:
     """Site B events: one interval per attacker episode, from its labelled windows.
 
-    ``episode`` is the episode index of each attack window (-1 for none); the event
-    runs from the first such window's start to the last one's end.
+    ``episode`` is the episode index of each window (-1 for none). Episodes are
+    defined by time for the whole site, so with ``label`` only the windows labelled
+    as attacks on *this* node count: a node the attacker never reached has no events.
+    The event runs from the first such window's start to the last one's end.
     """
     starts = np.asarray(window_start_s, dtype=np.float64)
-    ids = np.asarray(episode).astype(np.int64)
+    ids = np.asarray(episode).astype(np.int64).copy()
+    if label is not None:
+        ids[~np.asarray(label).astype(bool)] = -1
     events: list[Interval] = []
     for e in np.unique(ids[ids >= 0]):
         member = starts[ids == e]

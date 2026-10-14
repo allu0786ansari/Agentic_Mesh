@@ -6,10 +6,10 @@ PY := $(UV) run python
 
 .PHONY: help setup setup-fl lock lint format typecheck test check \
         checksums verify-checksums inspect-data bench-llm bench-ray feasibility \
-        prepare partition check-data data fixture fixture-smoke check-results
+        prepare partition check-data data fixture fixture-smoke check-results baselines
 
 help:
-	@echo "setup             install core + dev dependencies (creates uv.lock on first run)"
+	@echo "setup             install core + dev + ml (torch CPU) dependencies"
 	@echo "setup-fl          also install the federated-learning stack (flwr, ray, torch CPU)"
 	@echo "lint / format     ruff lint and format check / auto-fix"
 	@echo "typecheck         mypy (strict)"
@@ -26,12 +26,13 @@ help:
 	@echo "data              prepare + partition + check-data"
 	@echo "fixture-smoke     run the whole data pipeline on the synthetic fixture (what CI runs)"
 	@echo "check-results     validate every result artifact under results/X*/"
+	@echo "baselines         Week 4: X1 non-private baselines on validation -> results/X1/"
 
 setup:
-	$(UV) sync --group dev
+	$(UV) sync --group dev --group ml
 
 setup-fl:
-	$(UV) sync --group dev --group fl
+	$(UV) sync --group dev --group ml --group fl
 
 lock:
 	$(UV) lock
@@ -95,3 +96,6 @@ fixture-smoke: fixture
 
 check-results:
 	$(PY) -m agmesh.evaluation.checker
+
+baselines:
+	$(PY) -m agmesh.experiments.x1_baselines

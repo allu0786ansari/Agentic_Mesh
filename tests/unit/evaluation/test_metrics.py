@@ -128,3 +128,5 @@ def test_episode_events() -> None:
     starts = np.array([0.0, 10.0, 20.0, 30.0, 100.0])
     episode = np.array([-1, 0, -1, 0, 1])
     assert ev.events_from_episodes(starts, episode, 10.0) == [(10.0, 40.0), (100.0, 110.0)]
+    label = np.array([0, 0, 0, 1, 0])  # this node saw only one window of episode 0
+    assert ev.events_from_episodes(starts, episode, 10.0, label) == [(30.0, 40.0)]

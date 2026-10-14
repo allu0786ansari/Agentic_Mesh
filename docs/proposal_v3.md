@@ -935,6 +935,7 @@ Findings come from the full analysis of HAI 21.03 and of the CIC Modbus 2023 att
 | HAI-5 | 50 events, smallest gap 24 min | Validation/test split by event segment, about 15/35 | §6.2 |
 | HAI-6 | A flattened window has more inputs than a client has training windows | Six 10 s segment means per feature (336 inputs) | §6.4; `models.vae.input_mode` |
 | HAI-7 | About 3,000–3,400 windows per client; σ ≈ 8.4 at ε = 1 | Keep the ε sweep; batch 256; report the curve | §6.4, §7.3 |
+| HAI-8 | Week 4 baselines: `P1_PCV02Z` steps between recording periods, so local models flag most attack-validation normals (local VAE FPR 0.64, local PCA 0.54 at a 1% target) | **Open, decided at G1:** exclude it from model inputs and report its changes through the training-constant change rule (ADR 0002 decision 2) | §6.1; `models.vae.exclude_features` |
 | MB-1 | Attack logs and other attacker positions are not in the obtained data | Labels from attacker address; optional extra data recorded as a risk | §6.1, §12 |
 | MB-2 | Capture-level labels would mark all 3,681 IED1A attack-day windows as attacks; only 51 contain attacker traffic | Window-level labels, marked derived | §6.1; `data.modbus.label_source` |
 | MB-3 | Only IED1A saw the external attacker | RQ2 reframed as a trade-off | §2 |
@@ -950,5 +951,6 @@ Findings come from the full analysis of HAI 21.03 and of the CIC Modbus 2023 att
 | MB-13 | The secure IEDs stall together on normal days | Latency excluded from fusion | §8.2; `fusion.site_b.exclude_latency` |
 | MB-14 | The HMI is a client; the IEDs are servers | Features from each node's own side; one schema | §4.1, §6.6 |
 | MB-15 | Week 3 diagnostics: on the attack day, `new_peers` reproduces the label exactly and `peers` separates it perfectly, because the label *is* the attacker's (new) address | **Open, decided at G1:** whether the Site B model sees identity features, or detects from behaviour only with a new-peer rule reported as a separate baseline | §6.6, §10.5; `evaluation/diagnostics.py` |
+| MB-16 | Week 4 baselines: attack-day normal windows alert at 7–10% on b1 and b3 against 1% on benign validation (TCP resets, latency); only 1 of 12 HMI alerts falls inside an episode | Report as day-to-day drift; it bounds the fusion gain (RQ2). ADR 0002 decision 5 | §10.6; ADR 0002 |
 
 The window figure in MB-6 counts IPv4 traffic only. An earlier count of 80 windows also included 29 windows containing only ARP frames from the attacker, which carry no Modbus content.

@@ -25,10 +25,16 @@ def fixture_paths(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Path]:
 
 
 @pytest.fixture(scope="session")
+def partitions_root(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """One partitions folder holding both sites, like data/partitions."""
+    return tmp_path_factory.mktemp("parts")
+
+
+@pytest.fixture(scope="session")
 def site_a_run(
-    params: Params, fixture_paths: dict[str, Path], tmp_path_factory: pytest.TempPathFactory
+    params: Params, fixture_paths: dict[str, Path], partitions_root: Path
 ) -> tuple[dict[str, Any], Path]:
-    out = tmp_path_factory.mktemp("parts") / "site_a"
+    out = partitions_root / "site_a"
     return site_a.partition(params, fixture_paths["hai_dir"], out), out
 
 
@@ -43,7 +49,7 @@ def interim_dir(
 
 @pytest.fixture(scope="session")
 def site_b_run(
-    params: Params, interim_dir: Path, tmp_path_factory: pytest.TempPathFactory
+    params: Params, interim_dir: Path, partitions_root: Path
 ) -> tuple[dict[str, Any], Path]:
-    out = tmp_path_factory.mktemp("parts") / "site_b"
+    out = partitions_root / "site_b"
     return site_b.partition(params, interim_dir, out), out

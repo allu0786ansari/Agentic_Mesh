@@ -161,17 +161,33 @@ class VaeConfig(_Section):
     batch: int = Field(gt=0)
     input_mode: Literal["flat", "segment_means"]
     segments_per_window: int = Field(gt=0)
+    kl_weight: float = Field(ge=0)
+    exclude_features: list[str] = Field(default_factory=list)
+    max_epochs: int = Field(gt=0)
+    patience: int = Field(gt=0)
 
 
 class AeConfig(_Section):
     hidden: list[int] = Field(min_length=1)
     lr: float = Field(gt=0)
     batch: int = Field(gt=0)
+    max_epochs: int = Field(gt=0)
+    patience: int = Field(gt=0)
+    transform: Literal["log1p", "none"]
+    clip_sd: float = Field(gt=0)
+    exclude_features: list[str]
+
+
+class BaselinesConfig(_Section):
+    pca_variance: float = Field(gt=0, lt=1)
+    iforest_trees: int = Field(gt=0)
+    iforest_max_samples: int = Field(gt=0)
 
 
 class ModelsConfig(_Section):
     vae: VaeConfig
     ae: AeConfig
+    baselines: BaselinesConfig
 
 
 class StoppingConfig(_Section):

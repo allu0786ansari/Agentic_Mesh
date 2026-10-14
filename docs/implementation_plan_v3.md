@@ -515,9 +515,10 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 1. **Models:**
    - `models/vae.py`: a VAE over six 10 s segment means per feature (6 × 56 = 336 inputs; hidden 256 → 128, latent 16), Opacus-compatible (no batch normalisation). The flattened 3,360-input variant is trained once on validation as a comparison; the choice is recorded at G1 (`models.vae.input_mode`).
    - `models/autoencoder.py`: dense autoencoder (64 → 32).
-   - `models/scoring.py`: window score plus a per-feature error vector, taking `LabelFreeFrame` input only.
-2. **Baselines** (`models/baselines.py`): PCA reconstruction error and Isolation Forest, both local.
-3. **Baseline runs:** `experiments/x1_utility.py --configs baselines --split val` trains local-only and centralised non-private models for both sites (one seed, to sanity-check before the full X1).
+   - `models/inputs.py`: model inputs from `load_partition` (label-free): Site A windows → segment means, Site B `log1p` and scaling; `exclude_features` per site; per-feature error vectors.
+   - `models/nets.py`: training with early stopping on normal-validation loss, seeded initialisation, reconstruction scoring (window score plus per-input errors).
+2. **Baselines** (`models/baselines.py`): PCA reconstruction error, Isolation Forest, and on Site B the new-peer rule (MB-15).
+3. **Baseline runs:** `make baselines` (`agmesh.experiments.x1_baselines`) trains local-only and centralised non-private models for both sites on one seed, sets each node's threshold on its normal validation and evaluates on its attack validation (`agmesh.evaluation.detection`). About 3 minutes on a laptop CPU. Results and the G1 decisions they raise are in ADR 0002.
 4. **Ground truth:** write `docs/mapping_protocol.md`. Build `evaluation/ground_truth/mapping_site_a.json` (each of the 50 HAI events → tactic set, from its targeted processes and deviating variables; technique set where the evidence supports one) and `mapping_site_b.json` (each of the seven Modbus episodes → technique and tactic, for the case study). Do two review passes on separate days, and log any disagreements.
 5. **Preregistration** (`docs/preregistration.md`): the evaluation config hash, PT1–PT7 (PT3 may be revised using validation baselines only), primary metrics, and statistical tests.
 
@@ -528,8 +529,8 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 | Check | Command | Expected |
 |---|---|---|
 | Model unit tests | `pytest tests/unit/models -q` | Pass; per-feature errors have the correct shape |
-| Opacus compatibility | `pytest tests/unit/test_opacus_compat.py` | `ModuleValidator.validate` reports no errors |
-| Baselines on validation | `ls results/baselines/` | Artifacts for both sites |
+| Opacus compatibility | `pytest tests/unit/models -k opacus` | Only `Linear`/`ReLU` modules (Opacus's own validator runs in Week 5, when Opacus is installed) |
+| Baselines on validation | `make baselines && make check-results` | 14 artifacts in `results/X1/`; all accepted |
 | **Gate G1** | Review against §7 | Mappings and preregistration committed and tagged `g1-frozen` |
 
 **Resolves:** M1, M5, M6, M7, D6, A7, E5, F7 (baseline available).

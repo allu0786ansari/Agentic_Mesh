@@ -1,6 +1,7 @@
 # Agentic Mesh v3 CI (Implementation Plan v3.1, WR-7).
 # Runs the quality gates on every push and pull request. The federated-learning
-# stack (flwr, ray, torch) is not installed here; tests that need it are skipped.
+# stack (flwr, ray) is not installed here; tests that need it are skipped. The ml
+# group (torch CPU) is installed so the Week 4 model tests run.
 name: CI
 
 on:
@@ -21,14 +22,8 @@ jobs:
       - name: Install Python 3.12
         run: uv python install 3.12
 
-      - name: Install core and dev dependencies
-        run: |
-          if [ -f uv.lock ]; then
-            uv sync --locked --group dev
-          else
-            echo "::warning::uv.lock not committed yet; resolving without a lock"
-            uv sync --group dev
-          fi
+      - name: Install core, dev and ml dependencies (torch CPU for the model tests)
+        run: uv sync --locked --group dev --group ml
 
       - name: Ruff lint
         run: uv run ruff check .
