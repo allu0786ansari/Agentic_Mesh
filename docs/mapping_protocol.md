@@ -1,7 +1,8 @@
 # Attribution Ground-Truth Mapping Protocol
 
 **Status:** v1.0. Pass 1 was done on 14 October 2026 by the assistant at the author's
-request. It awaits the author's verification (§6). Changing this protocol after
+request. It awaits the author's verification (§6), after which the mapping is tagged
+`gt-frozen` (preregistration, Status). That tag is required before Phase 3. Changing this protocol after
 `g1-frozen` requires a new ADR and invalidates attribution results produced under the
 old version.
 **Implements:** Proposal v3.1 §10.4; ADR 0002 decision 6.

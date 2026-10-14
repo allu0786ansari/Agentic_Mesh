@@ -1,9 +1,20 @@
 # Preregistration (Gate G1)
 
-**Status:** Draft, decisions filled in from ADRs 0002–0003; waits for the ground-truth reviews. Once
-accepted, this file is committed with the ground-truth mappings and the commit is
-tagged `g1-frozen`. After that, nothing here changes; a missed target is reported as a
-finding.
+**Status:** Frozen in two parts (decided 15 October 2026, before any Phase 2 result).
+
+1. **Detection evaluation: frozen at the tag `g1-frozen`.** This covers
+   §1 (except the ground-truth row), §2 detection and privacy metrics, §3 detection
+   and privacy targets, §4 and §5. These are the decisions of ADRs 0002-0005. After
+   the tag, none of them changes; a missed target is reported as a finding.
+2. **Attribution ground truth: frozen at the tag `gt-frozen`.** This covers the
+   ground-truth row of §1, the attribution metrics of §2, and
+   `evaluation/ground_truth/` under `docs/mapping_protocol.md` v1.0. The tag follows
+   the author's verification pass (mapping protocol §6). It must exist before any
+   attribution output is produced (Phase 3, Week 8). The Phase 3 runners refuse to
+   run without it.
+
+Phase 2 (private federated detection) does not read the ground truth, so the split
+does not let any attribution decision depend on a detection result, or the reverse.
 
 ## 1. Frozen evaluation configuration
 
@@ -12,8 +23,9 @@ finding.
 | Parameters file | `configs/params.yaml` at the `g1-frozen` commit (its SHA-256 is recorded in every result artifact) |
 | Partitions | `data/partitions/*/manifest.json` from `dvc.lock` at that commit |
 | Labels | `docs/labeling_protocol.md` v1.0 |
-| Ground truth | `evaluation/ground_truth/mapping_site_{a,b}.json` under `docs/mapping_protocol.md` |
-| Site A model inputs | 56 features minus `P1_PCV02Z` (ADR 0002), six 10 s segment means per feature; score = mean squared error, no smoothing (ADR 0003) |
+| Ground truth | `evaluation/ground_truth/mapping_site_{a,b}.json` under `docs/mapping_protocol.md` v1.0, frozen at `gt-frozen` (see Status) |
+| Site A model inputs | 56 features minus `P1_PCV02Z` (ADR 0002), six 10 s segment means per feature; score = mean squared error, no smoothing (ADR 0003), then the robust adaptive threshold R3 (ADR 0005) |
+| Training budget | VAE `max_epochs` 200, AE 30, early stopping as configured (ADR 0004; non-private runs) |
 | Site B model inputs | 18 features minus `peers`, `new_peers` (ADR 0002); `log1p`, standardised; score = mean of the three largest normalised feature errors, no smoothing (ADR 0003) |
 | Operating point | Threshold per node from its normal-validation windows at window FPR 1%; also reported at 0.5% and 5% |
 | Event tolerance | 60 s after the event end |
