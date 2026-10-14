@@ -4,25 +4,29 @@
       "acceptable": [
         "T0888",
         "T0861",
-        "T0846"
+        "T0846",
+        "T0814"
       ],
-      "observed": "Two reads, one asking for 65,535 values",
+      "observed": "Two reads, one asking for 65,535 values (a malformed length)",
       "primary": "T0888",
       "tactics": [
         "Collection",
-        "Discovery"
+        "Discovery",
+        "Inhibit Response Function"
       ]
     },
     "1": {
       "acceptable": [
         "T0861",
-        "T0888"
+        "T0888",
+        "T0814"
       ],
       "observed": "About 20 input-register reads; a stacked 23-frame packet",
       "primary": "T0861",
       "tactics": [
         "Collection",
-        "Discovery"
+        "Discovery",
+        "Inhibit Response Function"
       ]
     },
     "2": {
@@ -85,12 +89,20 @@
       ]
     }
   },
-  "generated_at": "2026-10-14T10:54:42Z",
-  "git_sha": "ab6ddc46d9a338cbe2bd0b0ac55394e2c4ca3ddf",
+  "generated_at": "2026-10-14T15:49:12Z",
+  "git_sha": "05452f904b2e56844740d3ae6a6f47846ced10a7",
   "pass": 1,
   "protocol": "docs/mapping_protocol.md",
-  "protocol_version": "draft-1",
+  "protocol_version": "1.0",
   "reviewed": false,
-  "reviews": [],
+  "reviews": [
+    {
+      "changed": "episodes 0 and 1: T0814 added to the acceptable set",
+      "date": "2026-10-14",
+      "method": "traffic observation and the CIC attack catalogue",
+      "pass": 1,
+      "reviewer": "Claude (AI assistant), at the author's request"
+    }
+  ],
   "site": "site_b"
 }

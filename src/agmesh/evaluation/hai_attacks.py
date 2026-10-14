@@ -5,8 +5,8 @@ Source: *HAI Security Dataset - Technical Details*, icsdataset/hai,
 (pp. 36-38). The table below is a transcription of that section: 50 attacks, 25
 single primitives (A1xx, A2xx) and 25 combinations of two primitives (A3xx-A5xx),
 each with its target controller code, target point(s), start time and duration. The
-start times are the data's own clock; every one matches the first labelled row of a
-HAI 21.03 test event to the second or within a few seconds.
+start times are the data's own clock; the first labelled row of every HAI 21.03 event
+lies between 1 s before and 21 s after its documented start minute.
 
 **Target controller code.** ``<process>-<controller>-<variable>``. The variable is
 ``SP`` (setpoint), ``CO`` (control output, the command the controller sends to an

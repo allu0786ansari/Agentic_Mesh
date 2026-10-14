@@ -47,7 +47,7 @@ attribution ground truth. It is the one logged exception to the sealed test set
 make ground-truth-draft
 ```
 
-**Expected result:** `50 events; primary {'T0855': 33, 'T0856': 13, 'T0836': 1, 'None': 3} …`
+**Expected result (v0 draft, superseded by protocol v1.0):** `50 events; primary {'T0855': 33, 'T0856': 13, 'T0836': 1, 'None': 3} …`
 and `7 events; …` for Site B. Four lines are appended to `results/test_access.log`.
 
 ## Step 5 — Commit and push
@@ -59,6 +59,9 @@ git push origin main
 ```
 
 ## Step 6 — Your review of the ground truth (two passes, different days)
+
+> **Superseded.** Pass 1 was done under mapping protocol v1.0 from the dataset's own
+> attack timetable. For pass 2, follow `docs/mapping_protocol.md` §6.
 
 Open `evaluation/ground_truth/mapping_site_a.json`. For each event:
 

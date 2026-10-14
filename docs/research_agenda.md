@@ -95,6 +95,15 @@ and runs within 24 s per incident on a laptop CPU.
 - **RQ3 / H3** with technique-level ground truth (ADR 0002 decision 6; mapping protocol).
 - Four ablation modes (X4), majority-class baseline, raw grounding rate, latency (X5).
 - Site B: seven-episode case study.
+- **Ground truth from the dataset's documentation (mapping protocol v1.0).** All 50
+  HAI 21.03 events match the attack timetable published with the dataset: 32 are
+  setpoint-led (T0836) and 18 output-led (T0855). The majority and constant-answer
+  baselines are 0.64.
+  - The attacks hide setpoint changes in the HMI, so a data-only rule names the
+    documented technique for only 18 of 50 events.
+  - Results are stratified by SP-led versus CO-led events. Recognising a hidden
+    setpoint change from how the controller's output tracks it is the test of
+    *grounded* attribution, and a possible contribution in its own right.
 
 **Venue type.** Security or applied-AI-for-security venue; a workshop version is
 possible after X4.

@@ -1,13 +1,40 @@
 {
+  "agreement_with_data_only_inference": {
+    "events": 50,
+    "inferred_primary_equals_documented": 18,
+    "inferred_primary_in_acceptable": 30
+  },
+  "constant_answer_baseline": {
+    "T0806": 0.2,
+    "T0831": 0.64,
+    "T0836": 0.64,
+    "T0855": 0.64,
+    "T0856": 0.38
+  },
   "events": {
     "test1:e00": {
       "acceptable": [
-        "T0856",
-        "T0832",
-        "T0855"
+        "T0836"
       ],
-      "basis": "root deviation: P1_PIT02 (sensor)",
+      "attack_id": "A101",
+      "basis": "documented attack A101: P1-PC-SP1 (P1_B2016)",
       "client": "a2",
+      "documented": {
+        "duration_s": 192,
+        "primitives": [
+          {
+            "code": "P1-PC-SP1",
+            "columns": [
+              "P1_B2016"
+            ],
+            "points": [
+              "P1_B2016"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-07 15:35"
+      },
       "evidence": [
         {
           "excess": 19.187,
@@ -66,24 +93,49 @@
           "variable": "P1_FT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0856",
+          "T0832",
+          "T0855"
+        ],
+        "basis": "root deviation: P1_PIT02 (sensor)",
+        "primary": "T0856"
+      },
+      "labelled_s": 192,
       "partition": "val_attack",
-      "primary": "T0856",
+      "primary": "T0836",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-07 15:35:11",
       "tactics": [
-        "Evasion",
-        "Impact",
         "Impair Process Control"
       ]
     },
     "test1:e01": {
       "acceptable": [
-        "T0855",
-        "T0831"
+        "T0836"
       ],
-      "basis": "root deviation: P1_FCV03D (command)",
+      "attack_id": "A102",
+      "basis": "documented attack A102: P1-FC-SP1 (P1_B3005)",
       "client": "a3",
+      "documented": {
+        "duration_s": 98,
+        "primitives": [
+          {
+            "code": "P1-FC-SP1",
+            "columns": [
+              "P1_B3005"
+            ],
+            "points": [
+              "P1_B3005"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-07 17:28"
+      },
       "evidence": [
         {
           "excess": 0.895,
@@ -128,13 +180,22 @@
           "variable": "P1_TIT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_FCV03D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 98,
       "partition": "test",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-07 17:28:11",
       "tactics": [
-        "Impact",
         "Impair Process Control"
       ]
     },
@@ -143,8 +204,25 @@
         "T0855",
         "T0831"
       ],
-      "basis": "root deviation: P1_LCV01D (command)",
+      "attack_id": "A103",
+      "basis": "documented attack A103: P1-LC-CO1 (P1_LCV01D)",
       "client": "a1",
+      "documented": {
+        "duration_s": 190,
+        "primitives": [
+          {
+            "code": "P1-LC-CO1",
+            "columns": [
+              "P1_LCV01D"
+            ],
+            "points": [
+              "P1_LCV01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-07 18:59"
+      },
       "evidence": [
         {
           "excess": 6.768,
@@ -203,11 +281,21 @@
           "variable": "P1_PCV01Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 190,
       "partition": "test",
       "primary": "T0855",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-07 18:59:11",
       "tactics": [
         "Impact",
         "Impair Process Control"
@@ -215,17 +303,34 @@
     },
     "test1:e03": {
       "acceptable": [
-        "T0856",
-        "T0832"
+        "T0855",
+        "T0831"
       ],
-      "basis": "root deviation: P2_CO_rpm (sensor)",
+      "attack_id": "A104",
+      "basis": "documented attack A104: P2-SC-CO1 (P2_CO_rpm)",
       "client": "a1",
+      "documented": {
+        "duration_s": 60,
+        "primitives": [
+          {
+            "code": "P2-SC-CO1",
+            "columns": [
+              "P2_CO_rpm"
+            ],
+            "points": [
+              "P2_SCO"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-07 20:21"
+      },
       "evidence": [
         {
           "excess": 2.898,
           "first_row": 0,
           "share": 1.0,
-          "type": "sensor",
+          "type": "command",
           "variable": "P2_CO_rpm"
         },
         {
@@ -243,30 +348,55 @@
           "variable": "P2_SIT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 60,
       "partition": "test",
-      "primary": "T0856",
+      "primary": "T0855",
       "processes": [
         "P2"
       ],
+      "start": "2020-07-07 20:21:06",
       "tactics": [
-        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
     },
     "test1:e04": {
       "acceptable": [
-        "T0856",
-        "T0832"
+        "T0836"
       ],
-      "basis": "root deviation: P2_CO_rpm (sensor)",
+      "attack_id": "A105",
+      "basis": "documented attack A105: P2-SC-SP1 (P2_ASD)",
       "client": "a3",
+      "documented": {
+        "duration_s": 89,
+        "primitives": [
+          {
+            "code": "P2-SC-SP1",
+            "columns": [
+              "P2_ASD"
+            ],
+            "points": [
+              "P2_AutoSD"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-07 21:03"
+      },
       "evidence": [
         {
           "excess": 7.775,
           "first_row": 3,
           "share": 0.966,
-          "type": "sensor",
+          "type": "command",
           "variable": "P2_CO_rpm"
         },
         {
@@ -305,25 +435,56 @@
           "variable": "P2_VYT02"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 89,
       "partition": "test",
-      "primary": "T0856",
+      "primary": "T0836",
       "processes": [
         "P2"
       ],
+      "start": "2020-07-07 21:03:21",
       "tactics": [
-        "Evasion",
-        "Impact",
         "Impair Process Control"
       ]
     },
     "test2:e00": {
       "acceptable": [
-        "T0855",
-        "T0831"
+        "T0836"
       ],
-      "basis": "root deviation: P2_Emerg (command)",
+      "attack_id": "A201",
+      "basis": "documented attack A201: P2-TC-SP2 (P2_VTR02)",
       "client": "a4",
+      "documented": {
+        "duration_s": 83,
+        "primitives": [
+          {
+            "code": "P2-TC-SP2",
+            "columns": [
+              "P2_VTR02"
+            ],
+            "points": [
+              "P2_VTR02"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-09 15:47"
+      },
       "evidence": [
+        {
+          "excess": 13.523,
+          "first_row": 47,
+          "share": 0.434,
+          "type": "command",
+          "variable": "P2_CO_rpm"
+        },
         {
           "excess": 1.0,
           "first_row": 47,
@@ -372,32 +533,53 @@
           "share": 0.434,
           "type": "sensor",
           "variable": "P2_VT01"
-        },
-        {
-          "excess": 20.153,
-          "first_row": 47,
-          "share": 0.434,
-          "type": "sensor",
-          "variable": "P2_SIT02"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 83,
       "partition": "test",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P2"
       ],
+      "start": "2020-07-09 15:47:00",
       "tactics": [
-        "Impact",
         "Impair Process Control"
       ]
     },
     "test2:e01": {
       "acceptable": [
-        "T0855",
-        "T0831"
+        "T0836",
+        "T0856"
       ],
-      "basis": "root deviation: P1_PCV01D (command)",
+      "attack_id": "A202",
+      "basis": "documented attack A202: P1-PC-SP1PV1 (P1_B2016, P1_PIT01)",
       "client": "a2",
+      "documented": {
+        "duration_s": 422,
+        "primitives": [
+          {
+            "code": "P1-PC-SP1PV1",
+            "columns": [
+              "P1_B2016",
+              "P1_PIT01"
+            ],
+            "points": [
+              "P1_B2016",
+              "P1_PIT01"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-09 17:38"
+      },
       "evidence": [
         {
           "excess": 0.594,
@@ -456,23 +638,51 @@
           "variable": "P1_LIT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_PCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 422,
       "partition": "val_attack",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-09 17:38:00",
       "tactics": [
-        "Impact",
+        "Evasion",
         "Impair Process Control"
       ]
     },
     "test2:e02": {
       "acceptable": [
         "T0855",
-        "T0831"
+        "T0831",
+        "T0806"
       ],
-      "basis": "root deviation: P1_LCV01D (command)",
+      "attack_id": "A203",
+      "basis": "documented attack A203: P1-LC-CO1-ST7 (P1_LCV01D)",
       "client": "a3",
+      "documented": {
+        "duration_s": 17,
+        "primitives": [
+          {
+            "code": "P1-LC-CO1-ST7",
+            "columns": [
+              "P1_LCV01D"
+            ],
+            "points": [
+              "P1_LCV01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-09 18:59"
+      },
       "evidence": [
         {
           "excess": 11.782,
@@ -510,11 +720,21 @@
           "variable": "P1_PIT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 17,
       "partition": "test",
       "primary": "T0855",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-09 18:59:06",
       "tactics": [
         "Impact",
         "Impair Process Control"
@@ -522,11 +742,30 @@
     },
     "test2:e03": {
       "acceptable": [
-        "T0855",
-        "T0831"
+        "T0836",
+        "T0856"
       ],
-      "basis": "root deviation: P1_FCV03D (command)",
+      "attack_id": "A204",
+      "basis": "documented attack A204: P1-FC-SP1PV1 (P1_B3005, P1_FT03)",
       "client": "a4",
+      "documented": {
+        "duration_s": 259,
+        "primitives": [
+          {
+            "code": "P1-FC-SP1PV1",
+            "columns": [
+              "P1_B3005",
+              "P1_FT03"
+            ],
+            "points": [
+              "P1_B3005",
+              "P1_FT03"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-09 20:10"
+      },
       "evidence": [
         {
           "excess": 14.741,
@@ -585,35 +824,94 @@
           "variable": "P1_FT01Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_FCV03D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 259,
       "partition": "test",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-09 20:10:00",
       "tactics": [
-        "Impact",
+        "Evasion",
         "Impair Process Control"
       ]
     },
     "test2:e04": {
-      "acceptable": [],
-      "basis": "no typed variable deviates",
+      "acceptable": [
+        "T0836",
+        "T0806"
+      ],
+      "attack_id": "A205",
+      "basis": "documented attack A205: P1-PC-SP1-ST10 (P1_B2016)",
       "client": "a4",
+      "documented": {
+        "duration_s": 123,
+        "primitives": [
+          {
+            "code": "P1-PC-SP1-ST10",
+            "columns": [
+              "P1_B2016"
+            ],
+            "points": [
+              "P1_B2016"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-09 21:15"
+      },
       "evidence": [],
+      "inferred": {
+        "acceptable": [],
+        "basis": "no typed variable deviates",
+        "primary": null
+      },
+      "labelled_s": 123,
       "partition": "test",
-      "primary": null,
+      "primary": "T0836",
       "processes": [
         "P1"
       ],
-      "tactics": []
+      "start": "2020-07-09 21:15:00",
+      "tactics": [
+        "Impair Process Control"
+      ]
     },
     "test2:e05": {
       "acceptable": [
         "T0855",
-        "T0831"
+        "T0831",
+        "T0856"
       ],
-      "basis": "root deviation: P1_FCV03D (command)",
+      "attack_id": "A206",
+      "basis": "documented attack A206: P1-FC-CO1PV1 (P1_FCV03D, P1_FT03)",
       "client": "a2",
+      "documented": {
+        "duration_s": 256,
+        "primitives": [
+          {
+            "code": "P1-FC-CO1PV1",
+            "columns": [
+              "P1_FCV03D",
+              "P1_FT03"
+            ],
+            "points": [
+              "P1_FCV03D",
+              "P1_FT03"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-09 23:02"
+      },
       "evidence": [
         {
           "excess": 14.326,
@@ -672,24 +970,58 @@
           "variable": "P1_FT02Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_FCV03D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 256,
       "partition": "test",
       "primary": "T0855",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-09 23:02:00",
       "tactics": [
+        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
     },
     "test2:e06": {
       "acceptable": [
-        "T0855",
-        "T0831"
+        "T0836"
       ],
-      "basis": "root deviation: P2_Emerg (command)",
+      "attack_id": "A207",
+      "basis": "documented attack A207: P2-TC-SP1 (P2_VTR01)",
       "client": "a2",
+      "documented": {
+        "duration_s": 68,
+        "primitives": [
+          {
+            "code": "P2-TC-SP1",
+            "columns": [
+              "P2_VTR01"
+            ],
+            "points": [
+              "P2_VTR01"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 01:08"
+      },
       "evidence": [
+        {
+          "excess": 17.239,
+          "first_row": 30,
+          "share": 0.559,
+          "type": "command",
+          "variable": "P2_CO_rpm"
+        },
         {
           "excess": 1.0,
           "first_row": 30,
@@ -703,13 +1035,6 @@
           "share": 0.559,
           "type": "command",
           "variable": "P2_OnOff"
-        },
-        {
-          "excess": 17.239,
-          "first_row": 30,
-          "share": 0.559,
-          "type": "sensor",
-          "variable": "P2_CO_rpm"
         },
         {
           "excess": 16.862,
@@ -747,23 +1072,51 @@
           "variable": "P2_VYT02"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 68,
       "partition": "test",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P2"
       ],
+      "start": "2020-07-10 01:08:00",
       "tactics": [
-        "Impact",
         "Impair Process Control"
       ]
     },
     "test2:e07": {
       "acceptable": [
-        "T0855",
-        "T0831"
+        "T0836",
+        "T0856"
       ],
-      "basis": "root deviation: P1_LCV01D (command)",
+      "attack_id": "A208",
+      "basis": "documented attack A208: P1-LC-SP1PV1 (P1_B3004, P1_LIT01)",
       "client": "a2",
+      "documented": {
+        "duration_s": 261,
+        "primitives": [
+          {
+            "code": "P1-LC-SP1PV1",
+            "columns": [
+              "P1_B3004",
+              "P1_LIT01"
+            ],
+            "points": [
+              "P1_B3004",
+              "P1_LIT01"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 01:33"
+      },
       "evidence": [
         {
           "excess": 14.753,
@@ -822,23 +1175,49 @@
           "variable": "P1_FT03"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 261,
       "partition": "test",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-10 01:33:01",
       "tactics": [
-        "Impact",
+        "Evasion",
         "Impair Process Control"
       ]
     },
     "test2:e08": {
       "acceptable": [
-        "T0855",
-        "T0831"
+        "T0836"
       ],
-      "basis": "root deviation: P1_LCV01D (command)",
+      "attack_id": "A209",
+      "basis": "documented attack A209: P1-LC-SP1 (P1_B3004)",
       "client": "a1",
+      "documented": {
+        "duration_s": 159,
+        "primitives": [
+          {
+            "code": "P1-LC-SP1",
+            "columns": [
+              "P1_B3004"
+            ],
+            "points": [
+              "P1_B3004"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 03:03"
+      },
       "evidence": [
         {
           "excess": 7.389,
@@ -897,23 +1276,52 @@
           "variable": "P1_PCV01Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 199,
       "partition": "test",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-10 03:03:11",
       "tactics": [
-        "Impact",
         "Impair Process Control"
       ]
     },
     "test2:e09": {
       "acceptable": [
         "T0855",
-        "T0831"
+        "T0831",
+        "T0856"
       ],
-      "basis": "root deviation: P1_PCV01D (command)",
+      "attack_id": "A210",
+      "basis": "documented attack A210: P1-PC-CO1PV1 (P1_PCV01D, P1_PIT01)",
       "client": "a4",
+      "documented": {
+        "duration_s": 421,
+        "primitives": [
+          {
+            "code": "P1-PC-CO1PV1",
+            "columns": [
+              "P1_PCV01D",
+              "P1_PIT01"
+            ],
+            "points": [
+              "P1_PCV01D",
+              "P1_PIT01"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 05:29"
+      },
       "evidence": [
         {
           "excess": 0.574,
@@ -972,29 +1380,57 @@
           "variable": "P1_FT03Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_PCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 421,
       "partition": "test",
       "primary": "T0855",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-10 05:29:00",
       "tactics": [
+        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
     },
     "test2:e10": {
       "acceptable": [
-        "T0856",
-        "T0832"
+        "T0836",
+        "T0806"
       ],
-      "basis": "root deviation: P2_CO_rpm (sensor)",
+      "attack_id": "A211",
+      "basis": "documented attack A211: P2-SC-SP1-ST5 (P2_ASD)",
       "client": "a3",
+      "documented": {
+        "duration_s": 45,
+        "primitives": [
+          {
+            "code": "P2-SC-SP1-ST5",
+            "columns": [
+              "P2_ASD"
+            ],
+            "points": [
+              "P2_AutoSD"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 07:51"
+      },
       "evidence": [
         {
           "excess": 3.72,
           "first_row": 3,
           "share": 0.511,
-          "type": "sensor",
+          "type": "command",
           "variable": "P2_CO_rpm"
         },
         {
@@ -1012,51 +1448,107 @@
           "variable": "P2_SIT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 45,
       "partition": "test",
-      "primary": "T0856",
+      "primary": "T0836",
       "processes": [
         "P2"
       ],
+      "start": "2020-07-10 07:51:06",
       "tactics": [
-        "Evasion",
-        "Impact",
         "Impair Process Control"
       ]
     },
     "test2:e11": {
       "acceptable": [
-        "T0856",
-        "T0832"
+        "T0836",
+        "T0856"
       ],
-      "basis": "root deviation: P2_CO_rpm (sensor)",
+      "attack_id": "A212",
+      "basis": "documented attack A212: P2-SC-SP1PV1 (P2_ASD, P2_SIT01)",
       "client": "a4",
+      "documented": {
+        "duration_s": 152,
+        "primitives": [
+          {
+            "code": "P2-SC-SP1PV1",
+            "columns": [
+              "P2_ASD",
+              "P2_SIT01"
+            ],
+            "points": [
+              "P2_AutoSD",
+              "P2_SIT01"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 09:13"
+      },
       "evidence": [
         {
           "excess": 5.051,
           "first_row": 25,
           "share": 0.546,
-          "type": "sensor",
+          "type": "command",
           "variable": "P2_CO_rpm"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 152,
       "partition": "test",
-      "primary": "T0856",
+      "primary": "T0836",
       "processes": [
         "P2"
       ],
+      "start": "2020-07-10 09:13:01",
       "tactics": [
         "Evasion",
-        "Impact",
         "Impair Process Control"
       ]
     },
     "test2:e12": {
       "acceptable": [
         "T0855",
-        "T0831"
+        "T0831",
+        "T0856"
       ],
-      "basis": "root deviation: P1_LCV01D (command)",
+      "attack_id": "A213",
+      "basis": "documented attack A213: P1-LC-CO1PV1 (P1_LCV01D, P1_LIT01)",
       "client": "a2",
+      "documented": {
+        "duration_s": 254,
+        "primitives": [
+          {
+            "code": "P1-LC-CO1PV1",
+            "columns": [
+              "P1_LCV01D",
+              "P1_LIT01"
+            ],
+            "points": [
+              "P1_LCV01D",
+              "P1_LIT01"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 10:49"
+      },
       "evidence": [
         {
           "excess": 2.681,
@@ -1115,12 +1607,23 @@
           "variable": "P1_PCV01D"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 254,
       "partition": "test",
       "primary": "T0855",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-10 10:49:03",
       "tactics": [
+        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
@@ -1130,8 +1633,25 @@
         "T0855",
         "T0831"
       ],
-      "basis": "root deviation: P1_PCV01D (command)",
+      "attack_id": "A214",
+      "basis": "documented attack A214: P1-PC-CO1 (P1_PCV01D)",
       "client": "a1",
+      "documented": {
+        "duration_s": 152,
+        "primitives": [
+          {
+            "code": "P1-PC-CO1",
+            "columns": [
+              "P1_PCV01D"
+            ],
+            "points": [
+              "P1_PCV01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 12:51"
+      },
       "evidence": [
         {
           "excess": 0.319,
@@ -1176,11 +1696,21 @@
           "variable": "P1_LCV01Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_PCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 152,
       "partition": "test",
       "primary": "T0855",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-10 12:51:11",
       "tactics": [
         "Impact",
         "Impair Process Control"
@@ -1188,25 +1718,55 @@
     },
     "test2:e14": {
       "acceptable": [
-        "T0856",
-        "T0832"
+        "T0855",
+        "T0831",
+        "T0856"
       ],
-      "basis": "root deviation: P2_CO_rpm (sensor)",
+      "attack_id": "A215",
+      "basis": "documented attack A215: P2-SC-CO1PV1 (P2_CO_rpm, P2_SIT01)",
       "client": "a2",
+      "documented": {
+        "duration_s": 151,
+        "primitives": [
+          {
+            "code": "P2-SC-CO1PV1",
+            "columns": [
+              "P2_CO_rpm",
+              "P2_SIT01"
+            ],
+            "points": [
+              "P2_SCO",
+              "P2_SIT01"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 15:11"
+      },
       "evidence": [
         {
           "excess": 2.818,
           "first_row": 3,
           "share": 0.404,
-          "type": "sensor",
+          "type": "command",
           "variable": "P2_CO_rpm"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 151,
       "partition": "test",
-      "primary": "T0856",
+      "primary": "T0855",
       "processes": [
         "P2"
       ],
+      "start": "2020-07-10 15:11:04",
       "tactics": [
         "Evasion",
         "Impact",
@@ -1216,10 +1776,28 @@
     "test2:e15": {
       "acceptable": [
         "T0855",
-        "T0831"
+        "T0831",
+        "T0806"
       ],
-      "basis": "root deviation: P1_FCV03D (command)",
+      "attack_id": "A216",
+      "basis": "documented attack A216: P1-FC-CO1-ST10 (P1_FCV03D)",
       "client": "a1",
+      "documented": {
+        "duration_s": 65,
+        "primitives": [
+          {
+            "code": "P1-FC-CO1-ST10",
+            "columns": [
+              "P1_FCV03D"
+            ],
+            "points": [
+              "P1_FCV03D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 15:40"
+      },
       "evidence": [
         {
           "excess": 37.955,
@@ -1278,35 +1856,90 @@
           "variable": "P1_FT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_FCV03D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 65,
       "partition": "val_attack",
       "primary": "T0855",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-10 15:40:06",
       "tactics": [
         "Impact",
         "Impair Process Control"
       ]
     },
     "test2:e16": {
-      "acceptable": [],
-      "basis": "no typed variable deviates",
+      "acceptable": [
+        "T0836"
+      ],
+      "attack_id": "A217",
+      "basis": "documented attack A217: P2-TC-SP3 (P2_RTR)",
       "client": "a3",
+      "documented": {
+        "duration_s": 184,
+        "primitives": [
+          {
+            "code": "P2-TC-SP3",
+            "columns": [
+              "P2_RTR"
+            ],
+            "points": [
+              "P2_RTR"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 16:22"
+      },
       "evidence": [],
+      "inferred": {
+        "acceptable": [],
+        "basis": "no typed variable deviates",
+        "primary": null
+      },
+      "labelled_s": 184,
       "partition": "val_attack",
-      "primary": null,
+      "primary": "T0836",
       "processes": [
         "P2"
       ],
-      "tactics": []
+      "start": "2020-07-10 16:22:04",
+      "tactics": [
+        "Impair Process Control"
+      ]
     },
     "test2:e17": {
       "acceptable": [
         "T0855",
         "T0831"
       ],
-      "basis": "root deviation: P1_FCV03D (command)",
+      "attack_id": "A218",
+      "basis": "documented attack A218: P1-FC-CO1 (P1_FCV03D)",
       "client": "a3",
+      "documented": {
+        "duration_s": 99,
+        "primitives": [
+          {
+            "code": "P1-FC-CO1",
+            "columns": [
+              "P1_FCV03D"
+            ],
+            "points": [
+              "P1_FCV03D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 18:21"
+      },
       "evidence": [
         {
           "excess": 9.165,
@@ -1365,11 +1998,21 @@
           "variable": "P1_FT01Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_FCV03D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 99,
       "partition": "val_attack",
       "primary": "T0855",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-10 18:21:13",
       "tactics": [
         "Impact",
         "Impair Process Control"
@@ -1380,8 +2023,25 @@
         "T0855",
         "T0831"
       ],
-      "basis": "root deviation: P3_LCP01D (command)",
+      "attack_id": "A219",
+      "basis": "documented attack A219: P3-LC-CO1 (P3_LCP01D)",
       "client": "a3",
+      "documented": {
+        "duration_s": 119,
+        "primitives": [
+          {
+            "code": "P3-LC-CO1",
+            "columns": [
+              "P3_LCP01D"
+            ],
+            "points": [
+              "P3_LCP01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 21:25"
+      },
       "evidence": [
         {
           "excess": 0.451,
@@ -1405,36 +2065,103 @@
           "variable": "P3_PIT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P3_LCP01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 119,
       "partition": "val_attack",
       "primary": "T0855",
       "processes": [
         "P3"
       ],
+      "start": "2020-07-10 21:25:03",
       "tactics": [
         "Impact",
         "Impair Process Control"
       ]
     },
     "test2:e19": {
-      "acceptable": [],
-      "basis": "no typed variable deviates",
+      "acceptable": [
+        "T0855",
+        "T0831"
+      ],
+      "attack_id": "A220",
+      "basis": "documented attack A220: P3-LC-CO2 (P3_LCV01D)",
       "client": "a3",
+      "documented": {
+        "duration_s": 119,
+        "primitives": [
+          {
+            "code": "P3-LC-CO2",
+            "columns": [
+              "P3_LCV01D"
+            ],
+            "points": [
+              "P2_LCV01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-10 22:56"
+      },
       "evidence": [],
+      "inferred": {
+        "acceptable": [],
+        "basis": "no typed variable deviates",
+        "primary": null
+      },
+      "labelled_s": 119,
       "partition": "test",
-      "primary": null,
+      "primary": "T0855",
       "processes": [
         "P3"
       ],
-      "tactics": []
+      "start": "2020-07-10 22:56:03",
+      "tactics": [
+        "Impact",
+        "Impair Process Control"
+      ]
     },
     "test3:e00": {
       "acceptable": [
-        "T0856",
-        "T0832",
-        "T0855"
+        "T0855",
+        "T0831",
+        "T0806",
+        "T0836"
       ],
-      "basis": "root deviation: P1_FT03 (sensor)",
+      "attack_id": "A301",
+      "basis": "documented attack A301: P1-LC-CO1-ST (P1_LCV01D) + P1-FC-SP1 (P1_B3005)",
       "client": "a4",
+      "documented": {
+        "duration_s": 132,
+        "primitives": [
+          {
+            "code": "P1-LC-CO1-ST",
+            "columns": [
+              "P1_LCV01D"
+            ],
+            "points": [
+              "P1_LCV01D"
+            ]
+          },
+          {
+            "code": "P1-FC-SP1",
+            "columns": [
+              "P1_B3005"
+            ],
+            "points": [
+              "P1_B3005"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-13 13:51"
+      },
       "evidence": [
         {
           "excess": 0.762,
@@ -1486,24 +2213,62 @@
           "variable": "P1_FT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0856",
+          "T0832",
+          "T0855"
+        ],
+        "basis": "root deviation: P1_FT03 (sensor)",
+        "primary": "T0856"
+      },
+      "labelled_s": 132,
       "partition": "test",
-      "primary": "T0856",
+      "primary": "T0836",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-13 13:51:06",
       "tactics": [
-        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
     },
     "test3:e01": {
       "acceptable": [
-        "T0855",
-        "T0831"
+        "T0836",
+        "T0856"
       ],
-      "basis": "root deviation: P1_FCV03D (command)",
+      "attack_id": "A302",
+      "basis": "documented attack A302: P1-PC-SP1PV1 (P1_B2016, P1_PIT01) + P1-FC-SP1 (P1_B3005)",
       "client": "a3",
+      "documented": {
+        "duration_s": 421,
+        "primitives": [
+          {
+            "code": "P1-PC-SP1PV1",
+            "columns": [
+              "P1_B2016",
+              "P1_PIT01"
+            ],
+            "points": [
+              "P1_B2016",
+              "P1_PIT01"
+            ]
+          },
+          {
+            "code": "P1-FC-SP1",
+            "columns": [
+              "P1_B3005"
+            ],
+            "points": [
+              "P1_B3005"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-13 15:21"
+      },
       "evidence": [
         {
           "excess": 11.789,
@@ -1562,13 +2327,23 @@
           "variable": "P1_LCV01Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_FCV03D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 421,
       "partition": "test",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-13 15:21:00",
       "tactics": [
-        "Impact",
+        "Evasion",
         "Impair Process Control"
       ]
     },
@@ -1577,8 +2352,34 @@
         "T0855",
         "T0831"
       ],
-      "basis": "root deviation: P1_LCV01D (command)",
+      "attack_id": "A303",
+      "basis": "documented attack A303: P1-PC-CO1 (P1_PCV01D) + P1-LC-CO1 (P1_LCV01D)",
       "client": "a2",
+      "documented": {
+        "duration_s": 189,
+        "primitives": [
+          {
+            "code": "P1-PC-CO1",
+            "columns": [
+              "P1_PCV01D"
+            ],
+            "points": [
+              "P1_PCV01D"
+            ]
+          },
+          {
+            "code": "P1-LC-CO1",
+            "columns": [
+              "P1_LCV01D"
+            ],
+            "points": [
+              "P1_LCV01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-13 18:11"
+      },
       "evidence": [
         {
           "excess": 1.253,
@@ -1637,11 +2438,21 @@
           "variable": "P1_FT03Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 189,
       "partition": "test",
       "primary": "T0855",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-13 18:11:08",
       "tactics": [
         "Impact",
         "Impair Process Control"
@@ -1649,18 +2460,42 @@
     },
     "test3:e03": {
       "acceptable": [
-        "T0856",
-        "T0832",
-        "T0855"
+        "T0836"
       ],
-      "basis": "root deviation: P2_CO_rpm (sensor)",
+      "attack_id": "A304",
+      "basis": "documented attack A304: P2-SC-SP1 (P2_ASD) + P2-TC-SP1 (P2_VTR01)",
       "client": "a4",
+      "documented": {
+        "duration_s": 106,
+        "primitives": [
+          {
+            "code": "P2-SC-SP1",
+            "columns": [
+              "P2_ASD"
+            ],
+            "points": [
+              "P2_AutoSD"
+            ]
+          },
+          {
+            "code": "P2-TC-SP1",
+            "columns": [
+              "P2_VTR01"
+            ],
+            "points": [
+              "P2_VTR01"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-13 20:53"
+      },
       "evidence": [
         {
           "excess": 14.924,
           "first_row": 10,
           "share": 0.887,
-          "type": "sensor",
+          "type": "command",
           "variable": "P2_CO_rpm"
         },
         {
@@ -1713,38 +2548,73 @@
           "variable": "P2_VYT02"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 106,
       "partition": "val_attack",
-      "primary": "T0856",
+      "primary": "T0836",
       "processes": [
         "P2"
       ],
+      "start": "2020-07-13 20:53:02",
       "tactics": [
-        "Evasion",
-        "Impact",
         "Impair Process Control"
       ]
     },
     "test3:e04": {
       "acceptable": [
         "T0855",
-        "T0831"
+        "T0831",
+        "T0836"
       ],
-      "basis": "root deviation: P2_Emerg (command)",
+      "attack_id": "A305",
+      "basis": "documented attack A305: P2-SC-CO1 (P2_CO_rpm) + P2-TC-SP2 (P2_VTR02)",
       "client": "a1",
+      "documented": {
+        "duration_s": 84,
+        "primitives": [
+          {
+            "code": "P2-SC-CO1",
+            "columns": [
+              "P2_CO_rpm"
+            ],
+            "points": [
+              "P2_SCO"
+            ]
+          },
+          {
+            "code": "P2-TC-SP2",
+            "columns": [
+              "P2_VTR02"
+            ],
+            "points": [
+              "P2_VTR02"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-13 21:23"
+      },
       "evidence": [
+        {
+          "excess": 4.149,
+          "first_row": 36,
+          "share": 0.571,
+          "type": "command",
+          "variable": "P2_CO_rpm"
+        },
         {
           "excess": 1.0,
           "first_row": 36,
           "share": 0.571,
           "type": "command",
           "variable": "P2_Emerg"
-        },
-        {
-          "excess": 4.149,
-          "first_row": 36,
-          "share": 0.571,
-          "type": "sensor",
-          "variable": "P2_CO_rpm"
         },
         {
           "excess": 1.0,
@@ -1789,11 +2659,21 @@
           "variable": "P2_VXT02"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 84,
       "partition": "val_attack",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P2"
       ],
+      "start": "2020-07-13 21:23:00",
       "tactics": [
         "Impact",
         "Impair Process Control"
@@ -1801,18 +2681,42 @@
     },
     "test3:e05": {
       "acceptable": [
-        "T0856",
-        "T0832",
-        "T0855"
+        "T0836"
       ],
-      "basis": "root deviation: P2_CO_rpm (sensor)",
+      "attack_id": "A306",
+      "basis": "documented attack A306: P1-PC-SP1 (P1_B2016) + P2-SC-SP1 (P2_ASD)",
       "client": "a4",
+      "documented": {
+        "duration_s": 238,
+        "primitives": [
+          {
+            "code": "P1-PC-SP1",
+            "columns": [
+              "P1_B2016"
+            ],
+            "points": [
+              "P1_B2016"
+            ]
+          },
+          {
+            "code": "P2-SC-SP1",
+            "columns": [
+              "P2_ASD"
+            ],
+            "points": [
+              "P2_AutoSD"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-13 23:55"
+      },
       "evidence": [
         {
           "excess": 6.067,
           "first_row": 0,
           "share": 0.357,
-          "type": "sensor",
+          "type": "command",
           "variable": "P2_CO_rpm"
         },
         {
@@ -1858,25 +2762,60 @@
           "variable": "P1_TIT02"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 238,
       "partition": "val_attack",
-      "primary": "T0856",
+      "primary": "T0836",
       "processes": [
         "P1",
         "P2"
       ],
+      "start": "2020-07-13 23:55:11",
       "tactics": [
-        "Evasion",
-        "Impact",
         "Impair Process Control"
       ]
     },
     "test3:e06": {
       "acceptable": [
         "T0855",
-        "T0831"
+        "T0831",
+        "T0836"
       ],
-      "basis": "root deviation: P1_FCV03D (command)",
+      "attack_id": "A307",
+      "basis": "documented attack A307: P1-FC-CO1 (P1_FCV03D) + P2-TC-SP1 (P2_VTR01)",
       "client": "a1",
+      "documented": {
+        "duration_s": 110,
+        "primitives": [
+          {
+            "code": "P1-FC-CO1",
+            "columns": [
+              "P1_FCV03D"
+            ],
+            "points": [
+              "P1_FCV03D"
+            ]
+          },
+          {
+            "code": "P2-TC-SP1",
+            "columns": [
+              "P2_VTR01"
+            ],
+            "points": [
+              "P2_VTR01"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-14 01:51"
+      },
       "evidence": [
         {
           "excess": 32.748,
@@ -1935,12 +2874,22 @@
           "variable": "P1_LIT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_FCV03D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 110,
       "partition": "val_attack",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1",
         "P2"
       ],
+      "start": "2020-07-14 01:51:02",
       "tactics": [
         "Impact",
         "Impair Process Control"
@@ -1949,10 +2898,41 @@
     "test3:e07": {
       "acceptable": [
         "T0855",
-        "T0831"
+        "T0831",
+        "T0856",
+        "T0836",
+        "T0806"
       ],
-      "basis": "root deviation: P1_LCV01D (command)",
+      "attack_id": "A308",
+      "basis": "documented attack A308: P1-LC-CO1PV1 (P1_LCV01D, P1_LIT01) + P2-SC-SP1-ST (P2_ASD)",
       "client": "a3",
+      "documented": {
+        "duration_s": 255,
+        "primitives": [
+          {
+            "code": "P1-LC-CO1PV1",
+            "columns": [
+              "P1_LCV01D",
+              "P1_LIT01"
+            ],
+            "points": [
+              "P1_LCV01D",
+              "P1_LIT01"
+            ]
+          },
+          {
+            "code": "P2-SC-SP1-ST",
+            "columns": [
+              "P2_ASD"
+            ],
+            "points": [
+              "P2_AutoSD"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-14 03:53"
+      },
       "evidence": [
         {
           "excess": 2.739,
@@ -2011,13 +2991,24 @@
           "variable": "P1_FCV03D"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 255,
       "partition": "test",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1",
         "P2"
       ],
+      "start": "2020-07-14 03:53:01",
       "tactics": [
+        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
@@ -2025,10 +3016,40 @@
     "test4:e00": {
       "acceptable": [
         "T0855",
-        "T0831"
+        "T0831",
+        "T0836",
+        "T0856"
       ],
-      "basis": "root deviation: P1_LCV01D (command)",
+      "attack_id": "A401",
+      "basis": "documented attack A401: P1-PC-CO1 (P1_PCV01D) + P1-LC-SP1PV1 (P1_B3004, P1_LIT01)",
       "client": "a4",
+      "documented": {
+        "duration_s": 254,
+        "primitives": [
+          {
+            "code": "P1-PC-CO1",
+            "columns": [
+              "P1_PCV01D"
+            ],
+            "points": [
+              "P1_PCV01D"
+            ]
+          },
+          {
+            "code": "P1-LC-SP1PV1",
+            "columns": [
+              "P1_B3004",
+              "P1_LIT01"
+            ],
+            "points": [
+              "P1_B3004",
+              "P1_LIT01"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-28 12:43"
+      },
       "evidence": [
         {
           "excess": 3.242,
@@ -2087,23 +3108,64 @@
           "variable": "P1_B4005"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 254,
       "partition": "val_attack",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-28 12:43:03",
       "tactics": [
+        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
     },
     "test4:e01": {
       "acceptable": [
+        "T0836",
+        "T0856",
         "T0855",
         "T0831"
       ],
-      "basis": "root deviation: P3_LCV01D (command)",
+      "attack_id": "A402",
+      "basis": "documented attack A402: P1-FC-SP1PV1 (P1_B3005, P1_FT03) + P3-LC-CO2 (P3_LCV01D)",
       "client": "a2",
+      "documented": {
+        "duration_s": 262,
+        "primitives": [
+          {
+            "code": "P1-FC-SP1PV1",
+            "columns": [
+              "P1_B3005",
+              "P1_FT03"
+            ],
+            "points": [
+              "P1_B3005",
+              "P1_FT03"
+            ]
+          },
+          {
+            "code": "P3-LC-CO2",
+            "columns": [
+              "P3_LCV01D"
+            ],
+            "points": [
+              "P2_LCV01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-28 13:45"
+      },
       "evidence": [
         {
           "excess": 0.545,
@@ -2162,24 +3224,65 @@
           "variable": "P1_LCV01Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P3_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 262,
       "partition": "val_attack",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1",
         "P3"
       ],
+      "start": "2020-07-28 13:45:00",
       "tactics": [
+        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
     },
     "test4:e02": {
       "acceptable": [
+        "T0836",
+        "T0856",
         "T0855",
         "T0831"
       ],
-      "basis": "root deviation: P3_LCV01D (command)",
+      "attack_id": "A403",
+      "basis": "documented attack A403: P1-LC-SP1PV1 (P1_B3004, P1_LIT01) + P3-LC-CO2 (P3_LCV01D)",
       "client": "a3",
+      "documented": {
+        "duration_s": 263,
+        "primitives": [
+          {
+            "code": "P1-LC-SP1PV1",
+            "columns": [
+              "P1_B3004",
+              "P1_LIT01"
+            ],
+            "points": [
+              "P1_B3004",
+              "P1_LIT01"
+            ]
+          },
+          {
+            "code": "P3-LC-CO2",
+            "columns": [
+              "P3_LCV01D"
+            ],
+            "points": [
+              "P2_LCV01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-28 15:57"
+      },
       "evidence": [
         {
           "excess": 0.4,
@@ -2238,13 +3341,24 @@
           "variable": "P1_FT03Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P3_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 263,
       "partition": "test",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1",
         "P3"
       ],
+      "start": "2020-07-28 15:57:01",
       "tactics": [
+        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
@@ -2252,16 +3366,47 @@
     "test4:e03": {
       "acceptable": [
         "T0855",
-        "T0831"
+        "T0831",
+        "T0856"
       ],
-      "basis": "root deviation: P1_LCV01D (command)",
+      "attack_id": "A404",
+      "basis": "documented attack A404: P2-SC-CO1PV1 (P2_CO_rpm, P2_SIT01) + P1-LC-CO1PV1 (P1_LCV01D, P1_LIT01)",
       "client": "a2",
+      "documented": {
+        "duration_s": 258,
+        "primitives": [
+          {
+            "code": "P2-SC-CO1PV1",
+            "columns": [
+              "P2_CO_rpm",
+              "P2_SIT01"
+            ],
+            "points": [
+              "P2_SCO",
+              "P2_SIT01"
+            ]
+          },
+          {
+            "code": "P1-LC-CO1PV1",
+            "columns": [
+              "P1_LCV01D",
+              "P1_LIT01"
+            ],
+            "points": [
+              "P1_LCV01D",
+              "P1_LIT01"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-28 17:45"
+      },
       "evidence": [
         {
           "excess": 3.046,
           "first_row": 5,
           "share": 0.233,
-          "type": "sensor",
+          "type": "command",
           "variable": "P2_CO_rpm"
         },
         {
@@ -2314,24 +3459,63 @@
           "variable": "P1_FCV03Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 258,
       "partition": "test",
       "primary": "T0855",
       "processes": [
         "P1",
         "P2"
       ],
+      "start": "2020-07-28 17:45:02",
       "tactics": [
+        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
     },
     "test4:e04": {
       "acceptable": [
+        "T0836",
+        "T0806",
         "T0855",
         "T0831"
       ],
-      "basis": "root deviation: P3_LCV01D (command)",
+      "attack_id": "A405",
+      "basis": "documented attack A405: P2-SC-SP1-ST (P2_ASD) + P3-LC-CO2 (P3_LCV01D)",
       "client": "a1",
+      "documented": {
+        "duration_s": 120,
+        "primitives": [
+          {
+            "code": "P2-SC-SP1-ST",
+            "columns": [
+              "P2_ASD"
+            ],
+            "points": [
+              "P2_AutoSD"
+            ]
+          },
+          {
+            "code": "P3-LC-CO2",
+            "columns": [
+              "P3_LCV01D"
+            ],
+            "points": [
+              "P2_LCV01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-28 20:47"
+      },
       "evidence": [
         {
           "excess": 0.62,
@@ -2344,7 +3528,7 @@
           "excess": 4.105,
           "first_row": 7,
           "share": 0.342,
-          "type": "sensor",
+          "type": "command",
           "variable": "P2_CO_rpm"
         },
         {
@@ -2362,12 +3546,22 @@
           "variable": "P2_SIT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P3_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 120,
       "partition": "test",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P2",
         "P3"
       ],
+      "start": "2020-07-28 20:47:01",
       "tactics": [
         "Impact",
         "Impair Process Control"
@@ -2375,11 +3569,38 @@
     },
     "test5:e00": {
       "acceptable": [
-        "T0836",
-        "T0855"
+        "T0855",
+        "T0831",
+        "T0836"
       ],
-      "basis": "root deviation: P1_B400B (setpoint)",
+      "attack_id": "A501",
+      "basis": "documented attack A501: P1-PC-CO1 (P1_PCV01D) + P2-TC-SP2 (P2_VTR02)",
       "client": "a1",
+      "documented": {
+        "duration_s": 172,
+        "primitives": [
+          {
+            "code": "P1-PC-CO1",
+            "columns": [
+              "P1_PCV01D"
+            ],
+            "points": [
+              "P1_PCV01D"
+            ]
+          },
+          {
+            "code": "P2-TC-SP2",
+            "columns": [
+              "P2_VTR02"
+            ],
+            "points": [
+              "P2_VTR02"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-30 11:16"
+      },
       "evidence": [
         {
           "excess": 7.056,
@@ -2438,29 +3659,69 @@
           "variable": "P1_PCV01D"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0836",
+          "T0855"
+        ],
+        "basis": "root deviation: P1_B400B (setpoint)",
+        "primary": "T0836"
+      },
+      "labelled_s": 172,
       "partition": "test",
       "primary": "T0836",
       "processes": [
         "P1",
         "P2"
       ],
+      "start": "2020-07-30 11:16:00",
       "tactics": [
+        "Impact",
         "Impair Process Control"
       ]
     },
     "test5:e01": {
       "acceptable": [
         "T0855",
-        "T0831"
+        "T0831",
+        "T0856"
       ],
-      "basis": "root deviation: P1_FCV03D (command)",
+      "attack_id": "A502",
+      "basis": "documented attack A502: P1-FC-CO1PV1 (P1_FCV03D, P1_FT03) + P2-SC-CO1 (P2_CO_rpm)",
       "client": "a2",
+      "documented": {
+        "duration_s": 258,
+        "primitives": [
+          {
+            "code": "P1-FC-CO1PV1",
+            "columns": [
+              "P1_FCV03D",
+              "P1_FT03"
+            ],
+            "points": [
+              "P1_FCV03D",
+              "P1_FT03"
+            ]
+          },
+          {
+            "code": "P2-SC-CO1",
+            "columns": [
+              "P2_CO_rpm"
+            ],
+            "points": [
+              "P2_SCO"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-30 13:30"
+      },
       "evidence": [
         {
           "excess": 3.486,
           "first_row": 3,
           "share": 0.233,
-          "type": "sensor",
+          "type": "command",
           "variable": "P2_CO_rpm"
         },
         {
@@ -2499,25 +3760,65 @@
           "variable": "P1_LIT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 258,
       "partition": "test",
       "primary": "T0855",
       "processes": [
         "P1",
         "P2"
       ],
+      "start": "2020-07-30 13:30:03",
       "tactics": [
+        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
     },
     "test5:e02": {
       "acceptable": [
+        "T0836",
         "T0856",
-        "T0832",
-        "T0855"
+        "T0855",
+        "T0831"
       ],
-      "basis": "root deviation: P2_SIT02 (sensor)",
+      "attack_id": "A503",
+      "basis": "documented attack A503: P1-LC-SP1PV1 (P1_B3004, P1_LIT01) + P2-SC-CO1 (P2_CO_rpm)",
       "client": "a4",
+      "documented": {
+        "duration_s": 256,
+        "primitives": [
+          {
+            "code": "P1-LC-SP1PV1",
+            "columns": [
+              "P1_B3004",
+              "P1_LIT01"
+            ],
+            "points": [
+              "P1_B3004",
+              "P1_LIT01"
+            ]
+          },
+          {
+            "code": "P2-SC-CO1",
+            "columns": [
+              "P2_CO_rpm"
+            ],
+            "points": [
+              "P2_SCO"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-30 16:05"
+      },
       "evidence": [
         {
           "excess": 0.309,
@@ -2576,12 +3877,23 @@
           "variable": "P1_FCV03D"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0856",
+          "T0832",
+          "T0855"
+        ],
+        "basis": "root deviation: P2_SIT02 (sensor)",
+        "primary": "T0856"
+      },
+      "labelled_s": 256,
       "partition": "test",
-      "primary": "T0856",
+      "primary": "T0836",
       "processes": [
         "P1",
         "P2"
       ],
+      "start": "2020-07-30 16:05:08",
       "tactics": [
         "Evasion",
         "Impact",
@@ -2593,8 +3905,34 @@
         "T0855",
         "T0831"
       ],
-      "basis": "root deviation: P1_FCV03D (command)",
+      "attack_id": "A504",
+      "basis": "documented attack A504: P1-FC-CO1 (P1_FCV03D) + P3-LC-CO2 (P3_LCV01D)",
       "client": "a4",
+      "documented": {
+        "duration_s": 120,
+        "primitives": [
+          {
+            "code": "P1-FC-CO1",
+            "columns": [
+              "P1_FCV03D"
+            ],
+            "points": [
+              "P1_FCV03D"
+            ]
+          },
+          {
+            "code": "P3-LC-CO2",
+            "columns": [
+              "P3_LCV01D"
+            ],
+            "points": [
+              "P2_LCV01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-30 17:45"
+      },
       "evidence": [
         {
           "excess": 3.835,
@@ -2653,12 +3991,22 @@
           "variable": "P1_LCV01Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_FCV03D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 120,
       "partition": "test",
       "primary": "T0855",
       "processes": [
         "P1",
         "P3"
       ],
+      "start": "2020-07-30 17:45:00",
       "tactics": [
         "Impact",
         "Impair Process Control"
@@ -2666,11 +4014,37 @@
     },
     "test5:e04": {
       "acceptable": [
-        "T0855",
-        "T0831"
+        "T0836",
+        "T0806"
       ],
-      "basis": "root deviation: P1_LCV01D (command)",
+      "attack_id": "A505",
+      "basis": "documented attack A505: P1-LC-SP1 (P1_B3004) + P2-SC-SP1-ST (P2_ASD)",
       "client": "a1",
+      "documented": {
+        "duration_s": 203,
+        "primitives": [
+          {
+            "code": "P1-LC-SP1",
+            "columns": [
+              "P1_B3004"
+            ],
+            "points": [
+              "P1_B3004"
+            ]
+          },
+          {
+            "code": "P2-SC-SP1-ST",
+            "columns": [
+              "P2_ASD"
+            ],
+            "points": [
+              "P2_AutoSD"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-30 18:38"
+      },
       "evidence": [
         {
           "excess": 2.169,
@@ -2729,39 +4103,87 @@
           "variable": "P1_TIT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 203,
       "partition": "test",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1",
         "P2"
       ],
+      "start": "2020-07-30 18:38:09",
       "tactics": [
-        "Impact",
         "Impair Process Control"
       ]
     },
     "test5:e05": {
       "acceptable": [
-        "T0856",
-        "T0832"
+        "T0855",
+        "T0831",
+        "T0856"
       ],
-      "basis": "root deviation: P2_CO_rpm (sensor)",
+      "attack_id": "A506",
+      "basis": "documented attack A506: P2-SC-CO1PV1 (P2_CO_rpm, P2_SIT01) + P3-LC-CO2 (P3_LCV01D)",
       "client": "a2",
+      "documented": {
+        "duration_s": 153,
+        "primitives": [
+          {
+            "code": "P2-SC-CO1PV1",
+            "columns": [
+              "P2_CO_rpm",
+              "P2_SIT01"
+            ],
+            "points": [
+              "P2_SCO",
+              "P2_SIT01"
+            ]
+          },
+          {
+            "code": "P3-LC-CO2",
+            "columns": [
+              "P3_LCV01D"
+            ],
+            "points": [
+              "P2_LCV01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-30 20:42"
+      },
       "evidence": [
         {
           "excess": 3.51,
           "first_row": 4,
           "share": 0.431,
-          "type": "sensor",
+          "type": "command",
           "variable": "P2_CO_rpm"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 153,
       "partition": "test",
-      "primary": "T0856",
+      "primary": "T0855",
       "processes": [
         "P2",
         "P3"
       ],
+      "start": "2020-07-30 20:42:03",
       "tactics": [
         "Evasion",
         "Impact",
@@ -2770,13 +4192,45 @@
     },
     "test5:e06": {
       "acceptable": [
-        "T0856",
-        "T0832",
-        "T0855"
+        "T0836",
+        "T0806"
       ],
-      "basis": "root deviation: P2_SIT02 (sensor)",
+      "attack_id": "A507",
+      "basis": "documented attack A507: P2-SC-SP1-ST (P2_ASD) + P2-TC-SP1 (P2_VTR01)",
       "client": "a1",
+      "documented": {
+        "duration_s": 79,
+        "primitives": [
+          {
+            "code": "P2-SC-SP1-ST",
+            "columns": [
+              "P2_ASD"
+            ],
+            "points": [
+              "P2_AutoSD"
+            ]
+          },
+          {
+            "code": "P2-TC-SP1",
+            "columns": [
+              "P2_VTR01"
+            ],
+            "points": [
+              "P2_VTR01"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-30 23:13"
+      },
       "evidence": [
+        {
+          "excess": 14.621,
+          "first_row": 3,
+          "share": 0.835,
+          "type": "command",
+          "variable": "P2_CO_rpm"
+        },
         {
           "excess": 16.575,
           "first_row": 3,
@@ -2790,13 +4244,6 @@
           "share": 0.835,
           "type": "sensor",
           "variable": "P2_SIT01"
-        },
-        {
-          "excess": 14.621,
-          "first_row": 3,
-          "share": 0.835,
-          "type": "sensor",
-          "variable": "P2_CO_rpm"
         },
         {
           "excess": 1.0,
@@ -2834,24 +4281,59 @@
           "variable": "P2_VXT02"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 79,
       "partition": "test",
-      "primary": "T0856",
+      "primary": "T0836",
       "processes": [
         "P2"
       ],
+      "start": "2020-07-30 23:13:05",
       "tactics": [
-        "Evasion",
-        "Impact",
         "Impair Process Control"
       ]
     },
     "test5:e07": {
       "acceptable": [
         "T0855",
-        "T0831"
+        "T0831",
+        "T0806"
       ],
-      "basis": "root deviation: P1_LCV01D (command)",
+      "attack_id": "A508",
+      "basis": "documented attack A508: P1-FC-CO1-ST (P1_FCV03D) + P1-LC-CO1-ST (P1_LCV01D)",
       "client": "a1",
+      "documented": {
+        "duration_s": 51,
+        "primitives": [
+          {
+            "code": "P1-FC-CO1-ST",
+            "columns": [
+              "P1_FCV03D"
+            ],
+            "points": [
+              "P1_FCV03D"
+            ]
+          },
+          {
+            "code": "P1-LC-CO1-ST",
+            "columns": [
+              "P1_LCV01D"
+            ],
+            "points": [
+              "P1_LCV01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-31 01:15"
+      },
       "evidence": [
         {
           "excess": 14.135,
@@ -2910,11 +4392,21 @@
           "variable": "P1_FT01Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 51,
       "partition": "val_attack",
       "primary": "T0855",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-31 01:15:06",
       "tactics": [
         "Impact",
         "Impair Process Control"
@@ -2922,11 +4414,38 @@
     },
     "test5:e08": {
       "acceptable": [
+        "T0836",
         "T0855",
         "T0831"
       ],
-      "basis": "root deviation: P1_PCV01D (command)",
+      "attack_id": "A509",
+      "basis": "documented attack A509: P1-PC-SP1 (P1_B2016) + P1-PC-CO1 (P1_PCV01D)",
       "client": "a3",
+      "documented": {
+        "duration_s": 241,
+        "primitives": [
+          {
+            "code": "P1-PC-SP1",
+            "columns": [
+              "P1_B2016"
+            ],
+            "points": [
+              "P1_B2016"
+            ]
+          },
+          {
+            "code": "P1-PC-CO1",
+            "columns": [
+              "P1_PCV01D"
+            ],
+            "points": [
+              "P1_PCV01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-31 02:01"
+      },
       "evidence": [
         {
           "excess": 4.434,
@@ -2985,11 +4504,21 @@
           "variable": "P1_FCV03D"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_PCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 241,
       "partition": "test",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-31 02:01:11",
       "tactics": [
         "Impact",
         "Impair Process Control"
@@ -2997,11 +4526,41 @@
     },
     "test5:e09": {
       "acceptable": [
+        "T0836",
         "T0855",
-        "T0831"
+        "T0831",
+        "T0856"
       ],
-      "basis": "root deviation: P1_LCV01D (command)",
+      "attack_id": "A510",
+      "basis": "documented attack A510: P1-LC-SP1 (P1_B3004) + P1-LC-CO1PV1 (P1_LCV01D, P1_LIT01)",
       "client": "a3",
+      "documented": {
+        "duration_s": 262,
+        "primitives": [
+          {
+            "code": "P1-LC-SP1",
+            "columns": [
+              "P1_B3004"
+            ],
+            "points": [
+              "P1_B3004"
+            ]
+          },
+          {
+            "code": "P1-LC-CO1PV1",
+            "columns": [
+              "P1_LCV01D",
+              "P1_LIT01"
+            ],
+            "points": [
+              "P1_LCV01D",
+              "P1_LIT01"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-31 09:54"
+      },
       "evidence": [
         {
           "excess": 3.949,
@@ -3053,30 +4612,67 @@
           "variable": "P1_FCV03Z"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_LCV01D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 262,
       "partition": "val_attack",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-31 09:54:01",
       "tactics": [
+        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
     },
     "test5:e10": {
       "acceptable": [
-        "T0856",
-        "T0832",
-        "T0855"
+        "T0836",
+        "T0855",
+        "T0831"
       ],
-      "basis": "root deviation: P2_CO_rpm (sensor)",
+      "attack_id": "A511",
+      "basis": "documented attack A511: P2-TC-SP3 (P2_RTR) + P3-LC-CO2 (P3_LCV01D)",
       "client": "a2",
+      "documented": {
+        "duration_s": 120,
+        "primitives": [
+          {
+            "code": "P2-TC-SP3",
+            "columns": [
+              "P2_RTR"
+            ],
+            "points": [
+              "P2_RTR"
+            ]
+          },
+          {
+            "code": "P3-LC-CO2",
+            "columns": [
+              "P3_LCV01D"
+            ],
+            "points": [
+              "P2_LCV01D"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-31 10:40"
+      },
       "evidence": [
         {
           "excess": 17.036,
           "first_row": 23,
           "share": 0.558,
-          "type": "sensor",
+          "type": "command",
           "variable": "P2_CO_rpm"
         },
         {
@@ -3129,25 +4725,64 @@
           "variable": "P2_VYT02"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P2_CO_rpm (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 120,
       "partition": "val_attack",
-      "primary": "T0856",
+      "primary": "T0836",
       "processes": [
         "P2",
         "P3"
       ],
+      "start": "2020-07-31 10:40:00",
       "tactics": [
-        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
     },
     "test5:e11": {
       "acceptable": [
+        "T0836",
         "T0855",
-        "T0831"
+        "T0831",
+        "T0856"
       ],
-      "basis": "root deviation: P1_FCV03D (command)",
+      "attack_id": "A512",
+      "basis": "documented attack A512: P1-FC-SP1 (P1_B3005) + P1-FC-CO1PV1 (P1_FCV03D, P1_FT03)",
       "client": "a1",
+      "documented": {
+        "duration_s": 262,
+        "primitives": [
+          {
+            "code": "P1-FC-SP1",
+            "columns": [
+              "P1_B3005"
+            ],
+            "points": [
+              "P1_B3005"
+            ]
+          },
+          {
+            "code": "P1-FC-CO1PV1",
+            "columns": [
+              "P1_FCV03D",
+              "P1_FT03"
+            ],
+            "points": [
+              "P1_FCV03D",
+              "P1_FT03"
+            ]
+          }
+        ],
+        "source": "HAI Security Dataset Technical Details (icsdataset/hai, hai_dataset_technical_details.pdf), HAI 21.03 attack operation, pp. 36-38",
+        "start": "2020-07-31 11:21"
+      },
       "evidence": [
         {
           "excess": 41.379,
@@ -3206,23 +4841,42 @@
           "variable": "P1_PIT01"
         }
       ],
+      "inferred": {
+        "acceptable": [
+          "T0855",
+          "T0831"
+        ],
+        "basis": "root deviation: P1_FCV03D (command)",
+        "primary": "T0855"
+      },
+      "labelled_s": 262,
       "partition": "test",
-      "primary": "T0855",
+      "primary": "T0836",
       "processes": [
         "P1"
       ],
+      "start": "2020-07-31 11:20:59",
       "tactics": [
+        "Evasion",
         "Impact",
         "Impair Process Control"
       ]
     }
   },
-  "generated_at": "2026-10-14T10:54:41Z",
-  "git_sha": "ab6ddc46d9a338cbe2bd0b0ac55394e2c4ca3ddf",
+  "generated_at": "2026-10-14T15:49:11Z",
+  "git_sha": "05452f904b2e56844740d3ae6a6f47846ced10a7",
   "pass": 1,
   "protocol": "docs/mapping_protocol.md",
-  "protocol_version": "draft-1",
+  "protocol_version": "1.0",
   "reviewed": false,
-  "reviews": [],
+  "reviews": [
+    {
+      "changed": "all 50 events: truth taken from the documented HAI 21.03 timetable (rule v1.0)",
+      "date": "2026-10-14",
+      "method": "documentation-based (mapping protocol v1.0)",
+      "pass": 1,
+      "reviewer": "Claude (AI assistant), at the author's request"
+    }
+  ],
   "site": "site_a"
 }
