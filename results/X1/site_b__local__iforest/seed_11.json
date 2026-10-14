@@ -3,11 +3,12 @@
   "kind": "result",
   "data_source": "runtime",
   "provenance": {
-    "created_at": "2026-10-14T09:56:10Z",
-    "git_sha": "a6546eeab6a20e4c0cf05ec6068c207d01ee67de",
+    "created_at": "2026-10-14T10:53:40Z",
+    "git_sha": "ab6ddc46d9a338cbe2bd0b0ac55394e2c4ca3ddf",
     "git_branch": "main",
     "git_dirty": false,
-    "params_sha256": "a278a0ca92b16b470a7753e4bed633e3a5a18105f3464cf847d304be5dba1abb",
+    "git_dirty_paths": [],
+    "params_sha256": "4e41991670173e3f638c08e25bbf0ff9c66e3ecbab65b29c3ad6e29579f6b3c5",
     "environment": {
       "python": "3.12.15",
       "implementation": "CPython",
@@ -20,12 +21,12 @@
       "swap_total_mb": 4096,
       "lockfile_sha256": "1184348c146123880a7ab77f83475c9870121b808073f7e027c33cc71fc89380",
       "hostname_hash": "89a720d64995",
-      "pid": 3829
+      "pid": 5672
     },
     "manifest_sha256": "193bf797926efed5c5c9d7e407e1f1bdf8f1ec8b4eac7a963ab26b4dd0c27905",
     "checkpoint_sha256": null,
-    "started_at": "2026-10-14T09:56:09Z",
-    "finished_at": "2026-10-14T09:56:10Z"
+    "started_at": "2026-10-14T10:53:39Z",
+    "finished_at": "2026-10-14T10:53:40Z"
   },
   "experiment": "X1",
   "config_id": "site_b__local__iforest",
@@ -117,17 +118,22 @@
       "inputs": 16
     },
     "b2": {
-      "train_seconds": 0.26,
+      "train_seconds": 0.27,
       "train_windows": 60596,
       "inputs": 16
     },
     "b3": {
-      "train_seconds": 0.26,
+      "train_seconds": 0.31,
       "train_windows": 59419,
       "inputs": 16
     }
   },
-  "wall_seconds": 1.11,
+  "wall_seconds": 1.18,
+  "scoring": {
+    "aggregation": "norm_top3",
+    "smooth": 1,
+    "top_k": 3
+  },
   "evaluation": {
     "threshold_from": "val_normal",
     "evaluated_on": "val_attack",
