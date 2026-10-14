@@ -46,7 +46,7 @@ KIND = {"site_a": "vae", "site_b": "ae"}
 def units(site: Site, part: Partition, params: Params) -> tuple[np.ndarray, list[str]]:
     """One row per privacy unit (training window) and the feature names.
 
-    Site A: the mean over each non-overlapping 60 s training window of the raw rows.
+    Site A: each non-overlapping 60 s training window, as its (60, features) raw rows.
     Site B: the 10 s windows themselves (``log1p`` already applied).
     """
     raw = x1._raw(site, part, params)
@@ -59,7 +59,7 @@ def units(site: Site, part: Partition, params: Params) -> tuple[np.ndarray, list
     length = win.length_s * params.data.hai.sample_rate_hz
     starts = window_starts(part.labels.time_s, part.labels.group, length, win.train_stride_s)
     names = [part.features.columns[i] for i in mi.site_a_columns(part, params)]
-    return gather(raw, starts, length).mean(axis=1).astype(np.float64), names
+    return gather(raw, starts, length).astype(np.float64), names
 
 
 def _lr(params: Params, site: Site) -> float:

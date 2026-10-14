@@ -60,3 +60,15 @@ def test_public_bounds_cover_every_modelled_feature() -> None:
         bounds.bounds_for("site_a", ["P9_UNKNOWN"])
     blo, bhi = bounds.bounds_for("site_b", ["req_recv", "tcp_rst"])
     assert (blo == 0).all() and np.allclose(bhi, math.log1p(10_000))
+
+
+def test_rows_of_a_unit_share_one_unit_of_weight() -> None:
+    lo, hi = np.zeros(2), np.full(2, 10.0)
+    unit = np.array([[[1.0, 9.0], [1.0, 1.0], [5.0, 1.0], [9.0, 1.0]]])  # 1 unit, 4 rows
+    counts = ns.exact_counts(unit, lo, hi, 10)
+    assert counts.sum(axis=1).tolist() == [1.0, 1.0]
+    assert float(np.linalg.norm(counts[1])) <= 1.0  # per-feature L2 contribution at most 1
+    rng = np.random.default_rng(4)
+    rows = rng.normal(5, 1, size=(2000, 60, 2))  # fast signal: rows vary within a window
+    _, scale = ns.centre_scale(ns.release(rows, lo, hi, bins=200, noise_multiplier=0, rng=rng))
+    np.testing.assert_allclose(scale, rows.reshape(-1, 2).std(axis=0), rtol=0.05)

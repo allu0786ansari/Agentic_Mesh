@@ -4,11 +4,15 @@ A model's inputs are standardised per feature. The centre and scale are computed
 the client's training data, so releasing them, or using them in a released model,
 must be private.
 
-**Mechanism.** Every privacy unit (one training window) adds 1 to one bin of every
-feature's histogram. The bins are ``bins`` equal-width bins over the feature's
-**public** range (:mod:`agmesh.privacy.bounds`); a value outside the range goes to
-the end bin. Adding or removing one unit changes the concatenated ``(features, bins)``
-count vector by a vector of ``d`` ones, so its L2 sensitivity is ``sqrt(d)``. The
+**Mechanism.** Every privacy unit (one training window) adds a total weight of 1 to
+every feature's histogram. A Site B unit is one row and adds 1 to one bin. A Site A
+unit holds 60 rows, each adding 1/60 to its bin, so the histogram describes rows,
+which is what the non-private scaler standardises. A window's mean would understate
+the spread of fast signals such as vibration. The bins are ``bins`` equal-width bins
+over the feature's **public** range (:mod:`agmesh.privacy.bounds`); a value outside
+the range goes to the end bin. For one feature, a unit's contribution has L2 norm at
+most 1 (all its rows in one bin). Adding or removing a unit therefore changes the
+concatenated ``(features, bins)`` vector by L2 norm at most ``sqrt(d)``. The
 release adds Gaussian noise with standard deviation ``z * sqrt(d)`` to every bin.
 That is one Gaussian mechanism ``(z, q=1, 1 step)`` for the accountant, composed with
 DP-SGD in RDP.
@@ -76,16 +80,24 @@ class Histograms:
 
 
 def exact_counts(values: npt.ArrayLike, lo: F64, hi: F64, bins: int) -> F64:
-    """(d, bins) counts of one value per unit and feature, values clipped into range."""
+    """(d, bins) histogram with total weight 1 per unit and feature, values clipped in range.
+
+    ``values`` is (units, features), one value per unit, or (units, rows, features),
+    where each of a unit's rows has weight 1 / rows.
+    """
     v = np.asarray(values, dtype=np.float64)
-    if v.ndim != 2 or v.shape[1] != lo.size:
-        raise ValueError("values must be (units, features)")
+    if v.ndim == 2:
+        v = v[:, None, :]
+    if v.ndim != 3 or v.shape[2] != lo.size:
+        raise ValueError("values must be (units, features) or (units, rows, features)")
+    rows = v.shape[1]
+    flat = v.reshape(-1, lo.size)
     width = (hi - lo) / bins
-    idx = np.floor((v - lo) / np.where(width > 0, width, 1.0)).astype(np.int64)
+    idx = np.floor((flat - lo) / np.where(width > 0, width, 1.0)).astype(np.int64)
     idx = np.clip(idx, 0, bins - 1)
     out = np.zeros((lo.size, bins))
     for j in range(lo.size):
-        out[j] = np.bincount(idx[:, j], minlength=bins)
+        out[j] = np.bincount(idx[:, j], minlength=bins) / rows
     return out
 
 
