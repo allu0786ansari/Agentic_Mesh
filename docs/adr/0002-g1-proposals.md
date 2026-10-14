@@ -1,7 +1,8 @@
 # ADR 0002 — Gate G1 proposals (evaluation frozen)
 
-**Status:** Proposed. Each decision below needs the author's choice; nothing is frozen
-and the `g1-frozen` tag does not exist yet.
+**Status:** Accepted (14 October 2026): the author accepted every recommendation. The
+`g1-frozen` tag follows once the ground-truth mappings have had their two review
+passes (`docs/mapping_protocol.md`) and the scoring choice of ADR 0003 is made.
 **Date:** 14 October 2026
 **Inputs:** `results/X1/*/seed_11.json` (Week 4 validation baselines, one seed, no
 DP), `results/data/partition_check.json`, Proposal v3.1 §6, §10, §11.

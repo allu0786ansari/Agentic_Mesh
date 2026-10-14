@@ -195,7 +195,9 @@ def make_modbus(root: Path, seed: int = 7) -> None:
 # --------------------------------------------------------------------------------- HAI
 
 
-def _hai_frame(start: str, seconds: int, rng: np.random.Generator) -> pd.DataFrame:
+def _hai_frame(
+    start: str, seconds: int, rng: np.random.Generator, offset: float = 1.2
+) -> pd.DataFrame:
     t = np.arange(seconds)
     turbine = np.where((t // 1800) % 3 == 0, 50.0, 0.0)
     frame = pd.DataFrame(
@@ -204,6 +206,7 @@ def _hai_frame(start: str, seconds: int, rng: np.random.Generator) -> pd.DataFra
             "P1_FT01": 10 + np.sin(t / 300) + rng.normal(0, 0.1, seconds),
             "P1_LIT01": 400 + 5 * np.cos(t / 900) + rng.normal(0, 0.5, seconds),
             "P1_PCV02D": np.full(seconds, 12.0),
+            "P1_PCV02Z": offset + rng.normal(0, 0.002, seconds),  # calibration offset (HAI-8)
             "P2_SIT01": 750 + rng.normal(0, 2, seconds),
             "P3_LCP01D": 3000 + 10 * np.sin(t / 600) + rng.normal(0, 3, seconds),
             "P4_ST_PS": turbine,
@@ -234,7 +237,7 @@ def make_hai(root: Path, seed: int = 11) -> None:
         for k, name in enumerate(("test1", "test2"))
     }
     for name, (start, seconds) in files.items():
-        frame = _hai_frame(start, seconds, rng)
+        frame = _hai_frame(start, seconds, rng, offset=1.2 if name in ("train1", "test1") else 0.4)
         for begin, stop, procs in events.get(name, []):
             frame.loc[begin : stop - 1, "attack"] = 1
             for proc in procs:

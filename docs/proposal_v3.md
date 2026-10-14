@@ -619,7 +619,7 @@ Point-adjusted F1 is not used, because it is known to inflate time-series anomal
 
 **Ground truth**
 - A mapping from attack to tactic set (and, where the evidence supports it, a technique set) is built under a written protocol (`docs/mapping_protocol.md`) and frozen at Gate G1, before any attribution results exist. Two review passes are made, and disagreements are recorded.
-- **Site A (primary, quantitative):** the 50 HAI events are mapped at **tactic level**, using the targeted processes (`attack_P1`–`attack_P3`) and the variables that deviate in each event. HAI attacks do not map cleanly to individual techniques. Test events only are scored; validation events tune nothing in the mapping.
+- **Site A (primary, quantitative):** the 50 HAI events are mapped at **technique level within process manipulation** (ADR 0002 decision 6): T0836 Modify Parameter, T0855 Unauthorized Command Message or T0856/T0832 for falsified readings, from the targeted processes (`attack_P1`–`attack_P3`) and the type of variable that deviates first. At tactic level nearly every HAI event is *Impair Process Control*, so tactic accuracy alone would be trivial; it is still reported, with the majority-class baseline. Each event has a primary technique and an acceptable set. Test events only are scored; validation events tune nothing in the mapping.
 - **Site B (case study):** the seven Modbus episodes are mapped by hand from their observed behaviour (for example, reconnaissance reads, a register scan with oversized quantities, a coil-write flood). The dataset documentation gives no MITRE mapping and seven episodes from one attacker position are too few for an accuracy estimate, so Site B reports validity rate, grounding rate and the chosen technique per episode, not accuracy.
 
 **Attribution metrics**
@@ -701,9 +701,9 @@ Success is defined in three tiers. **Completion criteria** must all pass for the
 |---|---|
 | PT1 | Federated DP model at ε ≤ 10: AUROC no more than 0.05 below centralised non-private, on each site |
 | PT2 | Federated DP model at ε ≤ 10: AUROC at or above the mean local-only AUROC, on each site |
-| PT3 | Site A event recall ≥ 0.70 on the 35 test events at window FPR ≤ 1%. Provisional: may be revised at G1 using validation-only baseline results on the 15 validation events, never afterwards. Site B event recall on the test episodes is reported, with no target, because there are only three |
+| PT3 | Site A, federated DP model: event recall ≥ 0.70 on the 35 test events **and** realised test window FPR ≤ 2%, with the threshold set at 1% on normal validation (revised at G1 from validation baselines, ADR 0002). Site B event recall on the test episodes is reported, with no target, because there are only three |
 | PT4 | Site B fusion: 2-of-3 fusion reduces false alarms per hour by at least 30% relative to the best single node at the same per-node threshold (H2a). The single-device recall loss on the real attack day (H2b) is reported with no target |
-| PT5 | Site A attribution: tactic accuracy ≥ 0.70 on HAI test events and above the majority-class baseline; `full` mode ≥ `retrieval_only`, reported with CI. Site B: JSON validity ≥ 95% and raw grounding rate reported over the seven episodes; no accuracy target |
+| PT5 | Site A attribution: technique top-3 ≥ 0.70 on HAI test events (acceptable sets per `docs/mapping_protocol.md`) and above the majority-class baseline; tactic accuracy reported; `full` mode ≥ `retrieval_only`, reported with CI. Site B: JSON validity ≥ 95% and raw grounding rate reported over the seven episodes; no accuracy target |
 | PT6 | Retrieval Recall@5 ≥ 0.85 on the held-out query set |
 | PT7 | Latency p95: detection ≤ 1 s; investigation ≤ 2 s; incident-to-dispatch ≤ 3 s in `retrieval_only` mode and ≤ L_LLM in `full` mode |
 
@@ -935,7 +935,7 @@ Findings come from the full analysis of HAI 21.03 and of the CIC Modbus 2023 att
 | HAI-5 | 50 events, smallest gap 24 min | Validation/test split by event segment, about 15/35 | §6.2 |
 | HAI-6 | A flattened window has more inputs than a client has training windows | Six 10 s segment means per feature (336 inputs) | §6.4; `models.vae.input_mode` |
 | HAI-7 | About 3,000–3,400 windows per client; σ ≈ 8.4 at ε = 1 | Keep the ε sweep; batch 256; report the curve | §6.4, §7.3 |
-| HAI-8 | Week 4 baselines: `P1_PCV02Z` steps between recording periods, so local models flag most attack-validation normals (local VAE FPR 0.64, local PCA 0.54 at a 1% target) | **Open, decided at G1:** exclude it from model inputs and report its changes through the training-constant change rule (ADR 0002 decision 2) | §6.1; `models.vae.exclude_features` |
+| HAI-8 | Week 4 baselines: `P1_PCV02Z` steps between recording periods, so local models flag most attack-validation normals (local VAE FPR 0.64, local PCA 0.54 at a 1% target) | **Accepted at G1:** excluded from model inputs; its changes are reported through the training-constant change rule (ADR 0002 decision 2) | §6.1; `models.vae.exclude_features` |
 | MB-1 | Attack logs and other attacker positions are not in the obtained data | Labels from attacker address; optional extra data recorded as a risk | §6.1, §12 |
 | MB-2 | Capture-level labels would mark all 3,681 IED1A attack-day windows as attacks; only 51 contain attacker traffic | Window-level labels, marked derived | §6.1; `data.modbus.label_source` |
 | MB-3 | Only IED1A saw the external attacker | RQ2 reframed as a trade-off | §2 |
@@ -950,7 +950,7 @@ Findings come from the full analysis of HAI 21.03 and of the CIC Modbus 2023 att
 | MB-12 | Normal write bursts rarely coincide across devices | 2-of-3 fusion for false-alarm reduction (H2a) | §2, §10.6 |
 | MB-13 | The secure IEDs stall together on normal days | Latency excluded from fusion | §8.2; `fusion.site_b.exclude_latency` |
 | MB-14 | The HMI is a client; the IEDs are servers | Features from each node's own side; one schema | §4.1, §6.6 |
-| MB-15 | Week 3 diagnostics: on the attack day, `new_peers` reproduces the label exactly and `peers` separates it perfectly, because the label *is* the attacker's (new) address | **Open, decided at G1:** whether the Site B model sees identity features, or detects from behaviour only with a new-peer rule reported as a separate baseline | §6.6, §10.5; `evaluation/diagnostics.py` |
+| MB-15 | Week 3 diagnostics: on the attack day, `new_peers` reproduces the label exactly and `peers` separates it perfectly, because the label *is* the attacker's (new) address | **Accepted at G1:** the Site B model detects from behaviour only (`peers`, `new_peers` excluded); the new-peer rule is reported as a separate baseline (ADR 0002 decision 1) | §6.6, §10.5; `evaluation/diagnostics.py` |
 | MB-16 | Week 4 baselines: attack-day normal windows alert at 7–10% on b1 and b3 against 1% on benign validation (TCP resets, latency); only 1 of 12 HMI alerts falls inside an episode | Report as day-to-day drift; it bounds the fusion gain (RQ2). ADR 0002 decision 5 | §10.6; ADR 0002 |
 
 The window figure in MB-6 counts IPv4 traffic only. An earlier count of 80 windows also included 29 windows containing only ARP frames from the attacker, which carry no Modbus content.

@@ -99,7 +99,7 @@ def test_event_segments_have_gaps_and_contain_their_event(params: Params) -> Non
 def test_partition_on_fixture(site_a_run: tuple[dict[str, Any], Path], params: Params) -> None:
     manifest, out = site_a_run
     assert manifest == read_manifest(out)
-    assert manifest["features"]["n_features"] == 5
+    assert manifest["features"]["n_features"] == 6
     assert manifest["events"]["total"] == 14
     assert manifest["events"]["val_attack"] == 4
     assert all(c["ok"] for c in structural_site_a(manifest, params))
