@@ -55,7 +55,8 @@ def check_file(path: Path, accesses: list[dict[str, Any]]) -> Finding:
     if not (prov.get("environment") or {}).get("lockfile_sha256"):
         problems.append("provenance.environment.lockfile_sha256 is missing")
     if prov.get("git_dirty"):
-        problems.append("produced from a working tree with uncommitted changes")
+        changed = ", ".join(prov.get("git_dirty_paths") or []) or "unknown files"
+        problems.append(f"produced from a working tree with uncommitted changes ({changed})")
     if artifact.experiment in DETECTION_EXPERIMENTS:
         missing = [m for m in DETECTION_METRICS if m not in artifact.metrics]
         if missing:

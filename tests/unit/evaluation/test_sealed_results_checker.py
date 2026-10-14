@@ -93,9 +93,11 @@ def test_checker_accepts_runtime_and_rejects_the_rest(
     assert any("metrics missing" in p for p in _problems(findings, "partial"))
     assert any("access log" in p for p in _problems(findings, "sealed"))
     good_problems = _problems(findings, "good")
-    assert good_problems == (
-        ["produced from a working tree with uncommitted changes"] if dirty else []
-    )
+    if dirty:
+        assert len(good_problems) == 1
+        assert good_problems[0].startswith("produced from a working tree with uncommitted")
+    else:
+        assert good_problems == []
 
 
 def test_checker_matches_the_access_log(tmp_path: Path) -> None:

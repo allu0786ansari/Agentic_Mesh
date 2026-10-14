@@ -35,3 +35,28 @@ def test_build_provenance_includes_params_hash(tmp_path: Path) -> None:
     assert record["params_sha256"] == sha256_file(params)
     assert record["note"] == "x"
     assert {"git_sha", "git_branch", "git_dirty", "created_at", "environment"} <= record.keys()
+
+
+def test_rewritten_outputs_do_not_count_as_uncommitted(tmp_path: Path) -> None:
+    """Re-running an experiment rewrites committed results; that alone is not 'dirty'."""
+    import subprocess
+
+    from agmesh.common.provenance import git_state
+
+    def git(*args: str) -> None:
+        subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True)
+
+    git("init", "-q")
+    git("config", "user.email", "t@example.com")
+    git("config", "user.name", "t")
+    (tmp_path / "results").mkdir()
+    (tmp_path / "results" / "r.json").write_text("1", encoding="utf-8")
+    (tmp_path / "code.py").write_text("x = 1\n", encoding="utf-8")
+    git("add", ".")
+    git("commit", "-qm", "init")
+    assert git_state(tmp_path)["git_dirty"] is False
+    (tmp_path / "results" / "r.json").write_text("2", encoding="utf-8")
+    assert git_state(tmp_path)["git_dirty"] is False
+    (tmp_path / "code.py").write_text("x = 2\n", encoding="utf-8")
+    state = git_state(tmp_path)
+    assert state["git_dirty"] is True and state["git_dirty_paths"] == ["code.py"]

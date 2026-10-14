@@ -54,15 +54,30 @@ def _git(*args: str, cwd: Path | None = None) -> str | None:
     return result.stdout.strip()
 
 
+#: Paths that hold outputs, not inputs. Rewriting them (for example re-running an
+#: experiment whose artifacts are committed) does not make a run irreproducible.
+OUTPUT_PATHS = ("results",)
+
+
 def git_state(cwd: Path | None = None) -> dict[str, Any]:
-    """Return the current commit, branch and whether the working tree has local changes."""
+    """Return the current commit, branch and whether code, config or inputs have local changes.
+
+    Tracked files under :data:`OUTPUT_PATHS` are ignored: an artifact must not count as
+    "uncommitted" because an earlier artifact of the same run was just rewritten.
+    ``git_dirty_paths`` lists up to ten changed files, so a rejection can be explained.
+    """
     sha = _git("rev-parse", "HEAD", cwd=cwd)
     branch = _git("rev-parse", "--abbrev-ref", "HEAD", cwd=cwd)
-    status = _git("status", "--porcelain", "--untracked-files=no", cwd=cwd)
+    excludes = [f":(exclude){p}" for p in OUTPUT_PATHS]
+    status = _git("status", "--porcelain", "--untracked-files=no", "--", ".", *excludes, cwd=cwd)
+    paths = (
+        [line.split(None, 1)[-1] for line in status.splitlines() if line.strip()] if status else []
+    )
     return {
         "git_sha": sha or "unknown",
         "git_branch": branch or "unknown",
-        "git_dirty": bool(status) if status is not None else None,
+        "git_dirty": bool(paths) if status is not None else None,
+        "git_dirty_paths": paths[:10],
     }
 
 
