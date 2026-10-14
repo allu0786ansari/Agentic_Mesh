@@ -124,3 +124,12 @@ def test_holm() -> None:
     adjusted = holm([0.01, 0.04, 0.03, float("nan")])
     assert adjusted[:3] == pytest.approx([0.03, 0.06, 0.06])
     assert np.isnan(adjusted[3])
+
+
+def test_one_block_is_not_estimable() -> None:
+    _, short = _node(np.random.default_rng(6), fp_rate=0.02, hours=0.4, events=2)
+    plan = EventBootstrap({"b1": short}, block_s=3600, b=50)
+    assert plan.units["b1"].n_blocks == 1
+    assert not plan.estimable("window_fpr") and plan.estimable("event_recall")
+    c = compare(plan, {11: {"b1": short}}, {11: {"b1": short}}, "window_fpr")
+    assert np.isnan(c.p_one_sided) and c.b == 0

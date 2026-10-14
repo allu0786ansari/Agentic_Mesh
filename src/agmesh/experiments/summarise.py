@@ -147,22 +147,42 @@ def event_level(
             )
         draws[config] = plans[site].draws(recs)
         observed[config] = plans[site].observed(recs)
+    site_of = {c: str(next(iter(runs[c].values()))["site"]) for c in available}
     cis: dict[str, Any] = {}
     for config, d in draws.items():
         cis[config] = {}
+        plan = plans[site_of[config]]
         for metric, values in d.items():
             finite = values[np.isfinite(values)]
+            ok = plan.estimable(metric) and finite.size > 0
             cis[config][metric] = {
                 "observed": observed[config][metric],
-                "low": float(np.quantile(finite, 0.025)) if finite.size else None,
-                "high": float(np.quantile(finite, 0.975)) if finite.size else None,
+                "low": float(np.quantile(finite, 0.025)) if ok else None,
+                "high": float(np.quantile(finite, 0.975)) if ok else None,
+                "estimable": plan.estimable(metric),
             }
     tests = []
     for label, a, b, metric in COMPARISONS:
         if a not in draws or b not in draws:
             continue
-        c = inf.difference(draws[a], draws[b], observed[a], observed[b], metric)
-        tests.append({"comparison": label, "a": a, "b": b, **c.as_dict()})
+        if plans[site_of[a]].estimable(metric):
+            c = inf.difference(draws[a], draws[b], observed[a], observed[b], metric)
+            entry = {"comparison": label, "a": a, "b": b, **c.as_dict(), "estimable": True}
+        else:
+            diff = observed[a][metric] - observed[b][metric]
+            entry = {
+                "comparison": label,
+                "a": a,
+                "b": b,
+                "metric": metric,
+                "observed_difference": diff,
+                "ci": [float("nan"), float("nan")],
+                "p_one_sided": float("nan"),
+                "resamples": 0,
+                "estimable": False,
+                "note": "fewer than two resampling units on a node; no interval",
+            }
+        tests.append(entry)
     for t, adj in zip(tests, inf.holm([t["p_one_sided"] for t in tests]), strict=True):
         t["p_holm"] = adj
     return {
@@ -191,8 +211,10 @@ def markdown_event_level(ev: dict[str, Any]) -> str:
         cells = []
         for k in keys:
             e = entry.get(k)
-            if e is None or e["low"] is None or not np.isfinite(e["observed"]):
+            if e is None or not np.isfinite(e["observed"]):
                 cells.append("-")
+            elif e["low"] is None:
+                cells.append(f"{e['observed']:.3f} [n/e]")
             else:
                 cells.append(f"{e['observed']:.3f} [{e['low']:.3f}, {e['high']:.3f}]")
         lines.append(f"| {config} | " + " | ".join(cells) + " |")
@@ -200,11 +222,19 @@ def markdown_event_level(ev: dict[str, Any]) -> str:
         lines += ["", "| Comparison (H1: A - B > 0) | metric | diff [95% CI] | p | p (Holm) |"]
         lines.append("|---|---|---|---|---|")
         for c in ev["comparisons"]:
+            if not c.get("estimable", True):
+                lines.append(
+                    f"| {c['comparison']} | {c['metric']} | {c['observed_difference']:+.3f} "
+                    "[n/e] | n/e | n/e |"
+                )
+                continue
             lines.append(
                 f"| {c['comparison']} | {c['metric']} | {c['observed_difference']:+.3f} "
                 f"[{c['ci'][0]:+.3f}, {c['ci'][1]:+.3f}] | {c['p_one_sided']:.4f} | "
                 f"{c['p_holm']:.4f} |"
             )
+    lines.append("")
+    lines.append("n/e: not estimable, a node has fewer than two resampling units of that kind.")
     return "\n".join(lines)
 
 

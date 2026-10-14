@@ -41,6 +41,9 @@ from agmesh.evaluation.detection import NodeArrays
 
 F64 = npt.NDArray[np.float64]
 METRICS = ("auroc", "auprc", "event_recall", "ttd_mean_s", "window_fpr", "false_alarms_per_hour")
+#: Which resampling units each metric depends on.
+EVENT_METRICS = ("event_recall", "ttd_mean_s")
+BLOCK_METRICS = ("window_fpr", "false_alarms_per_hour")
 #: Normal-block length per site (ADR 0005).
 BLOCK_S = {"site_a": 1800.0, "site_b": 3600.0}
 CHUNK = 500
@@ -215,6 +218,18 @@ class EventBootstrap:
             for node, u in self.units.items()
         }
 
+    def estimable(self, metric: str) -> bool:
+        """False if some node has fewer than two units of the kind the metric resamples.
+
+        With one unit the resample is always the same, so the interval would be zero
+        width; that is a missing estimate, not certainty.
+        """
+        if metric in BLOCK_METRICS:
+            return all(u.n_blocks >= 2 for u in self.units.values() if u.n_blocks)
+        if metric in EVENT_METRICS:
+            return all(u.n_events >= 2 for u in self.units.values() if u.n_events)
+        return True
+
     def _check(self, records: Records) -> None:
         for seed, nodes in records.items():
             if set(nodes) != set(self.units):
@@ -297,6 +312,9 @@ def compare(
     plan: EventBootstrap, a: Records, b: Records, metric: str, *, level: float = 0.95
 ) -> Comparison:
     """Paired comparison of two configurations on the same draws."""
+    if not plan.estimable(metric):
+        observed = plan.observed(a)[metric] - plan.observed(b)[metric]
+        return Comparison(metric, float(observed), (float("nan"), float("nan")), float("nan"), 0)
     return difference(
         plan.draws(a), plan.draws(b), plan.observed(a), plan.observed(b), metric, level=level
     )
