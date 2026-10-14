@@ -578,6 +578,7 @@ The checker (`evaluation/checker.py`) reads **only** these artifacts. It rejects
 1. **Client** (`federated/client.py`): loads only its own partition. `fit` runs DP training through the budget guard, with the accountant persisted; `evaluate` returns aggregate counts and binned histograms.
 2. **Server** (`federated/server.py`): has **no data loader imports**. Uses `strategies.py` (FedAvg, FedProx) and `fed_eval.py` (aggregates metrics, pooled AUROC).
 3. **Normalisation round:** a federated round for noisy statistics, run before training.
+3a. **DP federated threshold (H1c):** after training, clients release Gaussian-noised normal-validation score histograms (1,000 bins); the server sums them and sets the pooled 99th-percentile threshold. Its ε is added to each client's budget; per-node thresholds are computed alongside for the comparison.
 4. **Stopping and convergence:** the patience rule; rounds-to-target computed against the centralised baseline's validation loss from Week 4.
 5. **Stragglers** (`federated/stragglers.py`):
    - Round timeout and minimum client counts (Fed-A 3/4, Fed-B 2/3).

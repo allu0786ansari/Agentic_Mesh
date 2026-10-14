@@ -1,6 +1,6 @@
 # Preregistration (Gate G1)
 
-**Status:** Draft. Values marked **[decide]** need the author's choice (ADR 0002). Once
+**Status:** Draft, decisions filled in from ADRs 0002–0003; waits for the ground-truth reviews. Once
 accepted, this file is committed with the ground-truth mappings and the commit is
 tagged `g1-frozen`. After that, nothing here changes; a missed target is reported as a
 finding.
@@ -13,8 +13,8 @@ finding.
 | Partitions | `data/partitions/*/manifest.json` from `dvc.lock` at that commit |
 | Labels | `docs/labeling_protocol.md` v1.0 |
 | Ground truth | `evaluation/ground_truth/mapping_site_{a,b}.json` under `docs/mapping_protocol.md` |
-| Site A model inputs | 56 features **[decide: minus `P1_PCV02Z`]**, six 10 s segment means per feature |
-| Site B model inputs | 18 features minus `peers`, `new_peers` **[decide]**; `log1p`, standardised |
+| Site A model inputs | 56 features minus `P1_PCV02Z` (ADR 0002), six 10 s segment means per feature; score = mean squared error, no smoothing (ADR 0003) |
+| Site B model inputs | 18 features minus `peers`, `new_peers` (ADR 0002); `log1p`, standardised; score = mean of the three largest normalised feature errors, no smoothing (ADR 0003) |
 | Operating point | Threshold per node from its normal-validation windows at window FPR 1%; also reported at 0.5% and 5% |
 | Event tolerance | 60 s after the event end |
 | Seeds | 11, 23, 37, 41, 53 (five for headline configurations, three otherwise) |
@@ -29,13 +29,22 @@ finding.
 
 | ID | Target | Week 4 validation evidence |
 |---|---|---|
-| PT1 | Federated DP model at ε ≤ 10: AUROC no more than 0.05 below centralised non-private, on each site | Central VAE 0.916 (A), central AE 1.000 on b1 (B) |
-| PT2 | Federated DP model at ε ≤ 10: AUROC at or above the mean local-only AUROC, on each site | Local VAE 0.844 (A), local AE 0.999 on b1 (B) |
-| PT3 | **[decide]** recommended: Site A event recall ≥ 0.70 on the 35 test events **and** realised test window FPR ≤ 2%, for the federated DP model | Central VAE: event recall 1.0 at FPR 0.03–0.05 (validation) |
+| PT1 | Federated DP model at ε ≤ 10: AUROC no more than 0.05 below centralised non-private, on each site | Central VAE 0.914 (A), central AE 1.000 on b1 (B); validation, G1 inputs |
+| PT2 | Federated DP model at ε ≤ 10: AUROC at or above the mean local-only AUROC, on each site | Local VAE 0.829 (A), local AE 0.999 on b1 (B); validation, G1 inputs |
+| PT3 | Site A event recall ≥ 0.70 on the 35 test events **and** realised test window FPR ≤ 2%, for the federated DP model (ADR 0002) | Central VAE: event recall 1.0 at FPR 0.03 (validation, G1 inputs) |
 | PT4 | Site B 2-of-3 fusion reduces false alarms per hour by ≥ 30% against the best single node at the same thresholds | Attack-day normal false alarms: 13–16 per hour (AE), mostly b1 and b3 |
-| PT5 | Site A attribution: technique top-3 ≥ 0.70 **[decide: technique or tactic level]**, above the majority-class baseline; `full` ≥ `retrieval_only` with CI. Site B: JSON validity ≥ 95%; raw grounding rate reported | — |
+| PT5 | Site A attribution: technique top-3 ≥ 0.70 against the acceptable sets, above the majority-class baseline (about 0.66 at first pass); `full` ≥ `retrieval_only` with CI. Site B: JSON validity ≥ 95%; raw grounding rate reported | — |
 | PT6 | Retrieval Recall@5 ≥ 0.85 on the held-out query set | — |
 | PT7 | Latency p95: detection ≤ 1 s; investigation ≤ 2 s; incident-to-dispatch ≤ 3 s (`retrieval_only`) and ≤ 24 s (`full`, L_LLM from G0) | LLM call p95 13.6 s (G0) |
+
+## 3a. Secondary hypothesis added at G1
+
+**H1c.** For the federated DP model on Site A, a threshold computed from the clients'
+DP noisy normal-validation score histograms (pooled 99th percentile; its ε is added to
+each client's budget by basic composition) gives a lower realised test window FPR than
+per-node thresholds, at event recall within 0.05. Tested in X1 at ε = 10, five seeds,
+paired bootstrap. Motivation: validation local VAE FPR 0.30 against central 0.03
+(ADR 0003); `docs/research_agenda.md`, Paper B.
 
 ## 4. Statistical analysis
 
