@@ -202,6 +202,7 @@ def record(
     data_source: str,
     params_path: Path,
     backend: str = "inprocess",
+    save_model: Path | None = None,
 ) -> Path:
     val_losses = [r.val_loss for r in result.rounds]
     federation = {
@@ -239,6 +240,25 @@ def record(
         },
         "model_spec": result.spec.__dict__,
     }
+    if save_model is not None:
+        from agmesh.edge.bundle import GlobalModel
+
+        frozen = GlobalModel(
+            site,
+            result.spec,
+            result.weights,
+            result.norm,
+            {
+                "run_id": rid,
+                "config_id": cid,
+                "seed": seed,
+                "epsilon": eps_label(epsilon),
+                "strategy": strategy,
+                "rounds": len(result.rounds),
+            },
+        )
+        saved = frozen.save(save_model / cid / f"seed_{seed}")
+        extra["frozen_model"] = {"path": saved.parent.as_posix(), "model_version": frozen.version}
     if smoke:
         tag = smoke if isinstance(smoke, str) else "smoke"
         out = results / "federated" / tag / f"{cid}__seed{seed}.json"
@@ -297,6 +317,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--clip", type=float, default=None, help="override max_grad_norm")
     parser.add_argument("--mu", type=float, default=None, help="override FedProx's mu")
     parser.add_argument("--backend", choices=("inprocess", "flower"), default="inprocess")
+    parser.add_argument(
+        "--save-model",
+        type=Path,
+        default=None,
+        help="write the final global model to <dir>/<config_id>/seed_<n>/ (edge runtime)",
+    )
     parser.add_argument("--fixture", action="store_true")
     args = parser.parse_args(argv)
     params = load_params(args.params)
@@ -352,6 +378,7 @@ def main(argv: list[str] | None = None) -> int:
             data_source="fixture" if args.fixture else "runtime",
             params_path=args.params,
             backend=args.backend,
+            save_model=args.save_model,
         )
         m = result.final["macro"]
         print(

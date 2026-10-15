@@ -7,7 +7,8 @@ PY := $(UV) run python
 .PHONY: help setup setup-fl lock lint format typecheck test check \
         checksums verify-checksums inspect-data bench-llm bench-ray feasibility \
         prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft \
-        training-budget summarise shift-selection dp-sanity train x8 g2-pilot g2-tuning
+        training-budget summarise shift-selection dp-sanity train x8 g2-pilot g2-tuning \
+        edge-model edge latency
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -33,6 +34,9 @@ help:
 	@echo "shift-selection   ADR 0005: shift-robust scoring chosen on validation -> results/X1/shift_selection.json"
 	@echo "dp-sanity         Week 5: single-client DP training at eps 1, 3, 10, inf -> results/privacy/"
 	@echo "x8                Week 7: SecAgg+ systems experiment on Fed-A -> results/X8/"
+	@echo "edge-model        Week 8: train and save the dev global model, e.g. make edge-model SITE=site_b"
+	@echo "edge              Week 8: replay -> score -> evidence -> alerts, e.g. make edge SITE=site_b SPLIT=val"
+	@echo "latency           Week 8: detection latency p50/p95 from the latest edge runs -> results/latency/"
 	@echo "g2-pilot          Week 7: FedAvg and FedProx at eps 10, both sites, 50 rounds -> results/federated/g2_pilot/"
 	@echo "g2-tuning         Week 7: ADR 0008 DP lr x clip grid and FedProx mu grid -> results/federated/g2_*"
 	@echo "train             Week 6: one federated run, e.g. make train SITE=site_a [ROUNDS=5 smoke] [EPS=3] [STRATEGY=fedavg] [BACKEND=flower]"
@@ -158,3 +162,17 @@ g2-tuning:
 		$(PY) -m agmesh.federated.run --site site_a --strategy fedprox --epsilon 10 \
 			--mu $$mu --lr 0.001 --tag g2_mu || exit 1; \
 	done
+
+# Week 8 (ADR 0009): the development global model is FedProx at ε = 3, seed 11.
+EDGE_MODEL = results/models/$(SITE)__fedprox__eps3/seed_11
+
+edge-model:
+	$(PY) -m agmesh.federated.run --site $(SITE) --strategy fedprox --epsilon 3 --seeds 11 \
+		--tag week8_dev --save-model results/models
+
+edge:
+	$(PY) -m agmesh.edge.runtime --site $(SITE) --split $(or $(SPLIT),val) \
+		--model $(or $(MODEL),$(EDGE_MODEL)) $(if $(SPEED),--speed $(SPEED),)
+
+latency:
+	$(PY) -m agmesh.evaluation.latency --segment detection --split $(or $(SPLIT),val)
