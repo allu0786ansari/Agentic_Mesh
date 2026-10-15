@@ -1,4 +1,5 @@
 {
+  "attack_release": "ATT&CK for ICS v20.0 (evaluation/attack/ics_attack_20.0_techniques.json)",
   "events": {
     "0": {
       "acceptable": [
@@ -66,35 +67,37 @@
     "5": {
       "acceptable": [
         "T0806",
-        "T0855",
+        "T1692.001",
         "T0814"
       ],
       "observed": "65,535 coil writes to one address in 4 minutes",
       "primary": "T0806",
       "tactics": [
+        "Evasion",
         "Impair Process Control",
         "Inhibit Response Function"
       ]
     },
     "6": {
       "acceptable": [
-        "T0855",
-        "T0831"
+        "T1692.001"
       ],
       "observed": "21 coil writes to two addresses",
-      "primary": "T0855",
+      "primary": "T1692.001",
       "tactics": [
-        "Impact",
+        "Evasion",
         "Impair Process Control"
       ]
     }
   },
   "generated_at": "2026-10-14T15:49:12Z",
   "git_sha": "05452f904b2e56844740d3ae6a6f47846ced10a7",
-  "pass": 1,
+  "pass": 2,
   "protocol": "docs/mapping_protocol.md",
-  "protocol_version": "1.0",
-  "reviewed": false,
+  "protocol_version": "1.1",
+  "relabelled_at": "2026-10-15T04:46:58Z",
+  "relabelled_git_sha": "c741e4cd01cca8966e10ee594c64a263b4846c3b",
+  "reviewed": true,
   "reviews": [
     {
       "changed": "episodes 0 and 1: T0814 added to the acceptable set",
@@ -102,6 +105,14 @@
       "method": "traffic observation and the CIC attack catalogue",
       "pass": 1,
       "reviewer": "Claude (AI assistant), at the author's request"
+    },
+    {
+      "changed": "episodes 5 and 6: T0855 -> T1692.001; T0831 removed from episode 6. All seven observed behaviours confirmed by an independent dissection of the attacker's requests",
+      "date": "2026-10-15",
+      "independence_limit": "same AI system as pass 1; no human verification",
+      "method": "independent re-derivation from fresh downloads (HAI PDF and test CSVs from icsdataset/hai @ 2a814ce; ATT&CK for ICS v20.0 @ c2494b2); scripted field-by-field diff; label and signal checks; no pass-1 notes used; evidence in evaluation/ground_truth/pass2/",
+      "pass": 2,
+      "reviewer": "Claude (AI assistant); verification delegated by the author (Allaudin Ansari) on 15 Oct 2026"
     }
   ],
   "site": "site_b"

@@ -6,12 +6,17 @@
    §1 (except the ground-truth row), §2 detection and privacy metrics, §3 detection
    and privacy targets, §4 and §5. These are the decisions of ADRs 0002-0005. After
    the tag, none of them changes; a missed target is reported as a finding.
-2. **Attribution ground truth: frozen at the tag `gt-frozen`.** This covers the
-   ground-truth row of §1, the attribution metrics of §2, and
-   `evaluation/ground_truth/` under `docs/mapping_protocol.md` v1.0. The tag follows
-   the author's verification pass (mapping protocol §6). It must exist before any
-   attribution output is produced (Phase 3, Week 8). The Phase 3 runners refuse to
-   run without it.
+2. **Attribution ground truth: frozen at the tag `gt-frozen`.**
+   - **Covers:**
+     - the ground-truth and ATT&CK rows of §1;
+     - the attribution metrics of §2 and target PT5;
+     - `evaluation/ground_truth/` and `evaluation/attack/` under
+       `docs/mapping_protocol.md` v1.1.
+   - **Basis:** the verification pass 2 (15 October 2026, mapping protocol §6). The
+     author delegated it to the assistant, so no human has verified the mapping; the
+     papers disclose this.
+   - **Required before Phase 3:** the tag must exist before any attribution output is
+     produced (Week 8). The Phase 3 runners refuse to run without it.
 
 Phase 2 (private federated detection) does not read the ground truth, so the split
 does not let any attribution decision depend on a detection result, or the reverse.
@@ -23,7 +28,8 @@ does not let any attribution decision depend on a detection result, or the rever
 | Parameters file | `configs/params.yaml` at the `g1-frozen` commit (its SHA-256 is recorded in every result artifact) |
 | Partitions | `data/partitions/*/manifest.json` from `dvc.lock` at that commit |
 | Labels | `docs/labeling_protocol.md` v1.0 |
-| Ground truth | `evaluation/ground_truth/mapping_site_{a,b}.json` under `docs/mapping_protocol.md` v1.0, frozen at `gt-frozen` (see Status) |
+| Ground truth | `evaluation/ground_truth/mapping_site_{a,b}.json` under `docs/mapping_protocol.md` v1.1 (two passes, `reviewed: true`), frozen at `gt-frozen` (see Status) |
+| ATT&CK for ICS | v20.0, `mitre-attack/attack-stix-data` @ `c2494b2` (SHA-256 pinned in `src/agmesh/evaluation/attack_ics.py`); extract `evaluation/attack/ics_attack_20.0_techniques.json` |
 | Site A model inputs | 56 features minus `P1_PCV02Z` (ADR 0002), six 10 s segment means per feature; score = mean squared error, no smoothing (ADR 0003), then the robust adaptive threshold R3 (ADR 0005) |
 | Training budget | VAE `max_epochs` 200, AE 30, early stopping as configured (ADR 0004; non-private runs) |
 | Site B model inputs | 18 features minus `peers`, `new_peers` (ADR 0002); `log1p`, standardised; score = mean of the three largest normalised feature errors, no smoothing (ADR 0003) |
@@ -35,7 +41,15 @@ does not let any attribution decision depend on a detection result, or the rever
 
 - Detection: AUROC (window level); event recall with the realised window FPR; range-based F1; median time to detect; false alarms per hour.
 - Privacy: per-client (ε, δ) including the normalisation-statistics cost.
-- Attribution: Site A technique top-1 and top-3 and tactic accuracy against the majority-class baseline; raw grounding rate; Site B per-episode case study.
+- **Attribution:**
+  - Site A technique top-1 and top-3 against the majority-class and constant-answer
+    baselines (0.64), with predicted IDs first normalised to the pin by MITRE's
+    `revoked-by` relationships (T0855 → T1692.001, T0856 → T1692.002). A parent
+    technique does not match a sub-technique (mapping protocol §5).
+  - Tactic accuracy is reported, but on Site A a constant tactic scores 1.0, so it
+    is never used for a claim.
+  - Raw grounding rate.
+  - Site B per-episode case study.
 
 ## 3. Targets (Proposal §11.2)
 
@@ -45,7 +59,7 @@ does not let any attribution decision depend on a detection result, or the rever
 | PT2 | Federated DP model at ε ≤ 10: AUROC at or above the mean local-only AUROC, on each site | Local VAE 0.829 (A), local AE 0.999 on b1 (B); validation, G1 inputs |
 | PT3 | Site A event recall ≥ 0.70 on the 35 test events **and** realised test window FPR ≤ 2%, for the federated DP model (ADR 0002) | Central VAE: event recall 1.0 at FPR 0.03 (validation, G1 inputs) |
 | PT4 | Site B 2-of-3 fusion reduces false alarms per hour by ≥ 30% against the best single node at the same thresholds | Attack-day normal false alarms: 13–16 per hour (AE), mostly b1 and b3 |
-| PT5 | Site A attribution: technique top-3 ≥ 0.70 against the acceptable sets, above the majority-class baseline (about 0.66 at first pass); `full` ≥ `retrieval_only` with CI. Site B: JSON validity ≥ 95%; raw grounding rate reported | — |
+| PT5 | Site A attribution: technique top-3 ≥ 0.70 against the acceptable sets, above the majority-class baseline (0.64 under protocol v1.1); `full` ≥ `retrieval_only` with CI. Site B: JSON validity ≥ 95%; raw grounding rate reported | — |
 | PT6 | Retrieval Recall@5 ≥ 0.85 on the held-out query set | — |
 | PT7 | Latency p95: detection ≤ 1 s; investigation ≤ 2 s; incident-to-dispatch ≤ 3 s (`retrieval_only`) and ≤ 24 s (`full`, L_LLM from G0) | LLM call p95 13.6 s (G0) |
 

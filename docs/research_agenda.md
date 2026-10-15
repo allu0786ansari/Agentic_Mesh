@@ -103,10 +103,16 @@ and runs within 24 s per incident on a laptop CPU.
 - **RQ3 / H3** with technique-level ground truth (ADR 0002 decision 6; mapping protocol).
 - Four ablation modes (X4), majority-class baseline, raw grounding rate, latency (X5).
 - Site B: seven-episode case study.
-- **Ground truth from the dataset's documentation (mapping protocol v1.0).** All 50
-  HAI 21.03 events match the attack timetable published with the dataset: 32 are
-  setpoint-led (T0836) and 18 output-led (T0855). The majority and constant-answer
-  baselines are 0.64.
+- **Ground truth from the dataset's documentation (mapping protocol v1.1, reviewed
+  in two passes).** All 50 HAI 21.03 events match the attack timetable published with
+  the dataset: 32 are setpoint-led (T0836) and 18 output-led (T1692.001, formerly
+  T0855). The majority and constant-answer baselines are 0.64.
+  - IDs follow ATT&CK for ICS v20.0. Predictions in the pre-2026 IDs are normalised
+    by MITRE's `revoked-by` relationships, so models trained on older ATT&CK are not
+    penalised for vocabulary.
+  - Tactic accuracy is uninformative on Site A: a constant answer scores 1.0.
+  - Limitation to disclose: both review passes were made by the AI assistant, at the
+    author's request.
   - The attacks hide setpoint changes in the HMI, so a data-only rule names the
     documented technique for only 18 of 50 events.
   - Results are stratified by SP-led versus CO-led events. Recognising a hidden

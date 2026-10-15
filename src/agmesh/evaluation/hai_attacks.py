@@ -1,12 +1,14 @@
-"""The documented HAI 21.03 attacks, and how each maps to ATT&CK for ICS (mapping protocol v1.0).
+"""The documented HAI 21.03 attacks, and how each maps to ATT&CK for ICS (mapping protocol v1.1).
 
 Source: *HAI Security Dataset - Technical Details*, icsdataset/hai,
 ``hai_dataset_technical_details.pdf``, section "HAI 21.03 - Attack operation"
-(pp. 36-38). The table below is a transcription of that section: 50 attacks, 25
-single primitives (A1xx, A2xx) and 25 combinations of two primitives (A3xx-A5xx),
-each with its target controller code, target point(s), start time and duration. The
-start times are the data's own clock; the first labelled row of every HAI 21.03 event
-lies between 1 s before and 21 s after its documented start minute.
+(printed pp. 36-38, PDF pages 37-39). The table below is a transcription of that
+section: 50 attacks, 25 single primitives (A1xx, A2xx) and 25 combinations of two
+primitives (A3xx-A5xx), each with its target controller code, target point(s), start
+time and duration. The start times are the data's own clock; the first labelled row
+of every HAI 21.03 event lies between 1 s before and 21 s after its documented start
+minute. Pass 2 re-transcribed the table independently and found no difference
+(``evaluation/ground_truth/pass2/``).
 
 **Target controller code.** ``<process>-<controller>-<variable>``. The variable is
 ``SP`` (setpoint), ``CO`` (control output, the command the controller sends to an
@@ -18,7 +20,10 @@ controlled variable is frozen or replayed to hide the effect), with ``-ST`` (or
 
 * A220, A402, A403, A405, A504, A506 and A511 list ``P2_LCV01D`` as the target of
   ``P3-LC-CO2``. HAI has no ``P2_LCV01D``; the P3 level controller's second output
-  is ``P3_LCV01D``, and these events are labelled ``attack_P3``.
+  is ``P3_LCV01D``, and these events are labelled ``attack_P3``. The document's own
+  primitive catalogue (AP37, ``P3-LC CV2 P3_LCV01D``) and the later releases' tables
+  print ``P3_LCV01D`` for the same primitive. In the data, 50% of ``attack_P3`` rows
+  put ``P3_LCV01D`` above its normal-row 99.9th percentile (pass 2).
 * A209 is listed as 159 s; the labelled event lasts 199 s. The start time matches.
 
 **HAI 21.03 column names.** The document uses the newer point names. In the 21.03
@@ -236,22 +241,27 @@ TIMETABLE: tuple[Attack, ...] = (
 )
 
 
-# ------------------------------------------------------------------ mapping rule v1.0
+# ------------------------------------------------------------------ mapping rule v1.1
 
-#: Primitive kind -> (primary, acceptable). Mapping protocol §2, rule v1.0.
-#: Acceptable sets are kept to the techniques an analyst would name as the main one,
+#: Primitive kind -> (primary, acceptable). Mapping protocol §2, rule v1.1, in the
+#: IDs of ATT&CK for ICS v20.0 (:mod:`agmesh.evaluation.attack_ics`).
+#: Acceptable sets name the mechanism an analyst would give as the main technique,
 #: so that no constant answer is correct for most events (see ``constant_baseline``).
+#: v1.1 (pass 2) dropped T0831 Manipulation of Control from the CO set. By MITRE's
+#: definition it covers both setpoint and command manipulation, so it describes every
+#: event, and accepting it for CO events only was inconsistent.
 BASE = {
     # A changed setpoint or trip limit is a modified parameter. (The document notes
-    # the change is hidden in the HMI; that is part of the same primitive, not a
-    # second technique an analyst must name.)
+    # the change is hidden in the HMI. That applies to every SP primitive in the
+    # dataset, so it is part of the primitive, not a second technique to name.)
     "sp": ("T0836", ("T0836",)),
-    # A changed control output is an unauthorised command to the actuator; changing
-    # the controller's output point is also Manipulation of Control.
-    "co": ("T0855", ("T0855", "T0831")),
+    # A changed control output is an unauthorised command message to the actuator
+    # (T1692.001, formerly T0855).
+    "co": ("T1692.001", ("T1692.001",)),
 }
-#: Added when the sensor of the controlled variable is frozen or replayed.
-HIDDEN_SENSOR = ("T0856",)
+#: Added when the sensor of the controlled variable is frozen or replayed: a spoofed
+#: reporting message (T1692.002, formerly T0856).
+HIDDEN_SENSOR = ("T1692.002",)
 #: Added for short-term attacks repeated several times (repetitive I/O changes).
 SHORT_TERM = ("T0806",)
 #: Combination of two primitives: the primary comes from the more upstream one.
@@ -259,7 +269,7 @@ PRECEDENCE = {"sp": 0, "co": 1}
 
 
 def techniques(attack: Attack) -> tuple[str, list[str]]:
-    """Primary technique and acceptable set of a documented attack (rule v1.0)."""
+    """Primary technique and acceptable set of a documented attack (rule v1.1)."""
     lead = min(attack.primitives, key=lambda p: PRECEDENCE[p.kind])
     primary = BASE[lead.kind][0]
     acceptable: list[str] = []

@@ -1,7 +1,8 @@
-"""Attribution ground truth (docs/mapping_protocol.md, v1.0).
+"""Attribution ground truth (docs/mapping_protocol.md, v1.1).
 
     python -m agmesh.evaluation.ground_truth site_a   # reads HAI test events (logged)
     python -m agmesh.evaluation.ground_truth site_b   # writes the 7-episode mapping
+    python -m agmesh.evaluation.ground_truth relabel  # re-applies the rule; no data read
 
 Site A: every HAI attack event (validation and test) is matched by its start time and
 labelled processes to the attack timetable published with the dataset
@@ -35,16 +36,15 @@ from agmesh.data.manifest import read_manifest
 from agmesh.evaluation import hai_attacks as ha
 from agmesh.evaluation.sealed import FinalAccess, authorise
 
-PROTOCOL_VERSION = "1.0"
+PROTOCOL_VERSION = "1.1"
 OUT_DIR = Path("evaluation/ground_truth")
 
-#: Technique -> tactics (ATT&CK for ICS; checked against the STIX bundle in Week 9).
+#: Technique -> tactics in the pinned ATT&CK for ICS v20.0 (:mod:`attack_ics`; a test
+#: checks this table against the pin).
 TACTICS = {
     "T0836": ["Impair Process Control"],  # Modify Parameter
-    "T0855": ["Impair Process Control"],  # Unauthorized Command Message
-    "T0831": ["Impact"],  # Manipulation of Control
-    "T0856": ["Evasion", "Impair Process Control"],  # Spoof Reporting Message
-    "T0832": ["Impact"],  # Manipulation of View
+    "T1692.001": ["Evasion", "Impair Process Control"],  # Command Message (was T0855)
+    "T1692.002": ["Evasion", "Impair Process Control"],  # Reporting Message (was T0856)
     "T0888": ["Discovery"],  # Remote System Information Discovery
     "T0846": ["Discovery"],  # Remote System Discovery
     "T0861": ["Collection"],  # Point & Tag Identification
@@ -137,13 +137,13 @@ def rule(devs: list[dict[str, Any]]) -> dict[str, Any]:
     if first is None:
         return {"primary": None, "acceptable": [], "basis": "no typed variable deviates"}
     if first["type"] == "setpoint":
-        primary, acceptable = "T0836", ["T0836", "T0855"]
+        primary, acceptable = "T0836", ["T0836", "T1692.001"]
     elif first["type"] == "command":
-        primary, acceptable = "T0855", ["T0855", "T0831"]
+        primary, acceptable = "T1692.001", ["T1692.001"]
     else:
-        primary, acceptable = "T0856", ["T0856", "T0832"]
+        primary, acceptable = "T1692.002", ["T1692.002"]
         if types & {"command", "setpoint"}:
-            acceptable.append("T0855")
+            acceptable.append("T1692.001")
     return {
         "primary": primary,
         "acceptable": acceptable,
@@ -237,52 +237,109 @@ def site_a(
                         acceptable=inferred["acceptable"],
                         basis="inferred only: " + inferred["basis"],
                     )
-                record["tactics"] = sorted(
-                    {t for tech in record["acceptable"] for t in TACTICS[tech]}
-                )
+                record["tactics"] = _tactics(record["acceptable"])
                 events[str(segment_id)] = record
     doc = _document("site_a", events)
     _write(doc, out / "mapping_site_a.json")
     return doc
 
 
-def site_b(out: Path) -> dict[str, Any]:
-    table = {
-        "0": (
-            "Two reads, one asking for 65,535 values (a malformed length)",
-            "T0888",
-            ["T0888", "T0861", "T0846", "T0814"],
-        ),
-        "1": (
-            "About 20 input-register reads; a stacked 23-frame packet",
-            "T0861",
-            ["T0861", "T0888", "T0814"],
-        ),
-        "2": ("Five reads across all four read function codes", "T0861", ["T0861", "T0888"]),
-        "3": ("Two coil reads", "T0861", ["T0861", "T0801"]),
-        "4": (
-            "Slow scan: about one discrete-input read a minute for 20 minutes",
-            "T0801",
-            ["T0801", "T0861"],
-        ),
-        "5": (
-            "65,535 coil writes to one address in 4 minutes",
-            "T0806",
-            ["T0806", "T0855", "T0814"],
-        ),
-        "6": ("21 coil writes to two addresses", "T0855", ["T0855", "T0831"]),
-    }
-    events = {
+SITE_B = {
+    "0": (
+        "Two reads, one asking for 65,535 values (a malformed length)",
+        "T0888",
+        ["T0888", "T0861", "T0846", "T0814"],
+    ),
+    "1": (
+        "About 20 input-register reads; a stacked 23-frame packet",
+        "T0861",
+        ["T0861", "T0888", "T0814"],
+    ),
+    "2": ("Five reads across all four read function codes", "T0861", ["T0861", "T0888"]),
+    "3": ("Two coil reads", "T0861", ["T0861", "T0801"]),
+    "4": (
+        "Slow scan: about one discrete-input read a minute for 20 minutes",
+        "T0801",
+        ["T0801", "T0861"],
+    ),
+    "5": (
+        "65,535 coil writes to one address in 4 minutes",
+        "T0806",
+        ["T0806", "T1692.001", "T0814"],
+    ),
+    "6": ("21 coil writes to two addresses", "T1692.001", ["T1692.001"]),
+}
+
+
+def _tactics(acceptable: list[str]) -> list[str]:
+    return sorted({t for tech in acceptable for t in TACTICS[tech]})
+
+
+def _site_b_events() -> dict[str, Any]:
+    return {
         ep: {
             "observed": text,
             "primary": primary,
             "acceptable": acceptable,
-            "tactics": sorted({t for tech in acceptable for t in TACTICS[tech]}),
+            "tactics": _tactics(acceptable),
         }
-        for ep, (text, primary, acceptable) in table.items()
+        for ep, (text, primary, acceptable) in SITE_B.items()
     }
-    doc = _document("site_b", events)
+
+
+def site_b(out: Path) -> dict[str, Any]:
+    doc = _document("site_b", _site_b_events())
     _write(doc, out / "mapping_site_b.json")
+    return doc
+
+
+#: Rule v1.0 -> v1.1 for the data-only inference: the new IDs of ATT&CK v20.0, and no
+#: Impact umbrella techniques. Applying it to a v1.0 inference gives exactly what
+#: :func:`rule` now returns for the same deviations.
+_V11 = {"T0855": "T1692.001", "T0856": "T1692.002", "T0831": None, "T0832": None}
+
+
+def _translate(ids: list[str]) -> list[str]:
+    out: list[str] = []
+    for tid in ids:
+        new = _V11.get(tid, tid)
+        if new is not None and new not in out:
+            out.append(new)
+    return out
+
+
+def relabel(path: Path) -> dict[str, Any]:
+    """Re-apply the current rule to a mapping file, without reading any data.
+
+    Site A: the documented truth of each event is recomputed from its ``attack_id``
+    and the timetable. The stored data-only inference is translated by ``_V11``.
+    Site B: the episodes are rewritten from :data:`SITE_B`. The review history is
+    kept. Used for protocol v1.1 (pass 2), so the sealed test events are not read
+    again for a change that does not depend on them.
+    """
+    doc: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    if doc["site"] == "site_a":
+        by_id = {a.attack_id: a for a in ha.TIMETABLE}
+        for event in doc["events"].values():
+            inferred = event["inferred"]
+            if inferred.get("primary") is not None:
+                inferred["primary"] = _translate([inferred["primary"]])[0]
+            inferred["acceptable"] = _translate(inferred["acceptable"])
+            if event.get("attack_id"):
+                primary, acceptable = ha.techniques(by_id[event["attack_id"]])
+            else:
+                primary, acceptable = inferred["primary"], inferred["acceptable"]
+            event["primary"], event["acceptable"] = primary, acceptable
+            event["tactics"] = _tactics(acceptable)
+        baseline = ha.constant_baseline()
+        doc["constant_answer_baseline"] = {k: round(v, 2) for k, v in baseline.items()}
+        doc["agreement_with_data_only_inference"] = agreement(doc)
+    else:
+        doc["events"] = _site_b_events()
+    doc["protocol_version"] = PROTOCOL_VERSION
+    doc["relabelled_at"] = utc_now_iso()
+    doc["relabelled_git_sha"] = git_state()["git_sha"]
+    _write(doc, path)
     return doc
 
 
@@ -331,7 +388,7 @@ def summary(doc: dict[str, Any]) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="First-pass ground-truth mapping (draft)")
-    parser.add_argument("site", choices=("site_a", "site_b"))
+    parser.add_argument("site", choices=("site_a", "site_b", "relabel"))
     parser.add_argument("--params", type=Path, default=DEFAULT_PARAMS_PATH)
     parser.add_argument("--partitions", type=Path, default=None)
     parser.add_argument("--out", type=Path, default=OUT_DIR)
@@ -342,6 +399,10 @@ def main(argv: list[str] | None = None) -> int:
         help="keep events with no documented attack (fixture data); real runs must match all",
     )
     args = parser.parse_args(argv)
+    if args.site == "relabel":
+        for site in ("a", "b"):
+            print(summary(relabel(args.out / f"mapping_site_{site}.json")))
+        return 0
     params = load_params(args.params)
     if args.site == "site_a":
         doc = site_a(
