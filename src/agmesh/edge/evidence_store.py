@@ -31,7 +31,9 @@ class EvidenceStore:
     def __init__(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.path = path
-        self.conn = sqlite3.connect(path, timeout=30.0, isolation_level=None)
+        self.conn = sqlite3.connect(
+            path, timeout=30.0, isolation_level=None, check_same_thread=False
+        )
         self.conn.execute("PRAGMA journal_mode=WAL")
         self.conn.execute("PRAGMA synchronous=NORMAL")
         self.conn.executescript(SCHEMA)

@@ -42,7 +42,9 @@ class SqliteBus:
     ) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.path, self.clock, self.max_attempts = path, clock, max_attempts
-        self.conn = sqlite3.connect(path, timeout=30.0, isolation_level=None)
+        self.conn = sqlite3.connect(
+            path, timeout=30.0, isolation_level=None, check_same_thread=False
+        )
         self.conn.execute("PRAGMA journal_mode=WAL")
         self.conn.execute("PRAGMA synchronous=NORMAL")
         self.conn.executescript(SCHEMA)

@@ -1,0 +1,7 @@
+# Action policy (Proposal §8.5; ADR 0012 §5). Low-impact actions are dispatched;
+# high-impact actions wait for an authenticated approval.
+actions:
+  operator_alert:      {impact: low,  when: {attributed: true}}
+  increase_monitoring: {impact: low,  when: {attributed: true, min_severity: medium}}
+  isolate_or_block:    {impact: high, when: {attributed: true, min_severity: high, min_confidence: 0.5}}
+  change_threshold:    {impact: high, when: {operator_initiated: true}}   # never proposed automatically

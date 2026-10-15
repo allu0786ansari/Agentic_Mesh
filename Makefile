@@ -8,7 +8,7 @@ PY := $(UV) run python
         checksums verify-checksums inspect-data bench-llm bench-ray feasibility \
         prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft \
         training-budget summarise shift-selection dp-sanity train x8 g2-pilot g2-tuning \
-        edge-model edge latency setup-kb kb kb-sources retrieval-queries retrieval-eval
+        edge-model edge latency setup-kb kb kb-sources retrieval-queries retrieval-eval mesh
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -42,6 +42,7 @@ help:
 	@echo "kb                Week 9: build the ATT&CK for ICS knowledge base -> data/kb/, results/kb/manifest.json"
 	@echo "retrieval-queries Week 9: render the validation queries from the latest edge runs"
 	@echo "retrieval-eval    Week 9: Recall@5 and MRR (the first reference run is the PT6 measurement)"
+	@echo "mesh              Week 10: agent mesh over an edge run, e.g. make mesh SITE=site_b MODE=retrieval_only SPLIT=val"
 	@echo "g2-pilot          Week 7: FedAvg and FedProx at eps 10, both sites, 50 rounds -> results/federated/g2_pilot/"
 	@echo "g2-tuning         Week 7: ADR 0008 DP lr x clip grid and FedProx mu grid -> results/federated/g2_*"
 	@echo "train             Week 6: one federated run, e.g. make train SITE=site_a [ROUNDS=5 smoke] [EPS=3] [STRATEGY=fedavg] [BACKEND=flower]"
@@ -198,3 +199,8 @@ retrieval-queries:
 retrieval-eval:
 	$(UV) run --group kb python -m agmesh.evaluation.retrieval_eval --split val \
 		$(if $(VERSION),--version $(VERSION),)
+
+# Week 10 (ADR 0012): MODE = full | retrieval_only | llm_no_retrieval | rule_only
+mesh:
+	$(UV) run --group kb python -m agmesh.mesh.runner --site $(SITE) --mode $(or $(MODE),full) \
+		--split $(or $(SPLIT),val)

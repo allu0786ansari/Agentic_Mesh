@@ -43,6 +43,10 @@ CREATE TABLE IF NOT EXISTS actions (action_id TEXT PRIMARY KEY, session_id TEXT 
 
 CREATE TABLE IF NOT EXISTS session_alerts (session_id TEXT NOT NULL, alert_id TEXT NOT NULL,
   PRIMARY KEY (session_id, alert_id));
+
+CREATE TABLE IF NOT EXISTS session_steps (session_id TEXT NOT NULL, step TEXT NOT NULL,
+  status TEXT NOT NULL, payload TEXT NOT NULL, at TEXT NOT NULL,
+  PRIMARY KEY (session_id, step));
 """
 
 TERMINAL = frozenset({"COMPLETED", "COMPLETED_DEGRADED", "ABSTAINED", "FAILED"})
@@ -83,7 +87,9 @@ class SessionStore:
     def __init__(self, path: Path, *, max_hops: int = 3) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.max_hops = max_hops
-        self.conn = sqlite3.connect(path, timeout=30.0, isolation_level=None)
+        self.conn = sqlite3.connect(
+            path, timeout=30.0, isolation_level=None, check_same_thread=False
+        )
         self.conn.execute("PRAGMA journal_mode=WAL")
         self.conn.execute("PRAGMA foreign_keys=ON")
         self.conn.executescript(SCHEMA)
@@ -230,8 +236,69 @@ class SessionStore:
         ).fetchone()
         return str(row[0]), cur.rowcount == 1
 
+    # --------------------------------------------------------------------- steps
+    def record_step(self, session_id: str, step: str, status: str, payload: dict[str, Any]) -> bool:
+        """Persist an agent step once (ADR 0012 §1); False if it was already recorded."""
+        cur = self.conn.execute(
+            "INSERT OR IGNORE INTO session_steps VALUES (?, ?, ?, ?, ?)",
+            (
+                session_id,
+                step,
+                status,
+                json.dumps(payload, sort_keys=True, default=str),
+                utc_now_iso(),
+            ),
+        )
+        return cur.rowcount == 1
+
+    def step(self, session_id: str, step: str) -> dict[str, Any] | None:
+        row = self.conn.execute(
+            "SELECT payload FROM session_steps WHERE session_id = ? AND step = ?",
+            (session_id, step),
+        ).fetchone()
+        return json.loads(row[0]) if row else None
+
+    def steps(self, session_id: str) -> list[str]:
+        rows = self.conn.execute(
+            "SELECT step FROM session_steps WHERE session_id = ? ORDER BY at, step", (session_id,)
+        ).fetchall()
+        return [str(r[0]) for r in rows]
+
+    def actions(self, session_id: str | None = None) -> list[dict[str, Any]]:
+        cols = (
+            "action_id",
+            "session_id",
+            "action_type",
+            "impact",
+            "status",
+            "technique_id",
+            "tactic",
+            "confidence",
+            "payload",
+            "trace_id",
+            "created_at",
+        )
+        where = " WHERE session_id = ?" if session_id else ""
+        sql = "SELECT * FROM actions" + where  # noqa: S608 (fixed fragments, value bound)
+        rows = self.conn.execute(
+            sql + " ORDER BY created_at, action_type", (session_id,) if session_id else ()
+        ).fetchall()
+        return [dict(zip(cols, r, strict=True)) for r in rows]
+
+    def set_action_status(self, action_id: str, frm: str, to: str) -> bool:
+        cur = self.conn.execute(
+            "UPDATE actions SET status = ? WHERE action_id = ? AND status = ?", (to, action_id, frm)
+        )
+        return cur.rowcount == 1
+
+    def all_sessions(self) -> list[Session]:
+        return [
+            Session(*r)
+            for r in self.conn.execute("SELECT * FROM sessions ORDER BY opened_at").fetchall()
+        ]
+
     def count(self, table: str = "sessions") -> int:
-        if table not in ("sessions", "hops", "actions"):
+        if table not in ("sessions", "hops", "actions", "session_steps"):
             raise ValueError(table)
         return int(self.conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])  # noqa: S608
 
