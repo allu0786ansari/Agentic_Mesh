@@ -28,6 +28,7 @@ import argparse
 import collections
 import hashlib
 import json
+import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -40,6 +41,7 @@ from agmesh.kb.store import COLLECTIONS, QdrantStore, Store
 
 NIST_URL = "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-82r3.pdf"
 NIST_FILE = "NIST.SP.800-82r3.pdf"
+USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) agentic-mesh-kb/1.0"
 ENCODER_LOCK = Path("configs/kb/encoder.lock.json")
 SOURCES_LOCK = Path("configs/kb/sources.lock.json")
 
@@ -60,8 +62,17 @@ def fetch_nist(dest_dir: Path) -> Path:
     dest = dest_dir / NIST_FILE
     if not dest.is_file():
         dest_dir.mkdir(parents=True, exist_ok=True)
-        with urllib.request.urlopen(NIST_URL, timeout=300) as response:
-            dest.write_bytes(response.read())
+        # nvlpubs.nist.gov answers 403 to Python's default User-Agent.
+        request = urllib.request.Request(NIST_URL, headers={"User-Agent": USER_AGENT})
+        try:
+            with urllib.request.urlopen(request, timeout=300) as response:  # noqa: S310
+                dest.write_bytes(response.read())
+        except urllib.error.HTTPError as exc:
+            raise SystemExit(
+                f"NIST refused the download ({exc.code}). Fetch it by hand, then run `make kb`:\n"
+                f'  curl -L -A "{USER_AGENT}" -o {dest} {NIST_URL}\n'
+                "The knowledge base builds without it; PT6 does not depend on NIST (ADR 0010 §1)."
+            ) from exc
     digest = hashlib.sha256(dest.read_bytes()).hexdigest()
     _lock(SOURCES_LOCK, "nist_sp_800_82r3", {"url": NIST_URL, "sha256": digest})
     return dest

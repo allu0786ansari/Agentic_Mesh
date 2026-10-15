@@ -42,8 +42,17 @@ make kb                # -> data/kb/qdrant, configs/kb/encoder.lock.json, result
 ```
 
 It must say 104 techniques, 404 passages and dim 384. NIST may be a few hundred
-passages. If `make kb-sources` fails, for example because NIST blocks the
-download, the build continues without NIST. PT6 does not depend on it.
+passages.
+
+If NIST still refuses `make kb-sources`, download the PDF by hand, then run
+`make kb`:
+
+```bash
+curl -L -A "Mozilla/5.0" -o data/kb/NIST.SP.800-82r3.pdf https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-82r3.pdf
+```
+
+`make kb` records the PDF's SHA-256 either way. The build also works with no NIST
+file at all; PT6 does not depend on it.
 
 ## Step 3 — Render the queries and compare with the cloud (about 1 minute)
 
