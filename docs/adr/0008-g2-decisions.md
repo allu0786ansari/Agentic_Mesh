@@ -65,10 +65,12 @@ before it is run:
 ### Runs
 
 All runs below were done in the cloud workspace on the same partitions, seed 11,
-validation only, from clean commits (one exception is noted). The artifacts are
-committed under `results/G2/` and `results/X8/`; the privacy ledgers are under
-`results/privacy/`. The laptop can reproduce them with `make x8 g2-pilot g2-tuning`.
-Earlier rounds matched across machines bit for bit (ADR 0005, ADR 0006).
+validation only, from clean commits (one exception is noted). The cloud G2 artifacts
+are under `results/G2/`. (They sat in the ignored `results/` tree until the
+reproduction commit below; they are now committed unchanged.) The cloud X8 artifact
+was never committed, and the laptop's X8 artifact replaced it; the X8 table below
+gives the cloud numbers, and the reproduction section gives the laptop's. The laptop
+reproduced everything with `make x8 g2-pilot g2-tuning` (see "Laptop reproduction").
 
 **1. Pilots, ε = 10, 50 rounds, defaults before G2 (Site A DP lr 1e-3, C 1.0):**
 
@@ -165,6 +167,41 @@ bins, since no new evidence bears on them.
   private federated utility by 0.17 AUPRC. Reporting untuned DP baselines would have
   exaggerated the cost of privacy. The tuning used validation only, under a rule
   fixed in advance, and the same setting applies to every ε and strategy.
+
+### Laptop reproduction (commit 7dfe55f, code at be1289e, clean tree)
+
+All 13 G2 runs and X8 were rerun on the author's laptop (WSL2, 2 physical cores) and
+are committed under `results/federated/g2_{pilot,tuning,mu}/` and `results/X8/`.
+
+- **Pilots, μ runs, and five of the seven tuning cells:** the same metrics to three
+  decimals.
+- **Two cells differ:**
+  - lr 3e-3, C 1.0: AUPRC 0.7024 against 0.7026 in the cloud.
+  - lr 1e-2, C 1.0: 0.668 against 0.669.
+  - Cause: validation losses differ from round 1 at the 10⁻⁵ level. This is
+    floating-point summation order in CPU kernels on different hardware. It is not
+    a code or data difference:
+    - The lockfile hashes match.
+    - The parameters files differ only by the `dp_lr` default that G2 introduced.
+      These runs set `--lr` explicitly, so the default does not apply.
+    - Five of seven cells agree to three decimals on the same partitions.
+  - Earlier comparisons were bit-identical because they used shorter or non-DP runs.
+    Over 50 DP rounds, a larger learning rate amplifies these last-bit differences.
+- **Decisions are unchanged.** On the laptop numbers:
+  - lr 3e-3 / C 1.0 (0.702) and C 0.5 (0.700) are still tied, and C 1.0 still wins
+    on fewer changes.
+  - lr 1e-2 still does not beat 3e-3.
+  - μ is unchanged.
+- **X8 on the laptop:**
+  - Max error 3.36 × 10⁻⁶, within one quantisation step (3.81 × 10⁻⁶).
+  - Dropout recovered.
+  - Bytes ×1.84.
+  - Time ratio 0.87: SecAgg+ was not slower, and the difference is round-to-round
+    noise.
+
+**Consequence for X1–X2:** cross-machine agreement is to about 10⁻³ AUPRC, not
+bitwise. All X1/X2 seeds for a comparison are run on one machine, the laptop. Five
+seeds' spread (ADR 0005: 0.01–0.03) is far larger than this.
 
 **Gate G2: passed.** The X1/X2 grid can start (Phase 3 planning, Week 8, also needs
 `gt-frozen`).

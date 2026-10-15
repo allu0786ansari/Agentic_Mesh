@@ -1,0 +1,145 @@
+# Agentic Mesh v3 — single source of truth (Implementation Plan v3.1, WR-8).
+# Every count, window, target and hyperparameter is read from here by code and docs.
+# Values marked "G0" or "G1" are confirmed or revised at that decision gate and the
+# change is recorded in docs/adr/.
+
+project:
+  seeds: [11, 23, 37, 41, 53]
+
+paths:
+  raw_root: data/raw
+  hai_dir: data/raw/hai/hai-21.03          # G0: pinned release (21.03 is the release available locally)
+  modbus_dir: data/raw/modbus2023          # benign/<device>/*.pcap and attack/<device>/*.pcap
+  results_root: results
+  checksums_file: data/raw_checksums.json
+  interim_dir: data/interim                # parsed Modbus tables (DVC stage: prepare)
+  partitions_dir: data/partitions          # per-node splits and manifests (DVC stage: partition)
+
+data:
+  hai:
+    release: "21.03"                       # G0 decision 1 (only complete release available)
+    sample_rate_hz: 1
+    label_column: attack                   # HAI-1: primary label (process columns are shorter at event edges)
+    process_label_columns: [attack_P1, attack_P2, attack_P3]
+    drop_train_constant_features: true     # HAI-2: 22 of 79 features never change in training
+    drop_features: [P4_HT_PS]              # HAI-2: exact scaled copy of P4_ST_PS
+    max_ffill_s: 5                         # missing values: forward-fill at most 5 s, else drop the row
+    scaling: {method: standard, clip_sd: 6.0}  # HAI-4: min-max breaks on out-of-range test values
+  modbus:
+    devices: {ied1a: 185.175.0.4, ied1b: 185.175.0.5, scada-hmi: 185.175.0.3}
+    other_hosts: {ied4c: 185.175.0.8, central_agent: 185.175.0.6, docker_gateway: 185.175.0.1}
+    attacker_ip: 185.175.0.7               # MB-2: the external attacker; labels the attack day
+    label_source: attacker_address         # no attack logs in the download (G0 decision 4)
+    idle_gap_s: 60                         # MB-7: HMI polling pauses longer than this are cut out
+    episode_gap_s: 125                     # attacker IPv4 gaps: up to 121 s inside a probe, at least 133 s between probes
+    attack_val_episodes: 4                 # episodes 0-3 -> attack validation, the rest -> test (Proposal §6.2)
+  windows:
+    site_a: {length_s: 60, train_stride_s: 60, infer_stride_s: 10}
+    site_b: {length_s: 10, train_stride_s: 10, infer_stride_s: 5}
+  splits:
+    normal_val_fraction: 0.15
+    gap_windows: 1
+    attack_val_fraction: 0.30              # Site A: about 15 of the 50 HAI events
+    seed: 2026                             # fixed seed for segment assignment and the iid scheme
+  partition:
+    site_a:
+      clients: [a1, a2, a3, a4]
+      block_hours: 6                       # unit for the iid variant (experiment X2)
+      scheme: time                         # HAI-3 / G0 decision 2: regime | iid | time
+      period_assignment:                   # used when scheme = time
+        a1: train1
+        a2: train2
+        a3: train3:first_half
+        a4: train3:second_half
+    site_b:
+      clients: {b1: ied1a, b2: ied1b, b3: scada-hmi}
+
+models:
+  vae:
+    hidden: [256, 128]
+    latent: 16
+    lr: 1.0e-3
+    batch: 256
+    input_mode: segment_means              # HAI-6: flat | segment_means (chosen on validation in Week 4)
+    segments_per_window: 6                 # 60 s window -> six 10 s means per feature
+    kl_weight: 1.0
+    exclude_features: [P1_PCV02Z]          # ADR 0002 decision 2 (HAI-8): calibration offset, steps between periods
+    max_epochs: 200                        # ADR 0004: at 100 the cap ended 32% of runs; at 200 none
+    patience: 10
+  ae:
+    hidden: [64, 32]
+    lr: 1.0e-3
+    batch: 256
+    max_epochs: 30
+    patience: 5
+    transform: log1p                       # counts and latency are heavy-tailed
+    clip_sd: 6.0
+    exclude_features: [peers, new_peers]   # ADR 0002 decision 1 (MB-15): identity features reproduce the label
+  scoring:                                 # ADR 0003: chosen on validation with a grid declared in advance
+    site_a: {aggregation: mean, smooth: 1, top_k: 3, shift: r3}       # ADR 0005: robust adaptive threshold
+    site_b: {aggregation: norm_top3, smooth: 1, top_k: 3, shift: r0}  # ADR 0005: Site B outside the selection
+    shift_window: {history_s: 1800, gap_s: 120, min_history_s: 300}   # ADR 0005, fixed before the run
+  baselines:
+    pca_variance: 0.95                     # components kept for the PCA reconstruction baseline
+    iforest_trees: 200
+    iforest_max_samples: 256
+
+federated:
+  strategy: fedprox                        # fedavg | fedprox
+  proximal_mu: 0.1                        # grid: [0.001, 0.01, 0.1]
+  max_rounds: 50
+  local_epochs: 1                          # heterogeneous arm samples from [1, 2, 3]
+  dropout_prob: 0.0                        # heterogeneous arm: 0.2
+  min_fit_clients: {site_a: 3, site_b: 2}
+  round_timeout_s: 120
+  stopping: {patience: 5, min_rel_delta: 0.005}
+  rounds_to_target_tolerance: 0.02
+  client_resources: {num_cpus: 2}          # G0 decision 9: 2 concurrent clients, 3.8 s/round, 1.8 GB PSS
+
+privacy:
+  target_epsilon: 10.0                     # sweep: [1, 3, 10, .inf]
+  delta_cap: 1.0e-5                        # delta = min(delta_cap, 1 / (delta_divisor * n_train_windows))
+  delta_divisor: 10
+  max_grad_norm: 1.0
+  accountant: rdp
+  normalisation_stats_epsilon: 0.3         # ADR 0006: ε of the histogram release alone; composed with DP-SGD in RDP
+  normalisation_bins: {site_a: 50, site_b: 200}   # ADR 0006: bins over each feature's public range
+  normalisation_threshold_sd: 3.0          # ADR 0006: noisy counts below 3 noise SDs are zeroed (post-processing)
+  threshold_epsilon: 0.5                   # ADR 0007: H1c score-histogram release, standalone ε; composed in RDP
+  threshold_bins: 100                      # ADR 0007: H1c histogram bins (groups of 10 of the 1,000-bin score grid)
+
+evaluation:
+  target_window_fpr: 0.01
+  report_window_fprs: [0.005, 0.01, 0.05]
+  event_tolerance_s: 60
+  calibration: isotonic
+  pooled_auroc_bins: 1000
+  bootstrap_resamples: 2000
+
+fusion:
+  site_b: {delta_t_s: 60, method: noisy_or, k_of_n: 2, exclude_latency: true}  # MB-13
+
+mesh:
+  max_hops: 3
+  connect_timeout_s: 0.2
+  read_timeout_s: 0.5
+  max_retries: 1
+  investigation_deadline_s: 3.0
+  breaker: {failure_threshold: 2, open_seconds: 30}
+  attribution:
+    mode: full                             # full | retrieval_only | llm_no_retrieval | rule_only
+    top_k: 5
+    min_confidence: 0.5
+    llm_timeout_s: 21                      # G0 decision 7: 1.5 x measured p95 (13.6 s) of the chosen model
+    l_llm_s: 24                            # G0 decision 7: full-mode incident-to-dispatch target = LLM timeout + 3 s non-LLM path
+
+llm:
+  base_url: "http://127.0.0.1:11434"
+  model: "llama3.2:3b"                     # G0 decision 6: p95 13.6 s, 100% schema-valid, 2.2 GB
+  alternative_model: "phi3.5:3.8b-mini-instruct-q4_K_M"  # p95 70.9 s, one timeout in 30 calls
+  num_ctx: 2048
+  temperature: 0
+
+security:
+  jwt: {issuer: mesh, ttl_s: 120}
+  egress_allowlist: ["127.0.0.1", "::1", "localhost"]

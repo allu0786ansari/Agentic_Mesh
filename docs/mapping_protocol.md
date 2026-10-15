@@ -3,7 +3,7 @@
 **Status:** v1.0. Pass 1 was done on 14 October 2026 by the assistant at the author's
 request. It awaits the author's verification (§6), after which the mapping is tagged
 `gt-frozen` (preregistration, Status). That tag is required before Phase 3. Changing this protocol after
-`g1-frozen` requires a new ADR and invalidates attribution results produced under the
+`gt-frozen` requires a new ADR and invalidates attribution results produced under the
 old version.
 **Implements:** Proposal v3.1 §10.4; ADR 0002 decision 6.
 
@@ -137,7 +137,7 @@ match reconnaissance-style reads and a write.
 - `evaluation/ground_truth/mapping_site_b.json`: `{episode: {...}}` with the same fields.
 
 Both carry the protocol version, the reviewer and the date of each pass, and are
-committed together with `docs/preregistration.md` in the `g1-frozen` commit.
+committed together with `docs/preregistration.md` in the `gt-frozen` commit.
 
 ## 5. Scoring (for reference)
 
@@ -169,4 +169,4 @@ assistant's notes:
 4. Check the seven Site B episodes, including T0814 on episodes 0 and 1.
 5. Record the pass here and in `reviews` in both JSON files, then tell the assistant.
    It will set `"reviewed": true`, finalise `docs/preregistration.md`, and tag
-   `g1-frozen`.
+   `gt-frozen`.
