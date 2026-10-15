@@ -1,0 +1,395 @@
+{
+  "schema_version": "1.0",
+  "kind": "edge.summary",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-15T16:55:53Z",
+    "git_sha": "c6f002f9f20e3864705bbf111e3e6cacb9b7a747",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "3345edb07091552cd8e4fb81acf6eb6cc14211327f39c7cac0351239c63185fe",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "845c09e22a7410331d4684069f3e617cb8cda069bbbb077dc6c64ca74d47be0f",
+      "hostname_hash": "89a720d64995",
+      "pid": 3535
+    }
+  },
+  "run_id": "edge__site_b__val__c4792f177b4f__20261015T222546",
+  "site": "site_b",
+  "split": "val",
+  "model": {
+    "path": "results/models/site_b__fedprox__eps3/seed_11",
+    "model_version": "sha256:c4792f177b4fcbafdd22f14d5314aacd785688001c97ab6196ada6caca437b03",
+    "source": {
+      "run_id": "site_b__fedprox__eps3__seed11__20261015T220512",
+      "config_id": "site_b__fedprox__eps3",
+      "seed": 11,
+      "epsilon": "3",
+      "strategy": "fedprox",
+      "rounds": 50
+    }
+  },
+  "replay": {
+    "speed": 0.0,
+    "max_gap_s": 60.0,
+    "wall_seconds": 4.28,
+    "slept_s": 0.0
+  },
+  "nodes": {
+    "b1": {
+      "threshold": 251.24137149347325,
+      "threshold_val_fpr": 0.009971136184728419,
+      "shift": "r0"
+    },
+    "b2": {
+      "threshold": 132.98647054680717,
+      "threshold_val_fpr": 0.009913954358398803,
+      "shift": "r0"
+    },
+    "b3": {
+      "threshold": 541.8483020635134,
+      "threshold_val_fpr": 0.009918931807343824,
+      "shift": "r0"
+    }
+  },
+  "streams": {
+    "b1/val_attack": {
+      "windows": 147,
+      "scored": 147,
+      "attack_windows": 12,
+      "alerts": 20,
+      "alerts_on_attack": 12,
+      "alerts_empty_features": 0,
+      "alerts_latency_only": 0,
+      "alerts_constants_changed": 0,
+      "false_alarms": 8,
+      "window_fpr_normal": 0.05925925925925926
+    },
+    "b1/val_normal": {
+      "windows": 11433,
+      "scored": 11433,
+      "attack_windows": 0,
+      "alerts": 115,
+      "alerts_on_attack": 0,
+      "alerts_empty_features": 0,
+      "alerts_latency_only": 0,
+      "alerts_constants_changed": 0,
+      "false_alarms": 115,
+      "window_fpr_normal": 0.010058602291612
+    },
+    "b2/val_attack": {
+      "windows": 147,
+      "scored": 147,
+      "attack_windows": 0,
+      "alerts": 3,
+      "alerts_on_attack": 0,
+      "alerts_empty_features": 0,
+      "alerts_latency_only": 0,
+      "alerts_constants_changed": 0,
+      "false_alarms": 3,
+      "window_fpr_normal": 0.02040816326530612
+    },
+    "b2/val_normal": {
+      "windows": 10692,
+      "scored": 10692,
+      "attack_windows": 0,
+      "alerts": 106,
+      "alerts_on_attack": 0,
+      "alerts_empty_features": 0,
+      "alerts_latency_only": 0,
+      "alerts_constants_changed": 0,
+      "false_alarms": 106,
+      "window_fpr_normal": 0.009913954358398803
+    },
+    "b3/val_attack": {
+      "windows": 147,
+      "scored": 147,
+      "attack_windows": 0,
+      "alerts": 2,
+      "alerts_on_attack": 0,
+      "alerts_empty_features": 0,
+      "alerts_latency_only": 0,
+      "alerts_constants_changed": 0,
+      "false_alarms": 2,
+      "window_fpr_normal": 0.013605442176870748
+    },
+    "b3/val_normal": {
+      "windows": 10485,
+      "scored": 10485,
+      "attack_windows": 0,
+      "alerts": 104,
+      "alerts_on_attack": 0,
+      "alerts_empty_features": 0,
+      "alerts_latency_only": 0,
+      "alerts_constants_changed": 0,
+      "false_alarms": 104,
+      "window_fpr_normal": 0.009918931807343824
+    }
+  },
+  "stream_vs_batch": {
+    "b1/val_attack": {
+      "windows": 147,
+      "scored_mask_mismatches": 0,
+      "max_abs_diff": 0.09742550062946975,
+      "max_rel_diff": 6.320712544976321e-05,
+      "alert_decision_mismatches": 0,
+      "mismatch_max_rel_margin": null
+    },
+    "b1/val_normal": {
+      "windows": 11433,
+      "scored_mask_mismatches": 0,
+      "max_abs_diff": 0.005513944299764262,
+      "max_rel_diff": 0.003227901297214872,
+      "alert_decision_mismatches": 1,
+      "mismatch_max_rel_margin": 0.0
+    },
+    "b2/val_attack": {
+      "windows": 147,
+      "scored_mask_mismatches": 0,
+      "max_abs_diff": 0.0008283433946303376,
+      "max_rel_diff": 0.003007726410421911,
+      "alert_decision_mismatches": 0,
+      "mismatch_max_rel_margin": null
+    },
+    "b2/val_normal": {
+      "windows": 10692,
+      "scored_mask_mismatches": 0,
+      "max_abs_diff": 0.007073022393797146,
+      "max_rel_diff": 0.00386443973986577,
+      "alert_decision_mismatches": 0,
+      "mismatch_max_rel_margin": null
+    },
+    "b3/val_attack": {
+      "windows": 147,
+      "scored_mask_mismatches": 0,
+      "max_abs_diff": 0.0038505519623868167,
+      "max_rel_diff": 9.944040270326614e-05,
+      "alert_decision_mismatches": 0,
+      "mismatch_max_rel_margin": null
+    },
+    "b3/val_normal": {
+      "windows": 10485,
+      "scored_mask_mismatches": 0,
+      "max_abs_diff": 0.009251720272004604,
+      "max_rel_diff": 0.0018588412521789782,
+      "alert_decision_mismatches": 0,
+      "mismatch_max_rel_margin": null
+    }
+  },
+  "detection_latency_ms": {
+    "n": 350,
+    "p50": 0.6138434999911624,
+    "p95": 1.7349541499697807,
+    "max": 13.265623999814125
+  },
+  "window_processing_ms": {
+    "n": 33051,
+    "p50": 0.09290200000577897,
+    "p95": 0.246167999989666,
+    "max": 13.763757999868176
+  },
+  "latency_target_ms": 1000.0,
+  "evidence": {
+    "records": {
+      "b1": 135,
+      "b2": 109,
+      "b3": 106
+    },
+    "magnitudes": {
+      "medium": 1188,
+      "low": 108,
+      "high": 454
+    },
+    "top_feature_frequency": {
+      "val_normal": {
+        "malformed_frames": 211,
+        "req_read": 172,
+        "req_other": 164,
+        "resp_exception": 162,
+        "stacked_frames": 159,
+        "tcp_syn": 103,
+        "unanswered": 99,
+        "req_sent": 94,
+        "slow_responses": 90,
+        "oversized_qty": 77
+      },
+      "val_attack": {
+        "req_other": 21,
+        "malformed_frames": 20,
+        "unanswered": 18,
+        "unseen_addr": 18,
+        "oversized_qty": 16,
+        "stacked_frames": 8,
+        "resp_exception": 6,
+        "slow_responses": 4,
+        "unseen_addr_write": 4,
+        "req_read": 3
+      }
+    }
+  },
+  "bus": {
+    "messages": 350,
+    "acked": 0,
+    "dead": 0,
+    "attempts": 0
+  },
+  "fusion": {
+    "val_normal": {
+      "configured": {
+        "delta_t_s": 60,
+        "k": 2,
+        "exclude_latency": true
+      },
+      "alerts": 325,
+      "incidents": 210,
+      "confirmed_k": 44,
+      "nodes_per_incident": {
+        "1": 166,
+        "2": 38,
+        "3": 6
+      },
+      "sensitivity_descriptive_only": [
+        {
+          "delta_t_s": 30.0,
+          "k": 1,
+          "incidents": 228,
+          "confirmed": 228
+        },
+        {
+          "delta_t_s": 30.0,
+          "k": 2,
+          "incidents": 228,
+          "confirmed": 36
+        },
+        {
+          "delta_t_s": 30.0,
+          "k": 3,
+          "incidents": 228,
+          "confirmed": 4
+        },
+        {
+          "delta_t_s": 60.0,
+          "k": 1,
+          "incidents": 210,
+          "confirmed": 210
+        },
+        {
+          "delta_t_s": 60.0,
+          "k": 2,
+          "incidents": 210,
+          "confirmed": 44
+        },
+        {
+          "delta_t_s": 60.0,
+          "k": 3,
+          "incidents": 210,
+          "confirmed": 6
+        },
+        {
+          "delta_t_s": 120.0,
+          "k": 1,
+          "incidents": 186,
+          "confirmed": 186
+        },
+        {
+          "delta_t_s": 120.0,
+          "k": 2,
+          "incidents": 186,
+          "confirmed": 49
+        },
+        {
+          "delta_t_s": 120.0,
+          "k": 3,
+          "incidents": 186,
+          "confirmed": 10
+        }
+      ]
+    },
+    "val_attack": {
+      "configured": {
+        "delta_t_s": 60,
+        "k": 2,
+        "exclude_latency": true
+      },
+      "alerts": 25,
+      "incidents": 10,
+      "confirmed_k": 3,
+      "nodes_per_incident": {
+        "3": 1,
+        "1": 7,
+        "2": 2
+      },
+      "sensitivity_descriptive_only": [
+        {
+          "delta_t_s": 30.0,
+          "k": 1,
+          "incidents": 14,
+          "confirmed": 14
+        },
+        {
+          "delta_t_s": 30.0,
+          "k": 2,
+          "incidents": 14,
+          "confirmed": 2
+        },
+        {
+          "delta_t_s": 30.0,
+          "k": 3,
+          "incidents": 14,
+          "confirmed": 1
+        },
+        {
+          "delta_t_s": 60.0,
+          "k": 1,
+          "incidents": 10,
+          "confirmed": 10
+        },
+        {
+          "delta_t_s": 60.0,
+          "k": 2,
+          "incidents": 10,
+          "confirmed": 3
+        },
+        {
+          "delta_t_s": 60.0,
+          "k": 3,
+          "incidents": 10,
+          "confirmed": 1
+        },
+        {
+          "delta_t_s": 120.0,
+          "k": 1,
+          "incidents": 4,
+          "confirmed": 4
+        },
+        {
+          "delta_t_s": 120.0,
+          "k": 2,
+          "incidents": 4,
+          "confirmed": 3
+        },
+        {
+          "delta_t_s": 120.0,
+          "k": 3,
+          "incidents": 4,
+          "confirmed": 2
+        }
+      ]
+    }
+  },
+  "outputs": {
+    "dir": "results/edge/site_b__val__20261015T222546",
+    "storage": "storage.db",
+    "events": "events.jsonl"
+  }
+}
