@@ -1,0 +1,621 @@
+{
+  "schema_version": "1.0",
+  "kind": "retrieval.queries",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-15T17:38:04Z",
+    "git_sha": "17a804c602bee05ae10291ec53d1c309a78ed3e1",
+    "git_branch": "main",
+    "git_dirty": true,
+    "git_dirty_paths": [
+      "uv.lock"
+    ],
+    "params_sha256": "3345edb07091552cd8e4fb81acf6eb6cc14211327f39c7cac0351239c63185fe",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "a8a3cbf6a5ba6fb057c11a6f77da026895a8d0a38120da879c4242fd5a864b66",
+      "hostname_hash": "89a720d64995",
+      "pid": 6512
+    }
+  },
+  "edge_runs": {
+    "site_a": "results/edge/site_a__val__20261015T222554",
+    "site_b": "results/edge/site_b__val__20261015T222546"
+  },
+  "missed_incidents": [
+    "site_a/test2:e18"
+  ],
+  "queries": [
+    {
+      "query_id": "r:site_a/test1:e00",
+      "incident": "site_a/test1:e00",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (boiler process P1), node a2: 23 anomalous 60-second windows over 5 minutes. Deviating variables: sensor reading water level of the return water tank (P1_LIT01) rose, high deviation; sensor reading current position of the LCV01 valve (P1_LCV01Z) rose, high deviation; sensor reading measured flowrate of the return water tank (P1_FT01) fell, high deviation; control command position command for the LCV01 valve (P1_LCV01D) rose, high deviation; sensor reading heat-exchanger outlet pressure (P1_PIT01) fell, high deviation. Variables that are constant in normal operation changed: position command for the PCV2 valve (P1_PCV02D).",
+      "relevant": [
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "r:site_a/test2:e01",
+      "incident": "site_a/test2:e01",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (boiler process P1), node a2: 44 anomalous 60-second windows over 8 minutes. Deviating variables: sensor reading water level of the return water tank (P1_LIT01) fell, high deviation; sensor reading current position of the LCV01 valve (P1_LCV01Z) rose, high deviation; control command position command for the LCV01 valve (P1_LCV01D) rose, high deviation; sensor reading measured flowrate of the return water tank (P1_FT01) rose, high deviation; setpoint water level setpoint (return water tank) (P1_B3004) rose, high deviation. Variables that are constant in normal operation changed: position command for the PCV2 valve (P1_PCV02D).",
+      "relevant": [
+        "T0836",
+        "T1692.002"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "r:site_a/test2:e15",
+      "incident": "site_a/test2:e15",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (boiler process P1), node a1: 8 anomalous 60-second windows over 3 minutes. Deviating variables: sensor reading measured flowrate of the return water tank (P1_FT01) rose, high deviation; sensor reading measured flowrate of the return water tank (P1_FT03) fell, high deviation; sensor reading water inflow rate converted from P1_FT01 (P1_FT01Z) rose, high deviation; sensor reading water outflow rate converted from P1_FT03 (P1_FT03Z) fell, high deviation; sensor reading current position of the FCV03 valve (P1_FCV03Z) fell, high deviation.",
+      "relevant": [
+        "T1692.001",
+        "T0806"
+      ],
+      "stratum": "co"
+    },
+    {
+      "query_id": "r:site_a/test2:e16",
+      "incident": "site_a/test2:e16",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (turbine process P2), node a3: 10 anomalous 60-second windows over 2 minutes. Deviating variables: sensor reading current turbine RPM measured by speed probe (P2_SIT01) fell, high deviation; sensor reading P2_SIT02 fell, high deviation; sensor reading shaft-vibration-related X-axis displacement near the 1st mass wheel (P2_VXT02) rose, high deviation; sensor reading shaft-vibration-related Y-axis displacement near the 1st mass wheel (P2_VYT02) fell, high deviation; sensor reading phase lag signal of the key phasor probe (P2_VT01) fell, high deviation. Variables that are constant in normal operation changed: emergency button (P2_Emerg); on/off switch of the turbine DCS (P2_OnOff).",
+      "relevant": [
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "r:site_a/test2:e17",
+      "incident": "site_a/test2:e17",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (boiler process P1), node a3: 20 anomalous 60-second windows over 4 minutes. Deviating variables: sensor reading measured flowrate of the return water tank (P1_FT01) fell, high deviation; sensor reading water level of the return water tank (P1_LIT01) rose, high deviation; sensor reading heat-exchanger outlet pressure (P1_PIT01) rose, high deviation; sensor reading measured flowrate of the return water tank (P1_FT03) fell, high deviation; sensor reading water outflow rate converted from P1_FT03 (P1_FT03Z) fell, high deviation.",
+      "relevant": [
+        "T1692.001"
+      ],
+      "stratum": "co"
+    },
+    {
+      "query_id": "r:site_a/test3:e03",
+      "incident": "site_a/test3:e03",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (turbine process P2), node a4: 13 anomalous 60-second windows over 3 minutes. Deviating variables: sensor reading current turbine RPM measured by speed probe (P2_SIT01) fell, high deviation; sensor reading P2_SIT02 fell, high deviation; sensor reading shaft-vibration-related Y-axis displacement near the 1st mass wheel (P2_VYT02) fell, high deviation; sensor reading phase lag signal of the key phasor probe (P2_VT01) fell, high deviation; sensor reading shaft-vibration-related X-axis displacement near the 1st mass wheel (P2_VXT02) rose, high deviation. Variables that are constant in normal operation changed: emergency button (P2_Emerg); on/off switch of the turbine DCS (P2_OnOff).",
+      "relevant": [
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "r:site_a/test3:e04",
+      "incident": "site_a/test3:e04",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (turbine process P2), node a1: 13 anomalous 60-second windows over 3 minutes. Deviating variables: control command control output value of the speed controller (P2_CO_rpm) fell, high deviation; sensor reading current turbine RPM measured by speed probe (P2_SIT01) fell, high deviation; sensor reading P2_SIT02 fell, high deviation; sensor reading phase lag signal of the key phasor probe (P2_VT01) fell, high deviation; sensor reading shaft-vibration-related X-axis displacement near the 1st mass wheel (P2_VXT02) rose, high deviation. Variables that are constant in normal operation changed: emergency button (P2_Emerg); on/off switch of the turbine DCS (P2_OnOff).",
+      "relevant": [
+        "T1692.001",
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "r:site_a/test3:e05",
+      "incident": "site_a/test3:e05",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (turbine process P2), node a4: 9 anomalous 60-second windows over 2 minutes. Deviating variables: control command control output value of the speed controller (P2_CO_rpm) fell, high deviation; sensor reading current turbine RPM measured by speed probe (P2_SIT01) fell, high deviation; sensor reading P2_SIT02 fell, high deviation; sensor reading shaft-vibration-related Y-axis displacement near the 1st mass wheel (P2_VYT02) fell, high deviation; sensor reading shaft-vibration-related Y-axis displacement near the 2nd mass wheel (P2_VYT03) fell, high deviation.",
+      "relevant": [
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "r:site_a/test3:e06",
+      "incident": "site_a/test3:e06",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (boiler process P1, turbine process P2), node a1: 14 anomalous 60-second windows over 4 minutes. Deviating variables: sensor reading current turbine RPM measured by speed probe (P2_SIT01) fell, high deviation; sensor reading P2_SIT02 fell, high deviation; sensor reading measured flowrate of the return water tank (P1_FT01) rose, high deviation; sensor reading current position of the FCV03 valve (P1_FCV03Z) rose, high deviation; sensor reading phase lag signal of the key phasor probe (P2_VT01) fell, high deviation. Variables that are constant in normal operation changed: emergency button (P2_Emerg); on/off switch of the turbine DCS (P2_OnOff).",
+      "relevant": [
+        "T1692.001",
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "r:site_a/test4:e00",
+      "incident": "site_a/test4:e00",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (boiler process P1), node a4: 21 anomalous 60-second windows over 4 minutes. Deviating variables: sensor reading current position of the LCV01 valve (P1_LCV01Z) rose, high deviation; control command position command for the LCV01 valve (P1_LCV01D) rose, high deviation; sensor reading heat-exchanger outlet pressure (P1_PIT01) rose, high deviation; sensor reading measured flowrate of the return water tank (P1_FT01) fell, high deviation; sensor reading current position of the FCV03 valve (P1_FCV03Z) fell, high deviation.",
+      "relevant": [
+        "T1692.001",
+        "T0836",
+        "T1692.002"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "r:site_a/test4:e01",
+      "incident": "site_a/test4:e01",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (boiler process P1), node a2: 23 anomalous 60-second windows over 5 minutes. Deviating variables: sensor reading water level of the return water tank (P1_LIT01) fell, high deviation; sensor reading current position of the FCV03 valve (P1_FCV03Z) fell, high deviation; control command position command for the FCV03 valve (P1_FCV03D) fell, high deviation; sensor reading measured flowrate of the return water tank (P1_FT01) fell, high deviation; sensor reading current position of the LCV01 valve (P1_LCV01Z) rose, high deviation. Variables that are constant in normal operation changed: position command for the PCV2 valve (P1_PCV02D).",
+      "relevant": [
+        "T0836",
+        "T1692.002",
+        "T1692.001"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "r:site_a/test5:e07",
+      "incident": "site_a/test5:e07",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (boiler process P1), node a1: 10 anomalous 60-second windows over 2 minutes. Deviating variables: sensor reading measured flowrate of the return water tank (P1_FT01) fell, high deviation; control command position command for the FCV03 valve (P1_FCV03D) rose, high deviation; sensor reading water inflow rate converted from P1_FT01 (P1_FT01Z) fell, high deviation; sensor reading current position of the FCV03 valve (P1_FCV03Z) rose, high deviation; sensor reading current position of the LCV01 valve (P1_LCV01Z) rose, high deviation.",
+      "relevant": [
+        "T1692.001",
+        "T0806"
+      ],
+      "stratum": "co"
+    },
+    {
+      "query_id": "r:site_a/test5:e09",
+      "incident": "site_a/test5:e09",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (boiler process P1), node a3: 36 anomalous 60-second windows over 7 minutes. Deviating variables: sensor reading measured flowrate of the return water tank (P1_FT01) rose, high deviation; control command position command for the LCV01 valve (P1_LCV01D) rose, high deviation; sensor reading current position of the LCV01 valve (P1_LCV01Z) rose, high deviation; sensor reading heat-exchanger outlet pressure (P1_PIT01) rose, high deviation; sensor reading measured flowrate of the return water tank (P1_FT03) fell, high deviation.",
+      "relevant": [
+        "T0836",
+        "T1692.001",
+        "T1692.002"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "r:site_a/test5:e10",
+      "incident": "site_a/test5:e10",
+      "site": "site_a",
+      "kind": "rendered",
+      "text": "Industrial control system incident at a boiler, turbine and water-treatment testbed (turbine process P2), node a2: 10 anomalous 60-second windows over 2 minutes. Deviating variables: control command control output value of the speed controller (P2_CO_rpm) fell, high deviation; sensor reading current turbine RPM measured by speed probe (P2_SIT01) fell, high deviation; sensor reading P2_SIT02 fell, high deviation; sensor reading shaft-vibration-related Y-axis displacement near the 1st mass wheel (P2_VYT02) fell, high deviation; sensor reading phase lag signal of the key phasor probe (P2_VT01) fell, high deviation. Variables that are constant in normal operation changed: emergency button (P2_Emerg); on/off switch of the turbine DCS (P2_OnOff).",
+      "relevant": [
+        "T0836",
+        "T1692.001"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "r:site_b/0",
+      "incident": "site_b/0",
+      "site": "site_b",
+      "kind": "rendered",
+      "text": "Modbus/TCP incident at IED1A, a field device (Modbus server) (b1): 2 anomalous 10-second windows over 1 minute. Per 10-second window, at most: read requests 11-100, write requests 0, requests with other function codes 0, exception responses 0; request rate normal. Observed: requests from a peer never seen in training; requests to register addresses never seen in training; requests for more values than ever seen in training. Deviating counters: frames whose length field does not match their content, or truncated frames (malformed_frames) fell, high deviation; requests for more values than any request seen in training (oversized_qty) rose, high deviation; requests with other function codes (req_other) fell, high deviation; requests that received no response (unanswered) rose, high deviation; requests to register addresses never seen in training (unseen_addr) rose, high deviation.",
+      "relevant": [
+        "T0888",
+        "T0861",
+        "T0846",
+        "T0814"
+      ],
+      "stratum": null
+    },
+    {
+      "query_id": "r:site_b/1",
+      "incident": "site_b/1",
+      "site": "site_b",
+      "kind": "rendered",
+      "text": "Modbus/TCP incident at IED1A, a field device (Modbus server) (b1): 4 anomalous 10-second windows over 3 minutes. Per 10-second window, at most: read requests 11-100, write requests 0, requests with other function codes 0, exception responses 0; request rate high. Observed: requests from a peer never seen in training; requests to register addresses never seen in training; requests for more values than ever seen in training; malformed or truncated Modbus frames; several Modbus frames stacked in one packet. Deviating counters: requests for more values than any request seen in training (oversized_qty) rose, high deviation; requests to register addresses never seen in training (unseen_addr) rose, high deviation; frames whose length field does not match their content, or truncated frames (malformed_frames) fell, high deviation; requests that received no response (unanswered) rose, high deviation; requests with other function codes (req_other) fell, high deviation.",
+      "relevant": [
+        "T0861",
+        "T0888",
+        "T0814"
+      ],
+      "stratum": null
+    },
+    {
+      "query_id": "r:site_b/2",
+      "incident": "site_b/2",
+      "site": "site_b",
+      "kind": "rendered",
+      "text": "Modbus/TCP incident at IED1A, a field device (Modbus server) (b1): 5 anomalous 10-second windows over 2 minutes. Per 10-second window, at most: read requests 11-100, write requests 0, requests with other function codes 0, exception responses 0; request rate normal. Observed: requests from a peer never seen in training; requests to register addresses never seen in training; requests for more values than ever seen in training. Deviating counters: frames whose length field does not match their content, or truncated frames (malformed_frames) fell, high deviation; requests for more values than any request seen in training (oversized_qty) rose, high deviation; requests with other function codes (req_other) fell, high deviation; requests that received no response (unanswered) rose, high deviation; requests to register addresses never seen in training (unseen_addr) rose, high deviation.",
+      "relevant": [
+        "T0861",
+        "T0888"
+      ],
+      "stratum": null
+    },
+    {
+      "query_id": "r:site_b/3",
+      "incident": "site_b/3",
+      "site": "site_b",
+      "kind": "rendered",
+      "text": "Modbus/TCP incident at IED1A, a field device (Modbus server) (b1): 2 anomalous 10-second windows over 1 minute. Per 10-second window, at most: read requests 11-100, write requests 0, requests with other function codes 0, exception responses 0; request rate normal. Observed: requests from a peer never seen in training; requests to register addresses never seen in training; requests for more values than ever seen in training. Deviating counters: frames whose length field does not match their content, or truncated frames (malformed_frames) fell, high deviation; requests for more values than any request seen in training (oversized_qty) rose, high deviation; requests with other function codes (req_other) fell, high deviation; requests that received no response (unanswered) rose, high deviation; requests to register addresses never seen in training (unseen_addr) rose, high deviation.",
+      "relevant": [
+        "T0861",
+        "T0801"
+      ],
+      "stratum": null
+    },
+    {
+      "query_id": "p:p01",
+      "incident": "site_a/test1:e00",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "On the boiler side, the return tank level climbed sharply while the LCV01 level valve was driven further open and its position followed; inflow measured at FT01 dropped and outlet pressure sagged. A valve demand that never moves in normal running (PCV2) also shifted.",
+      "relevant": [
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p02",
+      "incident": "site_a/test1:e00",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Node a2 flagged five minutes of abnormal boiler behaviour: tank level up, level valve demand and feedback up, flow and heat-exchanger pressure down, plus an unexpected change on a normally fixed valve demand.",
+      "relevant": [
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p03",
+      "incident": "site_a/test2:e01",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Return tank level fell even though the level valve was driven more open; the level target for that tank itself moved upward, and the normally static PCV2 valve demand changed.",
+      "relevant": [
+        "T0836",
+        "T1692.002"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p04",
+      "incident": "site_a/test2:e01",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Eight minutes of boiler anomalies on a2: the level target went up, the level control valve opened, flow rose and the tank level dropped.",
+      "relevant": [
+        "T0836",
+        "T1692.002"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p05",
+      "incident": "site_a/test2:e15",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Short boiler disturbance on a1: inflow readings jumped while outflow readings and the FCV03 valve position dropped, with no target or demand change visible.",
+      "relevant": [
+        "T1692.001",
+        "T0806"
+      ],
+      "stratum": "co"
+    },
+    {
+      "query_id": "p:p06",
+      "incident": "site_a/test2:e16",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Turbine speed probes on a3 read lower, shaft displacement shifted on both axes and the key phasor lag dropped; the emergency button and the turbine on/off switch, which never change normally, both changed state.",
+      "relevant": [
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p07",
+      "incident": "site_a/test2:e16",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Two minutes of turbine trouble: falling RPM, changed shaft displacement near the first mass wheel, and unexpected toggling of the emergency and on/off controls.",
+      "relevant": [
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p08",
+      "incident": "site_a/test3:e03",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "The turbine slowed according to its speed probes, displacement readings near the first wheel moved, and the emergency and run switches changed although they are fixed in normal operation.",
+      "relevant": [
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p09",
+      "incident": "site_a/test3:e04",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "The speed controller's output dropped and the turbine RPM followed it down; phasor lag and shaft displacement also moved, and the normally fixed emergency and on/off inputs changed.",
+      "relevant": [
+        "T1692.001",
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p10",
+      "incident": "site_a/test3:e04",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "On a1 the turbine governor output fell, speed decreased, and switches that never move in routine running flipped.",
+      "relevant": [
+        "T1692.001",
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p11",
+      "incident": "site_a/test3:e05",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Turbine speed control output went down together with RPM, and Y-axis shaft displacement dropped near both mass wheels.",
+      "relevant": [
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p12",
+      "incident": "site_a/test3:e06",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Both turbine and boiler were disturbed on a1: turbine speed fell while boiler inflow and the FCV03 valve opening rose, and the emergency and power switches changed state.",
+      "relevant": [
+        "T1692.001",
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p13",
+      "incident": "site_a/test3:e06",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Four minutes in which RPM dropped, phasor lag fell, boiler flow increased and two normally constant turbine switches were altered.",
+      "relevant": [
+        "T1692.001",
+        "T0836"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p14",
+      "incident": "site_a/test4:e00",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "The level valve was told to open further and did, heat-exchanger pressure rose, boiler inflow fell and the FCV03 valve closed somewhat.",
+      "relevant": [
+        "T1692.001",
+        "T0836",
+        "T1692.002"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p15",
+      "incident": "site_a/test4:e00",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "a4 saw four minutes where the LCV01 demand and position went up together with outlet pressure, while flow and FCV03 position went down.",
+      "relevant": [
+        "T1692.001",
+        "T0836",
+        "T1692.002"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p16",
+      "incident": "site_a/test4:e01",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "The FCV03 valve was driven closed and followed, tank level and flow dropped, the level valve moved open, and the static PCV2 valve demand changed.",
+      "relevant": [
+        "T0836",
+        "T1692.002",
+        "T1692.001"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p17",
+      "incident": "site_a/test4:e01",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Boiler on a2: falling level and flow while the flow valve demand dropped; a normally constant valve demand also moved.",
+      "relevant": [
+        "T0836",
+        "T1692.002",
+        "T1692.001"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p18",
+      "incident": "site_a/test5:e07",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "The FCV03 valve demand rose and its position followed, but measured inflow went down; the LCV01 valve position also increased.",
+      "relevant": [
+        "T1692.001",
+        "T0806"
+      ],
+      "stratum": "co"
+    },
+    {
+      "query_id": "p:p19",
+      "incident": "site_a/test5:e07",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Two minutes of boiler anomaly on a1, with a higher flow-valve demand and reduced inflow.",
+      "relevant": [
+        "T1692.001",
+        "T0806"
+      ],
+      "stratum": "co"
+    },
+    {
+      "query_id": "p:p20",
+      "incident": "site_a/test5:e09",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Seven minutes on a3: level valve demand and feedback climbed, inflow and outlet pressure rose, outflow dropped.",
+      "relevant": [
+        "T0836",
+        "T1692.001",
+        "T1692.002"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p21",
+      "incident": "site_a/test5:e09",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "The boiler's level valve was pushed open for several minutes, with more water coming in, higher heat-exchanger pressure and less going out.",
+      "relevant": [
+        "T0836",
+        "T1692.001",
+        "T1692.002"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p22",
+      "incident": "site_a/test5:e10",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Turbine governor output fell on a2 and the shaft slowed; displacement and phasor signals moved and the emergency and on/off inputs changed.",
+      "relevant": [
+        "T0836",
+        "T1692.001"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p23",
+      "incident": "site_a/test5:e10",
+      "site": "site_a",
+      "kind": "paraphrase",
+      "text": "Speed control output decreased, RPM dropped, and normally fixed turbine safety switches were toggled.",
+      "relevant": [
+        "T0836",
+        "T1692.001"
+      ],
+      "stratum": "sp"
+    },
+    {
+      "query_id": "p:p24",
+      "incident": "site_b/0",
+      "site": "site_b",
+      "kind": "paraphrase",
+      "text": "A host that had never talked to IED1A before sent it read requests for registers outside its usual range, including one asking for far more values than normal; some requests went unanswered.",
+      "relevant": [
+        "T0888",
+        "T0861",
+        "T0846",
+        "T0814"
+      ],
+      "stratum": null
+    },
+    {
+      "query_id": "p:p25",
+      "incident": "site_b/0",
+      "site": "site_b",
+      "kind": "paraphrase",
+      "text": "Unknown client polling the field device with an oversized read and unfamiliar register addresses, no writes.",
+      "relevant": [
+        "T0888",
+        "T0861",
+        "T0846",
+        "T0814"
+      ],
+      "stratum": null
+    },
+    {
+      "query_id": "p:p26",
+      "incident": "site_b/1",
+      "site": "site_b",
+      "kind": "paraphrase",
+      "text": "A new peer sent IED1A input-register reads at a high rate, packed several Modbus frames into one packet, sent frames with broken lengths and asked for unusually large blocks.",
+      "relevant": [
+        "T0861",
+        "T0888",
+        "T0814"
+      ],
+      "stratum": null
+    },
+    {
+      "query_id": "p:p27",
+      "incident": "site_b/1",
+      "site": "site_b",
+      "kind": "paraphrase",
+      "text": "Three minutes of strange reads against the IED from an unfamiliar host, with bundled frames, wrong length fields and oversize requests.",
+      "relevant": [
+        "T0861",
+        "T0888",
+        "T0814"
+      ],
+      "stratum": null
+    },
+    {
+      "query_id": "p:p28",
+      "incident": "site_b/2",
+      "site": "site_b",
+      "kind": "paraphrase",
+      "text": "An unfamiliar host read from IED1A across register ranges it has never accessed, asking for more data than usual, without writing anything.",
+      "relevant": [
+        "T0861",
+        "T0888"
+      ],
+      "stratum": null
+    },
+    {
+      "query_id": "p:p29",
+      "incident": "site_b/3",
+      "site": "site_b",
+      "kind": "paraphrase",
+      "text": "Brief burst of reads from a previously unseen client against unfamiliar addresses on the IED, one request asking for an unusually large amount of data.",
+      "relevant": [
+        "T0861",
+        "T0801"
+      ],
+      "stratum": null
+    },
+    {
+      "query_id": "p:p30",
+      "incident": "site_b/3",
+      "site": "site_b",
+      "kind": "paraphrase",
+      "text": "IED1A answered a couple of out-of-pattern read requests from a newcomer on the network; nothing was written.",
+      "relevant": [
+        "T0861",
+        "T0801"
+      ],
+      "stratum": null
+    }
+  ]
+}
