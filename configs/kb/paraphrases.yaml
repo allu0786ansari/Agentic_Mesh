@@ -1,0 +1,172 @@
+# Retrieval evaluation paraphrases (ADR 0010 §4).
+#
+# There are 30 operator-style descriptions of 17 of the 18 detected validation
+# incidents (Site A val_attack events; Site B episodes 0-3). They were written on
+# 15 October 2026 by the assistant, from the rendered incident text and the evidence
+# records only, before any retrieval was run and without opening any knowledge-base
+# passage.
+#
+# Each paraphrase inherits its incident's acceptable set from the frozen ground
+# truth. tests/unit/test_retrieval_set.py fails if any of them shares an 8-gram with
+# any ATT&CK passage.
+paraphrases:
+  - id: p01
+    incident: site_a/test1:e00
+    text: >-
+      On the boiler side, the return tank level climbed sharply while the LCV01 level
+      valve was driven further open and its position followed; inflow measured at FT01
+      dropped and outlet pressure sagged. A valve demand that never moves in normal
+      running (PCV2) also shifted.
+  - id: p02
+    incident: site_a/test1:e00
+    text: >-
+      Node a2 flagged five minutes of abnormal boiler behaviour: tank level up, level
+      valve demand and feedback up, flow and heat-exchanger pressure down, plus an
+      unexpected change on a normally fixed valve demand.
+  - id: p03
+    incident: site_a/test2:e01
+    text: >-
+      Return tank level fell even though the level valve was driven more open; the
+      level target for that tank itself moved upward, and the normally static PCV2
+      valve demand changed.
+  - id: p04
+    incident: site_a/test2:e01
+    text: >-
+      Eight minutes of boiler anomalies on a2: the level target went up, the level
+      control valve opened, flow rose and the tank level dropped.
+  - id: p05
+    incident: site_a/test2:e15
+    text: >-
+      Short boiler disturbance on a1: inflow readings jumped while outflow readings
+      and the FCV03 valve position dropped, with no target or demand change visible.
+  - id: p06
+    incident: site_a/test2:e16
+    text: >-
+      Turbine speed probes on a3 read lower, shaft displacement shifted on both axes
+      and the key phasor lag dropped; the emergency button and the turbine on/off
+      switch, which never change normally, both changed state.
+  - id: p07
+    incident: site_a/test2:e16
+    text: >-
+      Two minutes of turbine trouble: falling RPM, changed shaft displacement near the
+      first mass wheel, and unexpected toggling of the emergency and on/off controls.
+  - id: p08
+    incident: site_a/test3:e03
+    text: >-
+      The turbine slowed according to its speed probes, displacement readings near
+      the first wheel moved, and the emergency and run switches changed although they
+      are fixed in normal operation.
+  - id: p09
+    incident: site_a/test3:e04
+    text: >-
+      The speed controller's output dropped and the turbine RPM followed it down;
+      phasor lag and shaft displacement also moved, and the normally fixed emergency
+      and on/off inputs changed.
+  - id: p10
+    incident: site_a/test3:e04
+    text: >-
+      On a1 the turbine governor output fell, speed decreased, and switches that never
+      move in routine running flipped.
+  - id: p11
+    incident: site_a/test3:e05
+    text: >-
+      Turbine speed control output went down together with RPM, and Y-axis shaft
+      displacement dropped near both mass wheels.
+  - id: p12
+    incident: site_a/test3:e06
+    text: >-
+      Both turbine and boiler were disturbed on a1: turbine speed fell while boiler
+      inflow and the FCV03 valve opening rose, and the emergency and power switches
+      changed state.
+  - id: p13
+    incident: site_a/test3:e06
+    text: >-
+      Four minutes in which RPM dropped, phasor lag fell, boiler flow increased and two
+      normally constant turbine switches were altered.
+  - id: p14
+    incident: site_a/test4:e00
+    text: >-
+      The level valve was told to open further and did, heat-exchanger pressure rose,
+      boiler inflow fell and the FCV03 valve closed somewhat.
+  - id: p15
+    incident: site_a/test4:e00
+    text: >-
+      a4 saw four minutes where the LCV01 demand and position went up together with
+      outlet pressure, while flow and FCV03 position went down.
+  - id: p16
+    incident: site_a/test4:e01
+    text: >-
+      The FCV03 valve was driven closed and followed, tank level and flow dropped, the
+      level valve moved open, and the static PCV2 valve demand changed.
+  - id: p17
+    incident: site_a/test4:e01
+    text: >-
+      Boiler on a2: falling level and flow while the flow valve demand dropped; a
+      normally constant valve demand also moved.
+  - id: p18
+    incident: site_a/test5:e07
+    text: >-
+      The FCV03 valve demand rose and its position followed, but measured inflow went
+      down; the LCV01 valve position also increased.
+  - id: p19
+    incident: site_a/test5:e07
+    text: >-
+      Two minutes of boiler anomaly on a1, with a higher flow-valve demand and reduced
+      inflow.
+  - id: p20
+    incident: site_a/test5:e09
+    text: >-
+      Seven minutes on a3: level valve demand and feedback climbed, inflow and outlet
+      pressure rose, outflow dropped.
+  - id: p21
+    incident: site_a/test5:e09
+    text: >-
+      The boiler's level valve was pushed open for several minutes, with more water
+      coming in, higher heat-exchanger pressure and less going out.
+  - id: p22
+    incident: site_a/test5:e10
+    text: >-
+      Turbine governor output fell on a2 and the shaft slowed; displacement and phasor
+      signals moved and the emergency and on/off inputs changed.
+  - id: p23
+    incident: site_a/test5:e10
+    text: >-
+      Speed control output decreased, RPM dropped, and normally fixed turbine safety
+      switches were toggled.
+  - id: p24
+    incident: site_b/0
+    text: >-
+      A host that had never talked to IED1A before sent it read requests for registers
+      outside its usual range, including one asking for far more values than normal;
+      some requests went unanswered.
+  - id: p25
+    incident: site_b/0
+    text: >-
+      Unknown client polling the field device with an oversized read and unfamiliar
+      register addresses, no writes.
+  - id: p26
+    incident: site_b/1
+    text: >-
+      A new peer sent IED1A input-register reads at a high rate, packed several Modbus
+      frames into one packet, sent frames with broken lengths and asked for unusually
+      large blocks.
+  - id: p27
+    incident: site_b/1
+    text: >-
+      Three minutes of strange reads against the IED from an unfamiliar host, with
+      bundled frames, wrong length fields and oversize requests.
+  - id: p28
+    incident: site_b/2
+    text: >-
+      An unfamiliar host read from IED1A across register ranges it has never accessed,
+      asking for more data than usual, without writing anything.
+  - id: p29
+    incident: site_b/3
+    text: >-
+      Brief burst of reads from a previously unseen client against unfamiliar addresses
+      on the IED, one request asking for an unusually large amount of data.
+  - id: p30
+    incident: site_b/3
+    text: >-
+      IED1A answered a couple of out-of-pattern read requests from a newcomer on the
+      network; nothing was written.

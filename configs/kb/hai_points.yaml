@@ -1,0 +1,329 @@
+# HAI 21.03 point glossary for the evidence renderer (ADR 0010 §3).
+# Transcribed from the HAI technical details point list (icsdataset/hai @ 2a814ce,
+# hai_dataset_technical_details.pdf, printed pp. 12-14). Descriptions are verbatim,
+# including the source's own wording (e.g. P2_VTR04 names P2_VIBTR03).
+# 21.03 column names that differ from the document's use the document's own
+# parenthesised names (VYT02 = VIBTR01, ...), or the aliases of mapping protocol §2.
+# P2_SIT02 and P2_HILout are not in the point list: only their type is rendered.
+processes:
+  P1: boiler process
+  P2: turbine process
+  P3: water-treatment process
+  P4: hardware-in-the-loop power-grid simulation
+points:
+  P1_B2004:
+    description: Heat-exchanger outlet pressure setpoint
+    document_name: P1_B2004
+    unit: bar
+  P1_B2016:
+    description: Pressure demand for thermal power output control
+    document_name: P1_B2016
+    unit: bar
+  P1_B3004:
+    description: Water level setpoint (return water tank)
+    document_name: P1_B3004
+    unit: mm
+  P1_B3005:
+    description: Discharge flowrate setpoint (return water tank)
+    document_name: P1_B3005
+    unit: l/h
+  P1_B4002:
+    description: Heat-exchanger outlet temperature setpoint
+    document_name: P1_B4002
+    unit: ℃
+  P1_B4005:
+    description: Temperature PID control output
+    document_name: P1_B4005
+    unit: '%'
+  P1_B400B:
+    description: Water outflow rate setpoint (heating water tank)
+    document_name: P1_B400B
+    unit: l/h
+  P1_B4022:
+    description: Temperature demand for thermal power output control
+    document_name: P1_B4022
+    unit: ℃
+  P1_FCV01D:
+    description: Position command for the FCV01 valve
+    document_name: P1_FCV01D
+    unit: '%'
+  P1_FCV01Z:
+    description: Current position of the FCV01 valve
+    document_name: P1_FCV01Z
+    unit: '%'
+  P1_FCV02D:
+    description: Position command for the FCV02 valve
+    document_name: P1_FCV02D
+    unit: '%'
+  P1_FCV02Z:
+    description: Current position of the FCV02 valve
+    document_name: P1_FCV02Z
+    unit: '%'
+  P1_FCV03D:
+    description: Position command for the FCV03 valve
+    document_name: P1_FCV03D
+    unit: '%'
+  P1_FCV03Z:
+    description: Current position of the FCV03 valve
+    document_name: P1_FCV03Z
+    unit: '%'
+  P1_FT01:
+    description: Measured flowrate of the return water tank
+    document_name: P1_FT01
+    unit: mmH2O
+  P1_FT01Z:
+    description: Water inflow rate converted from P1_FT01
+    document_name: P1_FT01Z
+    unit: l/h
+  P1_FT02:
+    description: Measured flowrate of heating water tank
+    document_name: P1_FT02
+    unit: mmH2O
+  P1_FT02Z:
+    description: Water outflow rate conversion from P1_FT02
+    document_name: P1_FT02Z
+    unit: l/h
+  P1_FT03:
+    description: Measured flowrate of the return water tank
+    document_name: P1_FT03
+    unit: mmH2O
+  P1_FT03Z:
+    description: Water outflow rate converted from P1_FT03
+    document_name: P1_FT03Z
+    unit: l/h
+  P1_LCV01D:
+    description: Position command for the LCV01 valve
+    document_name: P1_LCV01D
+    unit: '%'
+  P1_LCV01Z:
+    description: Current position of the LCV01 valve
+    document_name: P1_LCV01Z
+    unit: '%'
+  P1_LIT01:
+    description: Water level of the return water tank
+    document_name: P1_LIT01
+    unit: mm
+  P1_PCV01D:
+    description: Position command for the PCV01 valve
+    document_name: P1_PCV01D
+    unit: '%'
+  P1_PCV01Z:
+    description: Current position of the PCV01 valve
+    document_name: P1_PCV01Z
+    unit: '%'
+  P1_PCV02D:
+    description: Position command for the PCV2 valve
+    document_name: P1_PCV02D
+    unit: '%'
+  P1_PCV02Z:
+    description: Current position of the PCV02 valve
+    document_name: P1_PCV02Z
+    unit: '%'
+  P1_PIT01:
+    description: Heat-exchanger outlet pressure
+    document_name: P1_PIT01
+    unit: bar
+  P1_PIT02:
+    description: Water supply pressure of the heating water pump
+    document_name: P1_PIT02
+    unit: bar
+  P1_PP01AD:
+    description: Start command of the main water pump PP01A
+    document_name: P1_PP01AD
+    unit: Boolean
+  P1_PP01AR:
+    description: Running state of the main water pump PP01A
+    document_name: P1_PP01AR
+    unit: Boolean
+  P1_PP01BD:
+    description: Start command of the main water pump PP01B
+    document_name: P1_PP01BD
+    unit: Boolean
+  P1_PP01BR:
+    description: Running state of the main water pump PP01B
+    document_name: P1_PP01BR
+    unit: Boolean
+  P1_PP02D:
+    description: Start command of the heating water pump PP02
+    document_name: P1_PP02D
+    unit: Boolean
+  P1_PP02R:
+    description: Running state of the heating water pump PP02
+    document_name: P1_PP02R
+    unit: Boolean
+  P1_STSP:
+    description: Start/stop command of the boiler DCS
+    document_name: P1_STSP
+    unit: Boolean
+  P1_TIT01:
+    description: Heat-exchanger outlet temperature
+    document_name: P1_TIT01
+    unit: ℃
+  P1_TIT02:
+    description: Temperature of the heating water tank
+    document_name: P1_TIT02
+    unit: ℃
+  P2_24Vdc:
+    description: DCS 24V Input Voltage
+    document_name: P2_24Vdc
+    unit: Voltage
+  P2_ASD:
+    description: Auto speed demand
+    document_name: P2_AutoSD
+    unit: RPM
+  P2_AutoGO:
+    description: Auto start button
+    document_name: P2_AutoGo
+    unit: Boolean
+  P2_CO_rpm:
+    description: Control output value of the speed controller
+    document_name: P2_SCO
+    unit: '-'
+  P2_Emerg:
+    description: Emergency button
+    document_name: P2_Emerg
+    unit: Boolean
+  P2_HILout:
+    description: null
+    document_name: null
+    unit: null
+  P2_MSD:
+    description: Manual speed demand
+    document_name: P2_ManualSD
+    unit: RPM
+  P2_ManualGO:
+    description: Manual start button
+    document_name: P2_ManualGO
+    unit: Boolean
+  P2_OnOff:
+    description: On/off switch of the turbine DCS
+    document_name: P2_OnOff
+    unit: Boolean
+  P2_RTR:
+    description: RPM trip rate
+    document_name: P2_RTR
+    unit: RPM
+  P2_SIT01:
+    description: Current turbine RPM measured by speed probe
+    document_name: P2_SIT01
+    unit: RPM
+  P2_SIT02:
+    description: null
+    document_name: null
+    unit: null
+  P2_TripEx:
+    description: Trip emergency exit button
+    document_name: P2_TripEx
+    unit: Boolean
+  P2_VT01:
+    description: Phase lag signal of the key phasor probe
+    document_name: P2_VT01
+    unit: rad/s
+  P2_VTR01:
+    description: Preset vibration limit for the sensor P2_VIBTR01
+    document_name: P2_VTR01
+    unit: ㎛
+  P2_VTR02:
+    description: Preset vibration limit for the sensor P2_VIBTR02
+    document_name: P2_VTR02
+    unit: ㎛
+  P2_VTR03:
+    description: Preset vibration limit for the sensor P2_VIBTR03
+    document_name: P2_VTR03
+    unit: ㎛
+  P2_VTR04:
+    description: Preset vibration limit for the sensor P2_VIBTR03
+    document_name: P2_VTR04
+    unit: ㎛
+  P2_VXT02:
+    description: Shaft-vibration-related X-axis displacement near the 1st mass wheel
+    document_name: P2_VIBTR02
+    unit: ㎛
+  P2_VXT03:
+    description: Shaft-vibration-related X-axis displacement near the 2nd mass wheel
+    document_name: P2_VIBTR04
+    unit: ㎛
+  P2_VYT02:
+    description: Shaft-vibration-related Y-axis displacement near the 1st mass wheel
+    document_name: P2_VIBTR01
+    unit: ㎛
+  P2_VYT03:
+    description: Shaft-vibration-related Y-axis displacement near the 2nd mass wheel
+    document_name: P2_VIBTR03
+    unit: ㎛
+  P3_FIT01:
+    description: Flow rate of water flowing into the upper water tank
+    document_name: P3_FIT01
+    unit: '-'
+  P3_LCP01D:
+    description: Speed command for the pump LCP01
+    document_name: P3_LCP01D
+    unit: '-'
+  P3_LCV01D:
+    description: Position command for the valve LCV01
+    document_name: P3_LCV01D
+    unit: '-'
+  P3_LH:
+    description: High water level set-point
+    document_name: P3_LH01
+    unit: '%'
+  P3_LIT01:
+    description: Water level of the upper water tank
+    document_name: P3_LIT01
+    unit: '%'
+  P3_LL:
+    description: Low water level set-point
+    document_name: P3_LL01
+    unit: '%'
+  P3_PIT01:
+    description: Pressure of water flowing into the upper water tank
+    document_name: P3_PIT01
+    unit: '-'
+  P4_HT_FD:
+    description: Frequency deviation of HTM
+    document_name: P4_HT_FD
+    unit: mHz
+  P4_HT_LD:
+    description: Electrical load demand of HTM
+    document_name: P4_HT_LD
+    unit: MW
+  P4_HT_PO:
+    description: Output power of HTM
+    document_name: P4_HT_PO
+    unit: MW
+  P4_HT_PS:
+    description: Scheduled power demand of HTM
+    document_name: P4_HT_PS
+    unit: MW
+  P4_LD:
+    description: Total electrical load demand
+    document_name: P4_LD
+    unit: MW
+  P4_ST_FD:
+    description: Frequency deviation of STM
+    document_name: P4_ST_FD
+    unit: Hz
+  P4_ST_GOV:
+    description: Gate opening rate of STM
+    document_name: P4_ST_GOV
+    unit: '-'
+  P4_ST_LD:
+    description: Electrical load demand of STM
+    document_name: P4_ST_LD
+    unit: MW
+  P4_ST_PO:
+    description: Output power of STM
+    document_name: P4_ST_PO
+    unit: MW
+  P4_ST_PS:
+    description: Scheduled power demand of STM
+    document_name: P4_ST_PS
+    unit: MW
+  P4_ST_PT01:
+    description: Digital value of steam pressure of STM
+    document_name: P4_ST_PT01
+    unit: '-'
+  P4_ST_TT01:
+    description: Digital value of steam temperature of STM
+    document_name: P4_ST_TT01
+    unit: '-'

@@ -1,0 +1,22 @@
+# Rule baseline for the rule_only attribution mode (ADR 0010 §6).
+# Frozen on 15 October 2026, before any X4 run. Rules are tried in order; the first
+# match decides. IDs follow ATT&CK for ICS v20.0.
+version: 1
+site_a:
+  # The data-only rule of the ground truth (ground_truth.rule, pass 1), on evidence
+  # records. The root is the earliest record's top feature with the highest
+  # precedence. A changed training constant of setpoint type counts as a setpoint.
+  precedence: [setpoint, command, sensor]
+  rules:
+    - {id: a1, when: {root_type: setpoint}, technique: T0836}
+    - {id: a2, when: {root_type: command}, technique: T1692.001}
+    - {id: a3, when: {root_type: sensor}, technique: T1692.002}
+site_b:
+  # From the protocol semantics of the CIC attack categories. It is not independent
+  # of the case-study mapping (mapping protocol §3); Site B is a case study.
+  rules:
+    - {id: b1, when: {write_ops: ">100"}, technique: T0806}
+    - {id: b2, when: {any_writes: true}, technique: T1692.001}
+    - {id: b3, when: {any_flag: [malformed_frames, stacked_frames, oversized_quantity]}, technique: T0814}
+    - {id: b4, when: {any_reads: true, min_span_minutes: 10}, technique: T0801}
+    - {id: b5, when: {any_reads: true}, technique: T0861}

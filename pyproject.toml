@@ -39,6 +39,13 @@ ml = [
     "opacus>=1.6,<1.7",
     "torch>=2.5",
 ]
+# Knowledge base and retrieval (Week 9, ADR 0010): embedded Qdrant, MiniLM encoder, NIST PDF text.
+kb = [
+    "pypdf>=5,<7",
+    "qdrant-client>=1.12,<2",
+    "sentence-transformers>=3.0,<6",
+    "torch>=2.5",
+]
 
 [tool.uv]
 default-groups = ["dev"]
@@ -87,7 +94,7 @@ warn_unreachable = true
 pretty = true
 
 [[tool.mypy.overrides]]
-module = ["flwr.*", "ray.*", "torch.*", "sklearn.*", "opacus.*"]
+module = ["flwr.*", "ray.*", "torch.*", "sklearn.*", "opacus.*", "qdrant_client.*", "sentence_transformers.*", "huggingface_hub.*", "pypdf.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

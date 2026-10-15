@@ -1,0 +1,24 @@
+# CIC Modbus 2023 window counters for the evidence renderer (ADR 0010 §3).
+# Paraphrased from the feature definitions in src/agmesh/data/site_b.py (per node,
+# per 10-second window; vocabularies learned on that node's training windows).
+devices:
+  b1: IED1A, a field device (Modbus server)
+  b2: IED1B, a field device (Modbus server)
+  b3: the SCADA HMI (Modbus client)
+features:
+  req_sent: Modbus requests sent by the node
+  req_recv: Modbus requests received by the node
+  req_read: read requests (function codes 1-4)
+  req_write: write requests (function codes 5, 6, 15 and 16)
+  req_other: requests with other function codes
+  resp_exception: exception responses
+  unseen_addr: requests to register addresses never seen in training
+  unseen_addr_write: write requests to register addresses never seen in training
+  oversized_qty: requests for more values than any request seen in training
+  tcp_syn: TCP connection attempts
+  tcp_rst: TCP connection resets
+  stacked_frames: packets carrying several Modbus frames
+  malformed_frames: frames whose length field does not match their content, or truncated frames
+  latency_median_ms: median response latency
+  slow_responses: responses slower than the slowest 0.1% seen in training
+  unanswered: requests that received no response
