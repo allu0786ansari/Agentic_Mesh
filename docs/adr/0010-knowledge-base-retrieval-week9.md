@@ -273,9 +273,9 @@ These readings come from the per-query rankings of the PT6 artifact.
      question than the attribution truth asks.
 2. **Site B, whose evidence is protocol behaviour, works.**
    - All four rendered episodes put a relevant technique at rank 1 or 2.
-   - The paraphrases are weaker (Recall@5 2/7).
+   - The paraphrases are weaker (Recall@5 1/7).
 3. **Relevant techniques sit just below the cut.** Recall@10 is 0.688 against
-   Recall@5 of 0.333, and the median rank of the first relevant technique is 7.
+   Recall@5 of 0.333, and the median rank of the first relevant technique is 7.5 (a relevant technique is somewhere in the ranking for all 48).
 4. **What it means for RQ3.**
    - In `full` mode the LLM may only choose among the top 5 candidates (Proposal
      §8.4).
