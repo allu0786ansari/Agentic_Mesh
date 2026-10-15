@@ -196,4 +196,5 @@ retrieval-queries:
 	$(UV) run --group kb python -m agmesh.evaluation.retrieval_eval --split val --queries-only
 
 retrieval-eval:
-	$(UV) run --group kb python -m agmesh.evaluation.retrieval_eval --split val
+	$(UV) run --group kb python -m agmesh.evaluation.retrieval_eval --split val \
+		$(if $(VERSION),--version $(VERSION),)

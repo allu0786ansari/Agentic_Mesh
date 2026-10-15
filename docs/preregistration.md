@@ -77,6 +77,24 @@ adaptive threshold. It brings the local VAE validation FPR to 0.021. H1c is
 therefore tested against two comparators: per-node fixed thresholds on R0 scores,
 and R3. Both comparisons are reported, and Holm correction is applied across them.
 
+## 3b. Secondary target added after PT6 (ADR 0011, 15 October 2026)
+
+**PT6 result.** PT6 was measured once on validation queries (ADR 0010): Recall@5
+0.333, so it was not met. That result stands.
+
+**The change.** A post-hoc retrieval change, v2, was declared before it was run:
+
+- techniques whose only tactic is Impact are removed from the candidates;
+- the LLM is offered 10 candidates instead of 5.
+
+**PT6-v2.** This is v2's Recall@10 on the **test** incidents (Site A's 35 events,
+Site B's episodes 4–6; rendered queries only), measured once after `g4-frozen`.
+
+- **Target:** ≥ 0.85.
+- **Also reported:** Recall@5, MRR and v1 on the same queries.
+- **Status:** validation numbers for v2 are exploratory. PT6-v2 does not replace
+  PT6.
+
 ## 4. Statistical analysis
 
 Updated at G1 by ADR 0005 (accepted 14 October 2026, before any test access).

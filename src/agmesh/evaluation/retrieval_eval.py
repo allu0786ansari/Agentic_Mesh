@@ -229,6 +229,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--queries-only", action="store_true", help="write the rendered queries and stop"
     )
+    parser.add_argument(
+        "--version", default="v1", help="retrieval version in configs/kb/retrieval.yaml (v1: PT6)"
+    )
     parser.add_argument("--fixture", action="store_true")
     args = parser.parse_args(argv)
     rendered, meta = incidents(args.edge_root, args.partitions, args.split)
@@ -251,19 +254,27 @@ def main(argv: list[str] | None = None) -> int:
             "the hashing encoder is for tests only; it cannot report a result (ADR 0010 §5)"
         )
     from agmesh.kb.embed import HashingEncoder, SentenceEncoder
-    from agmesh.kb.retriever import Retriever
+    from agmesh.kb.retriever import Retriever, version
     from agmesh.kb.store import QdrantStore
 
+    ver = version(args.version)
     encoder = SentenceEncoder() if args.encoder == "reference" else HashingEncoder()
     store = QdrantStore(args.kb / "qdrant")
-    result = evaluate(queries, Retriever(store, encoder).rank)
+    retriever = Retriever(store, encoder, exclude_only_tactics=ver["exclude_only_tactics"])
+    result = evaluate(queries, retriever.rank)
     store.close()
     pt6 = out_dir / f"{args.split}__pt6.json"
-    official = args.encoder == "reference" and not args.fixture and not pt6.exists()
+    official = (
+        ver["name"] == "v1"
+        and args.encoder == "reference"
+        and not args.fixture
+        and not pt6.exists()
+    )
+    tag = "" if ver["name"] == "v1" else f"{ver['name']}__"
     path = (
         pt6
         if official
-        else out_dir / f"{args.split}__exploratory__{time.strftime('%Y%m%dT%H%M%S')}.json"
+        else out_dir / f"{args.split}__{tag}exploratory__{time.strftime('%Y%m%dT%H%M%S')}.json"
     )
     path = write_artifact(
         path,
@@ -271,7 +282,9 @@ def main(argv: list[str] | None = None) -> int:
         data_source="fixture" if args.fixture else "runtime",
         payload={
             **meta,
-            "protocol": "docs/adr/0010-knowledge-base-retrieval-week9.md",
+            "protocol": ver["adr"],
+            "retrieval_version": ver,
+            "candidates_excluded": sorted(retriever.excluded),
             "pt6_measurement": official,
             "target": {"recall@5": 0.85},
             "encoder": encoder.identity(),
@@ -281,8 +294,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     a = result["all"]
     print(
-        f"Recall@5 {a['recall@5']:.3f}  MRR {a['mrr']:.3f}  ({a['queries']} queries; "
-        f"PT6 measurement: {official}) -> {path}"
+        f"{ver['name']}: Recall@5 {a['recall@5']:.3f}  Recall@10 {a['recall@10']:.3f}  "
+        f"MRR {a['mrr']:.3f}  ({a['queries']} queries; PT6 measurement: {official}) -> {path}"
     )
     return 0
 

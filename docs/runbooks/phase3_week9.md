@@ -83,3 +83,19 @@ git add -f results/kb results/retrieval
 git commit -m "Week 9: kb lock, knowledge base build, rendered queries, PT6 retrieval measurement"
 git push origin main
 ```
+
+## Step 6 — Retrieval v2, exploratory (ADR 0011, about 1 minute)
+
+PT6 was not met (Recall@5 0.333). ADR 0011 declares v2:
+
+- Impact-only techniques are removed from the candidates;
+- the LLM is offered 10 candidates.
+
+Run it once on validation. The result is labelled exploratory; v2 is confirmed only
+on the test incidents at G4.
+
+```bash
+git pull origin main
+make retrieval-eval VERSION=v2     # -> results/retrieval/val__v2__exploratory__<time>.json
+git add -f results/retrieval && git commit -m "Week 9: retrieval v2 on validation (exploratory, ADR 0011)" && git push origin main
+```

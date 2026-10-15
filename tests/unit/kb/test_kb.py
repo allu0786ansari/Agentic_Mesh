@@ -229,3 +229,25 @@ def test_rule_baseline() -> None:
         for s in ("site_a", "site_b")
         for r in table[s]["rules"]
     )
+
+
+def test_retrieval_v2_drops_impact_only_candidates() -> None:
+    from agmesh.kb.retriever import excluded, version
+
+    v1, v2 = version("v1"), version("v2")
+    assert (v1["candidates"], v2["candidates"]) == (5, 10) and version()["name"] == "v2"
+    gone = excluded(v2["exclude_only_tactics"])
+    active = [t for t, v in attack_ics.table().items() if v["status"] == "active"]
+    assert len(gone) == 12 and len(active) - len(gone) == 92
+    assert {"T0827", "T0831", "T0880"} <= gone and "T0836" not in gone
+    assert all(attack_ics.table()[t]["tactics"] == ["Impact"] for t in gone)
+    assert excluded([]) == frozenset()
+    techs = stix_parser.parse(tiny_bundle())
+    enc = HashingEncoder()
+    store = MemoryStore()
+    from agmesh.kb.build import build
+
+    build(techs, enc, store)
+    ranked = Retriever(store, enc, exclude_only_tactics=["Impair Process Control"]).rank("x")
+    # tactics come from the pinned table: T0836 is Impair-only, T1692(.001) also Evasion
+    assert {h.technique_id for h in ranked} == {"T1692", "T1692.001"}
