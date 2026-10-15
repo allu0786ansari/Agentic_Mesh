@@ -119,8 +119,8 @@ class QdrantStore:
         return int(self.client.count(collection, exact=True).count)
 
     def dim(self, collection: str) -> int:
-        params = self.client.get_collection(collection).config.params.vectors
-        return int(params.size)  # type: ignore[union-attr]
+        params: Any = self.client.get_collection(collection).config.params.vectors
+        return int(params.size)
 
     def close(self) -> None:
         self.client.close()

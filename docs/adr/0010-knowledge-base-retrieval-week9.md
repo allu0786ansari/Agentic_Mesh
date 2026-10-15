@@ -225,3 +225,66 @@ models (`results/models/*`); Site A reproduces the laptop's 448 alerts.
 **Fixture run.** The full pipeline (build → render → rank → metrics) was run
 end-to-end with the hashing encoder, `--fixture`. That output is labelled fixture,
 is not committed, and is not a result.
+
+---
+
+## Result: the PT6 measurement (laptop, 15 October 2026)
+
+`results/retrieval/val__pt6.json` (`pt6_measurement: true`) comes from commit
+`17a804c`. The tree's only change was the `uv.lock` update, committed in the same
+push.
+
+**Build details.**
+
+- **Encoder:** `all-MiniLM-L6-v2` at snapshot `1110a243…`, with its weights'
+  SHA-256 pinned in `configs/kb/encoder.lock.json`.
+- **NIST SP 800-82r3:** 627 passages, SHA-256 pinned in
+  `configs/kb/sources.lock.json`.
+- **Rendered queries:** the laptop's 18 are identical to the cloud's.
+
+| Queries | n | Recall@1 | Recall@3 | **Recall@5** | Recall@10 | MRR |
+|---|---|---|---|---|---|---|
+| **All (PT6)** | 48 | 0.083 | 0.167 | **0.333** | 0.688 | 0.219 |
+| Rendered | 18 | 0.111 | 0.222 | 0.500 | 0.833 | 0.280 |
+| Paraphrases | 30 | 0.067 | 0.133 | 0.233 | 0.600 | 0.182 |
+| Site A | 37 | 0.027 | 0.081 | 0.297 | 0.676 | 0.159 |
+| Site B | 11 | 0.273 | 0.455 | 0.455 | 0.727 | 0.420 |
+| Site A, SP-led | 31 | 0.032 | 0.097 | 0.323 | 0.677 | 0.168 |
+| Site A, CO-led | 6 | 0.000 | 0.000 | 0.167 | 0.667 | 0.111 |
+
+**PT6 (Recall@5 ≥ 0.85) is not met: 0.333.** Under the preregistration, this is
+reported as a finding. The number stands, and nothing below changes it.
+
+### Exploratory diagnosis (not a result)
+
+These readings come from the per-query rankings of the PT6 artifact.
+
+1. **On Site A, effects outrank mechanisms.**
+   - 53% of all top-5 slots go to the 12 Impact-only techniques: Loss of Control,
+     Loss of Protection, Loss of Safety, Manipulation of Control, Loss of
+     Availability, Loss of Productivity and Revenue, and others.
+   - The rendered evidence describes what happened to the process: valves moved,
+     levels and speeds fell. That is the language of ATT&CK's *impact*
+     descriptions.
+   - The frozen ground truth names the *mechanism*: Modify Parameter, Command
+     Message, Reporting Message. Under protocol v1.1 rule 3, no Impact technique is
+     acceptable for any event.
+   - So the embedding similarity is semantically reasonable but answers a different
+     question than the attribution truth asks.
+2. **Site B, whose evidence is protocol behaviour, works.**
+   - All four rendered episodes put a relevant technique at rank 1 or 2.
+   - The paraphrases are weaker (Recall@5 2/7).
+3. **Relevant techniques sit just below the cut.** Recall@10 is 0.688 against
+   Recall@5 of 0.333, and the median rank of the first relevant technique is 7.
+4. **What it means for RQ3.**
+   - In `full` mode the LLM may only choose among the top 5 candidates (Proposal
+     §8.4).
+   - With this retriever, its top-1 accuracy on Site A is therefore capped near the
+     Recall@5 of 0.30.
+   - Mapping observed *effects* to the *mechanism* that caused them takes inference
+     that lexical or semantic similarity alone does not supply.
+
+Any change made because of this result (candidate set, k, query form) is
+**post hoc**. It needs a new version of this ADR, written before it is run. It is
+evaluated on validation as exploratory, and it can only be confirmed on held-out
+incidents (the test incidents, after G4).
