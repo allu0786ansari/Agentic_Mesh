@@ -1,0 +1,188 @@
+{
+  "schema_version": "1.0",
+  "kind": "result",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-15T00:56:00Z",
+    "git_sha": "be1289e5c0524fc759ef02cf6001de68540f8ffd",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "3345edb07091552cd8e4fb81acf6eb6cc14211327f39c7cac0351239c63185fe",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "845c09e22a7410331d4684069f3e617cb8cda069bbbb077dc6c64ca74d47be0f",
+      "hostname_hash": "89a720d64995",
+      "pid": 3234
+    },
+    "manifest_sha256": "61d66c7bf074bbc08d80bd527bf9b1dbf1c747b1df3bd4101cb6a2a4f51ccfb5",
+    "checkpoint_sha256": null,
+    "started_at": "2026-10-15T00:51:54Z",
+    "finished_at": "2026-10-15T00:56:00Z"
+  },
+  "experiment": "X8",
+  "config_id": "secagg",
+  "seed": 11,
+  "split": "val",
+  "metrics": {
+    "max_abs_error": 3.3589700857844518e-06,
+    "quantisation_step": 3.814698175119919e-06,
+    "error_within_step": 1.0,
+    "plaintext_max_abs_error": 2.9802322387695312e-08,
+    "seconds_per_round_plaintext": 25.22439447900001,
+    "seconds_per_round_secagg": 21.94482995333334,
+    "time_overhead_ratio": 0.869984410194782,
+    "bytes_per_round_plaintext": 7736764.0,
+    "bytes_per_round_secagg": 14216468.0,
+    "bytes_overhead_ratio": 1.8375212168808561,
+    "dropout_recovered": 1.0
+  },
+  "site": "site_a",
+  "arms": {
+    "plaintext": {
+      "arm": "plaintext",
+      "run_id": "X8__plaintext__seed11__2026-10-15T005154Z",
+      "rounds": [
+        {
+          "round": 1,
+          "updates": 4,
+          "aggregated": true,
+          "max_abs_error": 0.0,
+          "mean_abs_error": 0.0,
+          "outside_clip_share": 0.0,
+          "seconds": 44.640524027000026
+        },
+        {
+          "round": 2,
+          "updates": 4,
+          "aggregated": true,
+          "max_abs_error": 0.0,
+          "mean_abs_error": 0.0,
+          "outside_clip_share": 0.0,
+          "seconds": 18.663592047999998
+        },
+        {
+          "round": 3,
+          "updates": 4,
+          "aggregated": true,
+          "max_abs_error": 2.9802322387695312e-08,
+          "mean_abs_error": 7.143178826218843e-10,
+          "outside_clip_share": 0.0,
+          "seconds": 12.36906736200001
+        }
+      ],
+      "quantisation_step": 3.814698175119919e-06,
+      "bytes": {
+        "total": 23210292,
+        "by_stage": {
+          "train:": 23210292
+        }
+      },
+      "wall_seconds": 78.66264629100004,
+      "parameters": 241770
+    },
+    "secagg": {
+      "arm": "secagg",
+      "run_id": "X8__secagg__seed11__2026-10-15T005340Z",
+      "rounds": [
+        {
+          "round": 1,
+          "updates": 4,
+          "aggregated": true,
+          "max_abs_error": 3.129243850708008e-06,
+          "mean_abs_error": 6.183219589091105e-07,
+          "outside_clip_share": 0.0,
+          "seconds": 34.826668498000004
+        },
+        {
+          "round": 2,
+          "updates": 4,
+          "aggregated": true,
+          "max_abs_error": 3.0584633350372314e-06,
+          "mean_abs_error": 6.195609043077519e-07,
+          "outside_clip_share": 0.0,
+          "seconds": 18.519506390000004
+        },
+        {
+          "round": 3,
+          "updates": 4,
+          "aggregated": true,
+          "max_abs_error": 3.0472874641418457e-06,
+          "mean_abs_error": 6.188523190846949e-07,
+          "outside_clip_share": 0.0,
+          "seconds": 12.488314972000012
+        }
+      ],
+      "quantisation_step": 3.814698175119919e-06,
+      "bytes": {
+        "total": 42649404,
+        "by_stage": {
+          "train:": 42649404
+        }
+      },
+      "wall_seconds": 68.23414792400001,
+      "parameters": 241770
+    },
+    "secagg_drop": {
+      "arm": "secagg_drop",
+      "run_id": "X8__secagg_drop__seed11__2026-10-15T005452Z",
+      "rounds": [
+        {
+          "round": 1,
+          "updates": 4,
+          "aggregated": true,
+          "max_abs_error": 2.950429916381836e-06,
+          "mean_abs_error": 6.188557482224222e-07,
+          "outside_clip_share": 0.0,
+          "seconds": 34.833391500000005
+        },
+        {
+          "round": 2,
+          "updates": 3,
+          "aggregated": true,
+          "max_abs_error": 3.3589700857844518e-06,
+          "mean_abs_error": 7.179197739445554e-07,
+          "outside_clip_share": 0.0,
+          "seconds": 9.599065782000025
+        },
+        {
+          "round": 3,
+          "updates": 4,
+          "aggregated": true,
+          "max_abs_error": 3.0659139156341553e-06,
+          "mean_abs_error": 6.193128775413245e-07,
+          "outside_clip_share": 0.0,
+          "seconds": 17.659558989000004
+        }
+      ],
+      "quantisation_step": 3.814698175119919e-06,
+      "bytes": {
+        "total": 38777809,
+        "by_stage": {
+          "train:": 38777809
+        }
+      },
+      "wall_seconds": 64.67886383400003,
+      "parameters": 241770
+    }
+  },
+  "secagg": {
+    "num_shares": 4,
+    "reconstruction_threshold": 3,
+    "clipping_range": 8.0,
+    "quantization_range": 4194304,
+    "max_weight": 1.0,
+    "dropped": [
+      "a4",
+      2
+    ]
+  }
+}
