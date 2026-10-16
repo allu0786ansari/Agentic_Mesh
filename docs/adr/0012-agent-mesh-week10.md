@@ -1,6 +1,7 @@
 # ADR 0012 — Agent mesh: triage, investigation, attribution, dispatch (Week 10)
 
-**Status:** Accepted, 15 October 2026. Written before any mesh run.
+**Status:** Accepted, 15 October 2026. Written before any mesh run. §4 (the LLM call)
+and §6 (the summary) are amended by ADR 0013 after the first laptop runs.
 
 **Implements:** Plan Week 10 tasks 1–7, Proposal §8.1–8.6, §9.2.
 

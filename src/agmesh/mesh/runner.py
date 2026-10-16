@@ -14,14 +14,18 @@
 
 **Requirements.**
 
-* ``full`` and ``llm_no_retrieval`` need Ollama with ``llm.model``. The runner checks
-  this before starting.
+* ``full`` and ``llm_no_retrieval`` need Ollama with ``llm.model``, and a calibrated
+  timeout in ``configs/mesh/llm_timeouts.lock.json`` (``make llm-calibrate``; ADR 0013
+  §3.3). The runner checks both before starting.
+* After a failed LLM call, the runner waits for Ollama to recover before the next
+  incident (ADR 0013 §3.4).
 * Every mode except ``rule_only`` needs the knowledge base (``make kb``).
 
 **Output.** ``summary.json`` holds:
 
 * sessions by status and attribution mode;
 * the technique distribution and the grounding rate;
+* LLM failures by error class, token counts and recoveries (ADR 0013 §3.5);
 * investigation and incident-to-dispatch latency.
 
 It holds no ground-truth accuracy; that is X4.
@@ -42,10 +46,12 @@ import numpy as np
 from agmesh.bus.sqlite_bus import SqliteBus
 from agmesh.common.artifacts import write_artifact, write_event
 from agmesh.common.config import DEFAULT_PARAMS_PATH, Params, load_params
+from agmesh.common.env import load_env
 from agmesh.mesh.attribution import MODES, AttributionAgent
 from agmesh.mesh.breaker import CircuitBreaker
 from agmesh.mesh.graph import Mesh
 from agmesh.mesh.investigator import Investigator
+from agmesh.mesh.llm_calibrate import LLM_MODES, LOCK, read_lock
 from agmesh.mesh.nodeclient import LocalNodeClient, NodeClient
 from agmesh.mesh.sessions import SessionStore
 from agmesh.mesh.triage import ClosedIncident, Triage
@@ -156,27 +162,61 @@ def consume(
     return results
 
 
-def summarise(store: SessionStore, results: list[dict[str, Any]]) -> dict[str, Any]:
+def _llm_block(atts: list[dict[str, Any]]) -> dict[str, Any]:
+    """Answered calls, failures by error class, tokens and durations (ADR 0013 §3.5)."""
+    answered = [a for a in atts if a.get("llm") and "validation" in (a.get("llm") or {})]
+    failed = [a for a in atts if a.get("llm") and "error" in (a.get("llm") or {})]
+    grounded = [bool(a["llm"]["validation"]["grounded"]) for a in answered]
+    stats = [a["llm"].get("stats") or {} for a in answered]
+
+    def nums(key: str) -> list[float]:
+        return [float(s[key]) for s in stats if isinstance(s.get(key), int | float)]
+
+    return {
+        "calls": len(answered) + len(failed),
+        "answered": len(answered),
+        "raw_grounding_rate": float(np.mean(grounded)) if grounded else None,
+        "valid_rate": float(np.mean([a["llm"]["validation"]["valid"] for a in answered]))
+        if answered
+        else None,
+        "seconds": _q([float(a["llm"]["seconds"]) for a in answered]),
+        "failures": dict(
+            collections.Counter(str(a["llm"].get("kind", "Error")) for a in failed).most_common()
+        ),
+        "failed_seconds": _q(
+            [float(a["llm"]["seconds"]) for a in failed if a["llm"].get("seconds") is not None]
+        ),
+        "prompt_tokens": _q(nums("prompt_eval_count")),
+        "output_tokens": _q(nums("eval_count")),
+        "prompt_eval_s": _q(nums("prompt_eval_s")),
+        "eval_s": _q(nums("eval_s")),
+        "load_s_max": max(nums("load_s"), default=None),
+        "done_reason": dict(collections.Counter(str(s.get("done_reason")) for s in stats)),
+    }
+
+
+def summarise(
+    store: SessionStore,
+    results: list[dict[str, Any]],
+    recoveries: list[dict[str, Any]] | None = None,
+    l_llm_s: float = 24.0,
+) -> dict[str, Any]:
     sessions = store.all_sessions()
     by_status = collections.Counter(s.status for s in sessions)
     atts = [r.get("attribution") or {} for r in results]
     by_mode = collections.Counter(a.get("attribution_mode", "none") for a in atts)
     techniques = collections.Counter(a.get("technique_id") for a in atts if a.get("technique_id"))
-    llm_calls = [a for a in atts if a.get("llm") and "validation" in (a.get("llm") or {})]
-    grounded = [bool(a["llm"]["validation"]["grounded"]) for a in llm_calls]
-    llm_s = [float(a["llm"]["seconds"]) for a in llm_calls]
+    rec = recoveries or []
     return {
         "sessions": len(sessions),
         "by_status": dict(by_status),
         "by_attribution_mode": dict(by_mode),
         "techniques": dict(techniques.most_common()),
-        "llm": {
-            "calls": len(llm_calls),
-            "raw_grounding_rate": float(np.mean(grounded)) if grounded else None,
-            "valid_rate": float(np.mean([a["llm"]["validation"]["valid"] for a in llm_calls]))
-            if llm_calls
-            else None,
-            "seconds": _q(llm_s),
+        "llm": _llm_block(atts),
+        "llm_recoveries": {
+            "n": len(rec),
+            "probe_ok": sum(1 for r in rec if r.get("probe_ok")),
+            "seconds": _q([float(r["seconds"]) for r in rec]),
         },
         "hops": {
             "max_hop_count": max((s.hop_count for s in sessions), default=0),
@@ -205,11 +245,38 @@ def summarise(store: SessionStore, results: list[dict[str, Any]]) -> dict[str, A
         "targets_ms": {
             "investigation_p95": 2000.0,
             "incident_to_dispatch_p95_retrieval_only": 3000.0,
+            "incident_to_dispatch_p95_full": l_llm_s * 1000.0,  # PT7, unchanged (ADR 0013 §3.6)
         },
     }
 
 
-def _agent(params: Params, mode: str, kb: Path, retrieval_version: str | None) -> AttributionAgent:
+def llm_settings(params: Params, mode: str, lock_path: Path = LOCK) -> dict[str, Any]:
+    """The calibrated timeout and options of an LLM mode; refuses a missing or stale lock."""
+    entry = read_lock(lock_path)["modes"].get(mode)
+    if entry is None:
+        raise SystemExit(
+            f"{mode} has no calibrated LLM timeout in {lock_path}: make llm-calibrate MODE={mode} "
+            "(ADR 0013 §3.3)"
+        )
+    want = {
+        "model": params.llm.model,
+        "num_ctx": params.llm.ctx_for(mode),
+        "num_predict": params.llm.num_predict,
+        "temperature": params.llm.temperature,
+    }
+    stale = {k: (entry.get(k), v) for k, v in want.items() if entry.get(k) != v}
+    if stale:
+        raise SystemExit(f"{lock_path} was measured with other settings for {mode}: {stale}")
+    return {**want, "timeout_s": float(entry["timeout_s"]), "lock": lock_path.as_posix()}
+
+
+def _agent(
+    params: Params,
+    mode: str,
+    kb: Path,
+    retrieval_version: str | None,
+    llm_cfg: dict[str, Any] | None = None,
+) -> tuple[AttributionAgent, Any]:
     from agmesh.kb.retriever import version
 
     ver = version(retrieval_version)
@@ -226,27 +293,29 @@ def _agent(params: Params, mode: str, kb: Path, retrieval_version: str | None) -
         )
         rank = retriever.rank
     llm = None
-    if mode in ("full", "llm_no_retrieval"):
+    if llm_cfg is not None:
         from agmesh.mesh.llm import OllamaLLM
 
+        check_llm(params)
         llm = OllamaLLM(
             params.llm.base_url,
             params.llm.model,
-            timeout_s=params.mesh.attribution.llm_timeout_s,
-            num_ctx=params.llm.num_ctx,
-            temperature=params.llm.temperature,
+            timeout_s=llm_cfg["timeout_s"],
+            num_ctx=llm_cfg["num_ctx"],
+            num_predict=llm_cfg["num_predict"],
+            temperature=llm_cfg["temperature"],
         )
-        _check_llm(params)
-    return AttributionAgent(
+    agent = AttributionAgent(
         rank,
         llm,
         k=int(ver["candidates"]),
         exclude_only_tactics=ver["exclude_only_tactics"],
         min_confidence=params.mesh.attribution.min_confidence,
     )
+    return agent, llm
 
 
-def _check_llm(params: Params) -> None:
+def check_llm(params: Params) -> None:
     import httpx
 
     from agmesh.feasibility.llm_bench import is_installed
@@ -265,6 +334,9 @@ def _check_llm(params: Params) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    load_env()
+    from agmesh.kb.retriever import version
+
     parser = argparse.ArgumentParser(description="Run the agent mesh over an edge run's alerts")
     parser.add_argument("--params", type=Path, default=DEFAULT_PARAMS_PATH)
     parser.add_argument("--site", choices=("site_a", "site_b"), required=True)
@@ -275,16 +347,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--kb", type=Path, default=Path("data/kb"))
     parser.add_argument("--retrieval-version", default=None)
     parser.add_argument("--out", type=Path, default=Path("results/mesh"))
+    parser.add_argument("--llm-lock", type=Path, default=LOCK)
     args = parser.parse_args(argv)
     params = load_params(args.params)
     mode = args.mode or params.mesh.attribution.mode
+    llm_cfg = llm_settings(params, mode, args.llm_lock) if mode in LLM_MODES else None
     edge = args.edge_run or latest_edge_run(args.edge_root, args.site, args.split)
     stamp = time.strftime("%Y%m%dT%H%M%S")
     out = args.out / f"{args.site}__{mode}__{args.split}__{stamp}"
     out.mkdir(parents=True, exist_ok=True)
     shutil.copy2(edge / "storage.db", out / "storage.db")
     run_id = f"mesh__{args.site}__{mode}__{args.split}__{stamp}"
-    agent = _agent(params, mode, args.kb, args.retrieval_version)
+    agent, llm = _agent(params, mode, args.kb, args.retrieval_version, llm_cfg)
     store = SessionStore(out / "storage.db", max_hops=params.mesh.max_hops)
     bus = SqliteBus(out / "storage.db")
     events = out / "events.jsonl"
@@ -309,7 +383,13 @@ def main(argv: list[str] | None = None) -> int:
             run_id=run_id,
             data_source="runtime",
         )
+        if llm is not None and "error" in (att.get("llm") or {}):
+            # Between incidents, so it is not in any incident's latency (ADR 0013 §3.4).
+            rec = llm.recover()
+            recoveries.append(rec)
+            write_event(events, "llm_recovery", rec, run_id=run_id, data_source="runtime")
 
+    recoveries: list[dict[str, Any]] = []
     started = time.perf_counter()
     results = consume(
         mesh,
@@ -320,7 +400,7 @@ def main(argv: list[str] | None = None) -> int:
         run_id,
         on_session=logged,
         worker_timeout_s=params.mesh.investigation_deadline_s
-        + params.mesh.attribution.llm_timeout_s
+        + (llm_cfg["timeout_s"] if llm_cfg else 0.0)
         + 30,
     )
     payload = {
@@ -329,9 +409,10 @@ def main(argv: list[str] | None = None) -> int:
         "mode": mode,
         "split": args.split,
         "edge_run": edge.as_posix(),
-        "retrieval_version": args.retrieval_version or "default",
+        "retrieval_version": version(args.retrieval_version)["name"],
+        "llm_settings": llm_cfg,
         "wall_seconds": round(time.perf_counter() - started, 1),
-        **summarise(store, results),
+        **summarise(store, results, recoveries, params.mesh.attribution.l_llm_s),
     }
     path = write_artifact(
         out / "summary.json",

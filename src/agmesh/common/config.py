@@ -335,7 +335,13 @@ class LlmConfig(_Section):
     model: str
     alternative_model: str
     num_ctx: int = Field(gt=0)
+    num_ctx_no_retrieval: int = Field(gt=0)
+    num_predict: int = Field(gt=0)
     temperature: float = Field(ge=0)
+
+    def ctx_for(self, mode: str) -> int:
+        """``num_ctx`` by attribution mode (ADR 0013 §3.2)."""
+        return self.num_ctx_no_retrieval if mode == "llm_no_retrieval" else self.num_ctx
 
 
 class JwtConfig(_Section):

@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Any
 
 from agmesh.common.artifacts import write_artifact
+from agmesh.common.env import load_env
 from agmesh.evaluation.attack_ics import PIN
 from agmesh.kb import chunking, stix_parser
 from agmesh.kb.embed import Encoder, HashingEncoder, SentenceEncoder
@@ -127,6 +128,7 @@ def build(
 
 
 def main(argv: list[str] | None = None) -> int:
+    load_env()
     parser = argparse.ArgumentParser(description="Build the ATT&CK for ICS knowledge base")
     parser.add_argument("--out", type=Path, default=Path("data/kb"))
     parser.add_argument("--results", type=Path, default=Path("results"))

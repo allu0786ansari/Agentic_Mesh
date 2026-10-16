@@ -41,6 +41,7 @@ import numpy as np
 import yaml
 
 from agmesh.common.artifacts import write_artifact
+from agmesh.common.env import load_env
 from agmesh.common.schemas import EvidenceRecord
 from agmesh.data.manifest import read_manifest
 from agmesh.edge.evidence import iso
@@ -219,6 +220,7 @@ def evaluate(queries: list[Query], rank_fn: Any) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    load_env()
     parser = argparse.ArgumentParser(description="Retrieval evaluation (Recall@5, MRR)")
     parser.add_argument("--split", choices=("val",), default="val")
     parser.add_argument("--edge-root", type=Path, default=Path("results/edge"))
@@ -286,7 +288,15 @@ def main(argv: list[str] | None = None) -> int:
             "retrieval_version": ver,
             "candidates_excluded": sorted(retriever.excluded),
             "pt6_measurement": official,
-            "target": {"recall@5": 0.85},
+            "target": (
+                {"pt6": {"recall@5": 0.85}}
+                if ver["name"] == "v1"
+                else {
+                    "pt6_v2": {"recall@10": 0.85},
+                    "measured_on": "test rendered queries, once after g4-frozen (prereg. 3b)",
+                    "this_run": "exploratory" if not official else "PT6",
+                }
+            ),
             "encoder": encoder.identity(),
             "kb_manifest": (args.results / "kb" / "manifest.json").as_posix(),
             **result,

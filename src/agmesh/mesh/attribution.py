@@ -64,6 +64,11 @@ def load_mitigations(path: Path = TECHNIQUES_JSON) -> dict[str, list[list[str]]]
     }
 
 
+def _failure(exc: LLMUnavailableError) -> dict[str, Any]:
+    """What a failed call records: the message, the error class and the elapsed time."""
+    return {"error": str(exc), "kind": exc.kind, "seconds": exc.seconds}
+
+
 class AttributionAgent:
     def __init__(
         self,
@@ -84,7 +89,8 @@ class AttributionAgent:
         self.names = {t: v["name"] for t, v in table.items()}
         self.mitigations = mitigations if mitigations is not None else load_mitigations()
 
-    def _line(self, tid: str) -> tuple[str, str, list[str]]:
+    def line(self, tid: str) -> tuple[str, str, list[str]]:
+        """A candidate's prompt line: ID, name and tactics."""
         return tid, self.names[tid], attack_ics.tactics(tid)
 
     def _result(
@@ -151,7 +157,7 @@ class AttributionAgent:
                 text,
                 reason="no LLM configured",
             )
-        message = user_message(text, [self._line(t) for t in cands])
+        message = user_message(text, [self.line(t) for t in cands])
         try:
             reply = self.llm.choose(message, tuple(cands))
         except LLMUnavailableError as exc:
@@ -163,7 +169,7 @@ class AttributionAgent:
                 order,
                 cands,
                 text,
-                {"error": str(exc)},
+                _failure(exc),
                 reason="LLM unavailable or timed out",
             )
         v = validate(reply.content, tuple(cands), self.min_confidence)
@@ -171,6 +177,7 @@ class AttributionAgent:
             "content": reply.content,
             "seconds": reply.seconds,
             "model": reply.model,
+            "stats": reply.stats,
             "validation": v,
         }
         if not v["valid"]:
@@ -192,7 +199,7 @@ class AttributionAgent:
             return self._result(
                 mode, "abstained", None, None, [], cands, text, reason="no LLM configured"
             )
-        message = user_message(text, [self._line(t) for t in cands])
+        message = user_message(text, [self.line(t) for t in cands])
         try:
             reply = self.llm.choose(message, tuple(cands))
         except LLMUnavailableError as exc:
@@ -204,7 +211,7 @@ class AttributionAgent:
                 [],
                 cands,
                 text,
-                {"error": str(exc)},
+                _failure(exc),
                 reason="LLM unavailable or timed out",
             )
         v = validate(reply.content, tuple(cands), self.min_confidence)
@@ -212,6 +219,7 @@ class AttributionAgent:
             "content": reply.content,
             "seconds": reply.seconds,
             "model": reply.model,
+            "stats": reply.stats,
             "validation": v,
         }
         if not v["valid"]:
