@@ -14,7 +14,7 @@ def test_parse_accepts_the_usual_forms() -> None:
     text = """
     # comment
     HF_TOKEN=hf_abc123
-    export MESH_APPROVAL_KEY="0123456789abcdef0123"
+    export MESH_APPROVAL_KEY="placeholder"
     QUOTED='a # not a comment'
     TRAILING=value # a comment
     EMPTY=
@@ -22,7 +22,7 @@ def test_parse_accepts_the_usual_forms() -> None:
     """
     assert parse(text) == {
         "HF_TOKEN": "hf_abc123",
-        "MESH_APPROVAL_KEY": "0123456789abcdef0123",
+        "MESH_APPROVAL_KEY": "placeholder",
         "QUOTED": "a # not a comment",
         "TRAILING": "value",
         "EMPTY": "",
