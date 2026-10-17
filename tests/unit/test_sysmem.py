@@ -29,3 +29,24 @@ def test_missing_proc_gives_none(tmp_path: Path) -> None:
     assert llm_server_rss_mb(tmp_path / "nope") is None
     (tmp_path / "1").mkdir()
     assert llm_server_rss_mb(tmp_path) is None
+
+
+def test_server_info_reads_cache_ram_from_cmdline_or_environment(tmp_path: Path) -> None:
+    from agmesh.common.sysmem import llm_server_info
+
+    d = tmp_path / "10"
+    d.mkdir()
+    (d / "comm").write_text("llama-server\n")
+    (d / "cmdline").write_bytes(b"/usr/local/lib/ollama/llama-server\0-c\x004096\0-np\x001\0")
+    (d / "environ").write_bytes(b"HOME=/x\0LLAMA_ARG_CACHE_RAM=0\0")
+    info = llm_server_info(tmp_path)
+    assert info is not None
+    assert info["cache_ram"] == "0" and info["env_readable"] and info["pid"] == 10
+    (d / "cmdline").write_bytes(b"llama-server\0--cache-ram\x008192\0")
+    info = llm_server_info(tmp_path)
+    assert info is not None and info["cache_ram"] == "8192"
+    (d / "environ").unlink()
+    (d / "cmdline").write_bytes(b"llama-server\0")
+    info = llm_server_info(tmp_path)
+    assert info is not None and info["cache_ram"] is None and not info["env_readable"]
+    assert llm_server_info(tmp_path / "none") is None

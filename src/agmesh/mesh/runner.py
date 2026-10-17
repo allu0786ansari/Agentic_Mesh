@@ -47,7 +47,7 @@ from agmesh.bus.sqlite_bus import SqliteBus
 from agmesh.common.artifacts import write_artifact, write_event
 from agmesh.common.config import DEFAULT_PARAMS_PATH, Params, load_params
 from agmesh.common.env import load_env
-from agmesh.common.sysmem import snapshot
+from agmesh.common.sysmem import llm_server_info, snapshot
 from agmesh.mesh.attribution import MODES, AttributionAgent
 from agmesh.mesh.breaker import CircuitBreaker
 from agmesh.mesh.graph import Mesh
@@ -419,6 +419,23 @@ def main(argv: list[str] | None = None) -> int:
 
     recoveries: list[dict[str, Any]] = []
     done = [0]
+    server: dict[str, Any] | None = None
+    if llm is not None:
+        # ADR 0013 §7: load the model before the first incident, with the run's own
+        # options, so incident 1 does not pay the cold start. Excluded from every metric.
+        warm = llm.recover()
+        server = llm_server_info()
+        write_event(
+            events, "llm_warmup", {**warm, "server": server}, run_id=run_id, data_source="runtime"
+        )
+        print(f"warm-up {warm['seconds']:.1f}s probe_ok={warm['probe_ok']}", flush=True)
+        if server is None or server.get("cache_ram") != "0":
+            print(
+                "WARNING: the LLM server's prompt cache is not visibly off "
+                f"(cache_ram={None if server is None else server.get('cache_ram')}); "
+                "ADR 0013 §7 runs need LLAMA_ARG_CACHE_RAM=0",
+                flush=True,
+            )
     print(f"{args.site} {mode}: running; one line per incident", flush=True)
     started = time.perf_counter()
     results = consume(
@@ -441,6 +458,7 @@ def main(argv: list[str] | None = None) -> int:
         "edge_run": edge.as_posix(),
         "retrieval_version": version(args.retrieval_version)["name"],
         "llm_settings": llm_cfg,
+        "llm_server": server,
         "wall_seconds": round(time.perf_counter() - started, 1),
         **summarise(store, results, recoveries, params.mesh.attribution.l_llm_s),
     }

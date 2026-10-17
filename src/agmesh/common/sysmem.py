@@ -52,3 +52,46 @@ def llm_server_rss_mb(
 
 def snapshot() -> dict[str, int | None]:
     return {"mem_available_mb": available_mb(), "llm_server_rss_mb": llm_server_rss_mb()}
+
+
+def llm_server_info(
+    proc: Path = Path("/proc"), names: tuple[str, ...] = SERVER_NAMES
+) -> dict[str, object] | None:
+    """The running LLM server's command line and prompt-cache setting (ADR 0013 §7).
+
+    ``cache_ram`` comes from ``--cache-ram`` on the command line, else from
+    ``LLAMA_ARG_CACHE_RAM`` in the server's environment. That environment is readable
+    only when the server runs as the same user, as it does when started by hand. The
+    value is ``None`` when neither is visible.
+    """
+    try:
+        pids = sorted((p for p in proc.iterdir() if p.name.isdigit()), key=lambda p: p.name)
+    except OSError:
+        return None
+    for pid in pids:
+        try:
+            if (pid / "comm").read_text().strip() not in names:
+                continue
+            argv = (pid / "cmdline").read_bytes().decode(errors="replace").split("\0")
+        except OSError:
+            continue
+        argv = [a for a in argv if a]
+        cache_ram: str | None = None
+        if "--cache-ram" in argv[:-1]:
+            cache_ram = argv[argv.index("--cache-ram") + 1]
+        env_readable = False
+        try:
+            env = (pid / "environ").read_bytes().decode(errors="replace").split("\0")
+            env_readable = True
+            for item in env:
+                if item.startswith("LLAMA_ARG_CACHE_RAM=") and cache_ram is None:
+                    cache_ram = item.split("=", 1)[1]
+        except OSError:
+            pass
+        return {
+            "pid": int(pid.name),
+            "cmdline": argv,
+            "cache_ram": cache_ram,
+            "env_readable": env_readable,
+        }
+    return None

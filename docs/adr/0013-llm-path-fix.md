@@ -233,3 +233,77 @@ The rule is fixed before that re-calibration.
 - **Site B:** the re-run of 17 October stands and is not repeated. Its 35 failures
   are reported together with the memory evidence.
 - **Site A:** it is run under 6.2.
+
+## 7. Addendum, 17 October 2026: the cause is the server's prompt cache
+
+This addendum was written after the §6 re-calibration was stopped, and before any
+further LLM run.
+
+### 7.1 Cause, confirmed
+
+Ollama 0.40.3 runs the model in `llama-server`, and that server keeps a **prompt
+cache in RAM**.
+
+- **What the log says** (`results/llm_calibration/ollama_20261017T1151.log`): "prompt
+  cache is enabled, size limit: 8192 MiB". That limit is above WSL's whole 5.8 GiB.
+- **How it grows:**
+  - every prompt's state is saved: 191–197 MiB for a 92-candidate prompt;
+  - in the §6 calibration, the server's resident memory rose by about 193 MB per
+    call, from 2,534 MB to 5,453 MB, while `MemAvailable` fell from 2,830 MB to
+    39 MB;
+  - in Site A `full`, `MemAvailable` fell by about 52 MB per incident (prompts of
+    about 410 tokens), from 2,725 MB to 512 MB.
+- **Why decoding collapses:** Ollama loads the weights without memory-mapping
+  ("disabling mmap … reason=cpu"), so under exhaustion they go to swap. Each decoded
+  token then waits on swap, which gives about 0.2 tokens/s.
+- **What it explains:**
+  - the §6 calibration's slow calls;
+  - the 17 October Site B `llm_no_retrieval` run;
+  - the Site B `full` re-run's 35 timeouts, which began after about 80 incidents.
+
+**Correction to §6.** §6 attributed the slowdown to the machine. The finding it
+anticipated, "an 8 GB laptop cannot hold the 92-candidate prompt", is not supported:
+the model alone needs about 2.5 GB. The §6.4 stop stays recorded as the outcome of
+the 17 October 11:51 attempt.
+
+### 7.2 Prompt cache off
+
+Every remaining LLM run starts Ollama with `LLAMA_ARG_CACHE_RAM=0`. That is
+llama-server's own setting, passed through the environment.
+
+- **Before any run,** `~/ollama.log` must show that the cache is disabled; the
+  "prompt cache is enabled" line must not appear.
+- **What is recorded:** the runner and the calibration record the server's command
+  line and cache setting. The runner prints a warning if the setting is not visibly
+  0.
+- **Expected:** the server's memory stays flat from incident to incident.
+- **Side effect:** an exactly repeated prompt is no longer served from the cache. That
+  only affects duplicate incidents, and only their latency.
+
+### 7.3 Warm-up before the first incident
+
+The runner now sends one probe call with the run's own options before incident 1.
+It is excluded from every metric.
+
+**Why:** incident 1 of Site A `full` (17 October) timed out at 26.05 s, with
+4,997 MB available and no server process yet. That was the model loading (a cold
+start), and its recovery took 58 s. A deployed mesh has the model loaded.
+
+**Site A `full` of 17 October stands.** Memory stayed at or above 512 MB, and 44 of
+45 incidents were answered. Its incident-1 fallback is reported as a cold start.
+
+### 7.4 One final `llm_no_retrieval` attempt
+
+- **How:** `--force`, under 6.2 plus 7.2–7.3, with the same §6.4 stopping rule.
+- **Its outcome is final either way:**
+  - if it stops, the ablation is not run and is reported with this cause;
+  - if it passes, both sites are run.
+- **No further attempt follows.**
+
+### 7.5 Site B `full`, once more
+
+- **The new run:** Site B `full` is re-run once under 7.2–7.3. That run is the one
+  used for PT7 and X4 on Site B.
+- **Why:** the 17 October failures came from memory exhaustion, and its mechanism is
+  now confirmed.
+- **The 17 October run stays in the repository,** and both runs are reported.

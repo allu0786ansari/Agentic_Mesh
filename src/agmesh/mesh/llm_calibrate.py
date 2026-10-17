@@ -48,7 +48,7 @@ import numpy as np
 from agmesh.common.artifacts import write_artifact
 from agmesh.common.config import DEFAULT_PARAMS_PATH, load_params
 from agmesh.common.env import load_env
-from agmesh.common.sysmem import snapshot
+from agmesh.common.sysmem import llm_server_info, snapshot
 from agmesh.mesh.attribution import AttributionAgent
 from agmesh.mesh.llm import LLMUnavailableError, OllamaLLM, user_message, validate
 
@@ -224,6 +224,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     params = load_params(args.params)
     lock = read_lock(args.lock)
+    if args.mode in lock.get("stopped", {}) and not args.force:
+        raise SystemExit(
+            f"{args.mode} was stopped by ADR 0013 §6 in {args.lock}; a further attempt needs "
+            "--force and its reason recorded in the ADR first"
+        )
     if args.mode in lock["modes"] and not args.force:
         raise SystemExit(
             f"{args.mode} is already calibrated in {args.lock}; ADR 0013 measures once "
@@ -252,6 +257,7 @@ def main(argv: list[str] | None = None) -> int:
     agent = AttributionAgent(None, None, mitigations={})
     records = calibrate(llm, agent, prompts, params.mesh.attribution.min_confidence)
     result = summary(records)
+    server = llm_server_info()
     p95, timeout_s = timeout_rule([float(r["seconds"] or 0.0) for r in records])
     stopped = slow_spell(records, p95)
     entry = {
@@ -280,6 +286,7 @@ def main(argv: list[str] | None = None) -> int:
             "safety_cap_s": SAFETY_CAP_S,
             "lock_entry": None if stopped else entry,
             "stopped_by_rule": stopped or None,
+            "llm_server": server,
             "summary": result,
             "calls": records,
         },

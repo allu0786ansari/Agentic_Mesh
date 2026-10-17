@@ -158,3 +158,10 @@ def test_progress_line_names_status_mode_latency_and_memory() -> None:
         "[   7] COMPLETED | retrieval_fallback T0814 | dispatch 26.9s | llm 26.4s Deadline"
         " | mem avail 2100 MB, llm server 2600 MB"
     )
+
+
+def test_a_stopped_mode_needs_force(tmp_path: Path) -> None:
+    p = tmp_path / "lock.json"
+    p.write_text(json.dumps({"modes": {}, "stopped": {"llm_no_retrieval": {"reasons": ["x"]}}}))
+    with pytest.raises(SystemExit, match="needs --force"):
+        cal.main(["--mode", "llm_no_retrieval", "--lock", str(p)])
