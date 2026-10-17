@@ -252,6 +252,10 @@ def run(
         _RESULT["result"] = server_factory(pool).run()
 
     _RESULT.clear()
+    # Every client asks for num_gpus=0 and the runs are CPU-only. Opting into Ray's
+    # announced behaviour (no accelerator env override when num_gpus=0) changes nothing
+    # here and silences its FutureWarning. An explicit setting in the shell wins.
+    os.environ.setdefault("RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO", "0")
     run_simulation(
         server_app=server_app,
         client_app=build_client_app(),

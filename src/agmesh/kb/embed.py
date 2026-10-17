@@ -72,7 +72,14 @@ class SentenceEncoder:
         self.model_name = model
         self._model = SentenceTransformer(model, device="cpu")
         self.name = model
-        dim = self._model.get_sentence_embedding_dimension()
+        # sentence-transformers renamed get_sentence_embedding_dimension to
+        # get_embedding_dimension; use the new name when it exists (no FutureWarning).
+        name = (
+            "get_embedding_dimension"
+            if hasattr(self._model, "get_embedding_dimension")
+            else "get_sentence_embedding_dimension"
+        )
+        dim = getattr(self._model, name)()
         self.dim = int(dim) if dim is not None else DIM
         self.max_seq_length = int(self._model.max_seq_length)
 
