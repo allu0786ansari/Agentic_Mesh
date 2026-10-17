@@ -102,12 +102,24 @@ class FederatedClient:
         h1c_epsilon: float | None = None,
         epochs: int | None = None,
         privacy_root: Path = ROOT,
+        train_nodes: list[str] | None = None,
     ) -> None:
+        """``train_nodes`` makes this the centralised baseline's training client: it
+        trains on those nodes' training windows pooled, under one budget whose unit is
+        one pooled window (ADR 0016 §2). It is never asked to evaluate."""
         self.params, self.site, self.node = params, site, node
         self.seed, self.node_index = seed, node_index
-        self.data = _node_data(params.model_dump_json(), site, node, str(partitions))
-        train = self.data.parts["train"]
-        self.n_windows = n_training_units(site, train, params)
+        key = params.model_dump_json()
+        self.pooled = train_nodes is not None
+        # the pooled client never evaluates; its own-node data is a placeholder
+        data_node = node if train_nodes is None else train_nodes[0]
+        self.data = _node_data(key, site, data_node, str(partitions))
+        self.trains = [
+            _node_data(key, site, n, str(partitions)).parts["train"]
+            for n in (train_nodes if train_nodes is not None else [node])
+        ]
+        train = self.trains[0]
+        self.n_windows = sum(n_training_units(site, t, params) for t in self.trains)
         cols = (
             mi.site_a_columns(train, params)
             if site == "site_a"
@@ -151,6 +163,13 @@ class FederatedClient:
             self.site, self.data.parts["train"], self._scaler(norm), self.params, evaluation=False
         )
 
+    def _train_x(self, norm: Normalisation) -> np.ndarray:
+        """Training inputs: this node's, or every pooled node's, stacked."""
+        scaler = self._scaler(norm)
+        return np.concatenate(
+            [x1._inputs(self.site, t, scaler, self.params, evaluation=False).x for t in self.trains]
+        )
+
     def _model(self, spec: ModelSpec, weights: Weights | None) -> Any:
         from agmesh.models import nets
 
@@ -180,7 +199,7 @@ class FederatedClient:
         if self.budget is not None:
             z = self.budget.stats_noise_multiplier
             self.budget.guard.spend(noisy_stats.mechanism(z))  # accounted before release
-        units, _names = training_units(self.site, self.data.parts["train"], self.params)
+        units = np.concatenate([training_units(self.site, t, self.params)[0] for t in self.trains])
         hist = noisy_stats.release(
             units,
             lo,
@@ -197,7 +216,7 @@ class FederatedClient:
 
         started = time.perf_counter()
         model = self._model(self.spec(), ins.weights)
-        x = self._train_inputs(ins.norm).x
+        x = self._train_x(ins.norm)
         steps = ins.local_epochs * self.per_epoch
         cfg = self._cfg()
         kl = self.params.models.vae.kl_weight
@@ -258,6 +277,8 @@ class FederatedClient:
     def evaluate(self, ins: EvalInstruction) -> EvalReply:
         from agmesh.models import nets
 
+        if self.pooled:
+            raise RuntimeError("the pooled training client does not evaluate")
         model = self._model(self.spec(), ins.weights)
         scaler = self._scaler(ins.norm)
         vn = x1._inputs(

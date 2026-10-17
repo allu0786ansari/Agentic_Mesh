@@ -55,6 +55,10 @@ kb = [
     "torch>=2.5",
 ]
 
+# Figures from artifacts only (Plan Week 12 task 4, ADR 0016 §6).
+figures = [
+    "matplotlib>=3.9",
+]
 # Optional trace viewer (ADR 0014 §7): Phoenix and the OTLP exporter, not resident by default.
 obs = [
     "arize-phoenix>=8",
@@ -108,7 +112,7 @@ warn_unreachable = true
 pretty = true
 
 [[tool.mypy.overrides]]
-module = ["flwr.*", "ray.*", "torch.*", "sklearn.*", "opacus.*", "qdrant_client.*", "sentence_transformers.*", "huggingface_hub.*", "pypdf.*", "langgraph.*", "opentelemetry.exporter.*"]
+module = ["matplotlib.*", "flwr.*", "ray.*", "torch.*", "sklearn.*", "opacus.*", "qdrant_client.*", "sentence_transformers.*", "huggingface_hub.*", "pypdf.*", "langgraph.*", "opentelemetry.exporter.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

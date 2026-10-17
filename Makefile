@@ -9,7 +9,7 @@ PY := $(UV) run python
         prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft \
         training-budget summarise shift-selection dp-sanity train x8 g2-pilot g2-tuning \
         edge-model edge latency setup-kb kb kb-sources retrieval-queries retrieval-eval mesh llm-calibrate \
-	certs stack-up stack-down approvals-api security-tests g3
+	certs stack-up stack-down approvals-api security-tests g3 grid partitions-iid
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -50,6 +50,8 @@ help:
 	@echo "stack-down        Week 11: stop the node API processes"
 	@echo "approvals-api     Week 11: operator approval API for one mesh run, e.g. make approvals-api RUN=results/mesh/<run>"
 	@echo "security-tests    Week 11: mTLS, JWT, egress and redaction negative tests"
+	@echo "partitions-iid    Week 12: Site A IID partitions for X2 -> data/partitions_iid (ADR 0016 §3)"
+	@echo "grid              Week 12: X1/X2 matrix, resumable, e.g. make grid HOURS=9 (or ARGS=--dry-run)"
 	@echo "g3                Gate G3: ADR 0014 §9 rule over mesh runs, e.g. make g3 RUNS='results/mesh/<a> results/mesh/<b>'"
 	@echo "g2-pilot          Week 7: FedAvg and FedProx at eps 10, both sites, 50 rounds -> results/federated/g2_pilot/"
 	@echo "g2-tuning         Week 7: ADR 0008 DP lr x clip grid and FedProx mu grid -> results/federated/g2_*"
@@ -64,7 +66,7 @@ setup-fl:
 	$(UV) sync --group dev --group ml --group fl
 
 setup-kb:
-	$(UV) sync --group dev --group ml --group fl --group kb
+	$(UV) sync --group dev --group ml --group fl --group kb --group figures
 
 lock:
 	$(UV) lock
@@ -224,6 +226,12 @@ stack-down:
 
 approvals-api:
 	$(PY) -m agmesh.mesh.approvals_api --run $(RUN)
+
+partitions-iid:
+	$(PY) -m agmesh.data.pipeline partition --site a --scheme iid --out data/partitions_iid
+
+grid:
+	$(PY) -m agmesh.experiments.grid $(if $(HOURS),--hours $(HOURS),) $(ARGS)
 
 g3:
 	$(PY) -m agmesh.evaluation.g3 --runs $(RUNS)

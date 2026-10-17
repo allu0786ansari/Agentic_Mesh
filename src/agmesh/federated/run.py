@@ -3,6 +3,20 @@
     python -m agmesh.federated.run --site site_a --strategy fedavg --epsilon 10
     python -m agmesh.federated.run --site site_a --strategy fedprox --epsilon 3 --h1c
     python -m agmesh.federated.run --site site_a --rounds 5 --smoke     # 5-round smoke test
+    python -m agmesh.federated.run --site site_a --mode central --epsilon 3   # ADR 0016 baselines
+    python -m agmesh.federated.run --site site_b --heterogeneous --dropout 0.2 --experiment X2
+
+**Modes (ADR 0016 §2).**
+
+* ``federated`` (default) is the federation.
+* ``local`` is one single-client federation per node, each node scored with its own
+  model.
+* ``central`` is one training client holding every node's training windows, scored
+  on each node.
+
+All three use the same DP pipeline. ``--experiment X2`` writes under
+``results/X2``. Site A partitions built with ``scheme: iid`` add ``__iid`` to the
+config ID.
 
 A full run writes ``results/X1/<site>__<strategy>__eps<e>[__h1c][__het][__drop<p>]/seed_<n>.json``
 with a per-window score file (ADR 0005). The artifact holds:
@@ -25,6 +39,7 @@ is ever reset. ``--smoke`` writes to ``results/federated/smoke/`` instead of
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import math
 import os
@@ -39,15 +54,18 @@ from agmesh.common.config import DEFAULT_PARAMS_PATH, Params, load_params
 from agmesh.common.provenance import sha256_bytes, sha256_file, utc_now_iso
 from agmesh.data.access import Site
 from agmesh.evaluation.detection import DETECTION_KEYS
-from agmesh.evaluation.results import write_result
+from agmesh.evaluation.results import result_path, write_result, write_scores
 from agmesh.experiments import x1_baselines as x1
-from agmesh.federated.backends import ClientSettings, InProcessPool
+from agmesh.federated import fed_eval
+from agmesh.federated.backends import CentralPool, ClientSettings, InProcessPool
 from agmesh.federated.client import check_h1c
 from agmesh.federated.registry import NodeRegistry
-from agmesh.federated.server import FederationResult, Server, ServerConfig
+from agmesh.federated.server import FederationResult, RoundLog, Server, ServerConfig
 from agmesh.federated.strategies import Strategy
 
 HETEROGENEOUS_EPOCHS = (1, 2, 3)
+MODES = ("federated", "local", "central")
+EXPERIMENTS = ("X1", "X2")
 
 
 def eps_label(epsilon: float) -> str:
@@ -55,9 +73,19 @@ def eps_label(epsilon: float) -> str:
 
 
 def config_id(
-    site: str, strategy: str, epsilon: float, *, h1c: bool, heterogeneous: bool, dropout: float
+    site: str,
+    strategy: str,
+    epsilon: float,
+    *,
+    h1c: bool,
+    heterogeneous: bool,
+    dropout: float,
+    mode: str = "federated",
 ) -> str:
-    parts = [site, strategy, f"eps{eps_label(epsilon)}"]
+    if mode == "federated":
+        parts = [site, strategy, f"eps{eps_label(epsilon)}"]
+    else:  # pipeline-matched baselines (ADR 0016 §2), named like the Week 4 baselines
+        parts = [site, mode, "vae" if site == "site_a" else "ae", f"eps{eps_label(epsilon)}"]
     if h1c:
         parts.append("h1c")
     if heterogeneous:
@@ -77,6 +105,55 @@ def rounds_to_target(val_losses: list[float], tolerance: float) -> int | None:
         if np.isfinite(v) and v <= best * (1 + tolerance):
             return i
     return None
+
+
+def partition_suffix(partitions: Path, site: str) -> str:
+    """``__iid`` when the Site A partitions were built with ``scheme: iid`` (X2)."""
+    manifest = partitions / site / "manifest.json"
+    if site != "site_a" or not manifest.is_file():
+        return ""
+    scheme = json.loads(manifest.read_text(encoding="utf-8")).get("scheme")
+    return "__iid" if scheme == "iid" else ""
+
+
+def merge_local(per_node: dict[str, FederationResult], keys: tuple[str, ...]) -> FederationResult:
+    """Local-only baseline: one single-client federation per node, reported as one run.
+
+    Each node's metrics come from its own model; the macro is the mean over nodes.
+    The round log averages the nodes' losses round by round.
+    """
+    nodes = sorted(per_node)
+    first = per_node[nodes[0]]
+    replies = [r for n in nodes for r in per_node[n].final_replies]
+    rounds = []
+    for i in range(len(first.rounds)):
+        logs = [per_node[n].rounds[i] for n in nodes]
+        losses = [g.train_loss for g in logs if g.train_loss is not None]
+        rounds.append(
+            RoundLog(
+                i + 1,
+                [p for g in logs for p in g.participants],
+                [m for g in logs for m in g.missed],
+                [d for g in logs for d in g.declined],
+                all(g.aggregated for g in logs),
+                float(np.mean(losses)) if losses else None,
+                float(np.mean([g.val_loss for g in logs])),
+                float(sum(g.seconds for g in logs)),
+            )
+        )
+    return FederationResult(
+        first.spec,
+        first.norm,
+        [w for n in nodes for w in per_node[n].weights],
+        rounds,
+        fed_eval.summary(replies, keys),
+        replies,
+        None,
+        {k: v for n in nodes for k, v in per_node[n].registry.items()},
+        {k: v for n in nodes for k, v in per_node[n].privacy.items()},
+        float(sum(per_node[n].seconds for n in nodes)),
+        {"local_norms": {n: per_node[n].norm for n in nodes}},
+    )
 
 
 def _privacy_block(result: FederationResult) -> dict[str, Any]:
@@ -104,12 +181,19 @@ def federate(
     backend: str = "inprocess",
     params_path: Path = DEFAULT_PARAMS_PATH,
     suffix: str = "",
+    mode: str = "federated",
 ) -> tuple[str, str, FederationResult]:
+    if mode not in MODES:
+        raise ValueError(f"unknown mode {mode!r}")
+    if mode != "federated" and (h1c or heterogeneous or backend != "inprocess"):
+        raise ValueError("local and central baselines are homogeneous, in-process, without H1c")
     fed = params.federated
     n_rounds = rounds or fed.max_rounds
     drop = fed.dropout_prob if dropout is None else dropout
-    cid = config_id(site, strategy, epsilon, h1c=h1c, heterogeneous=heterogeneous, dropout=drop)
-    cid += suffix
+    cid = config_id(
+        site, strategy, epsilon, h1c=h1c, heterogeneous=heterogeneous, dropout=drop, mode=mode
+    )
+    cid += partition_suffix(partitions, site) + suffix
     rid = run_id or f"{cid}__seed{seed}__{time.strftime('%Y%m%dT%H%M%S')}"
     epochs_per_round = max(HETEROGENEOUS_EPOCHS) if heterogeneous else fed.local_epochs
     if h1c:
@@ -142,6 +226,22 @@ def federate(
         threshold_sd=params.privacy.normalisation_threshold_sd,
         metric_keys=DETECTION_KEYS,
     )
+    if mode == "central":
+        central_cfg = dataclasses.replace(cfg, min_fit_clients=1)
+        registry = NodeRegistry(privacy_root / rid / "registry.db")
+        result = Server(CentralPool(settings, nodes), central_cfg, registry).run()
+        return cid, rid, result
+    if mode == "local":
+        per_node = {}
+        for node in nodes:
+            node_rid = f"{rid}__{node}"
+            node_settings = dataclasses.replace(settings, run_id=node_rid)
+            per_node[node] = Server(
+                InProcessPool(node_settings, [node], index_of={node: nodes.index(node)}),
+                dataclasses.replace(cfg, min_fit_clients=1),
+                NodeRegistry(privacy_root / node_rid / "registry.db"),
+            ).run()
+        return cid, rid, merge_local(per_node, cfg.metric_keys)
     registry = NodeRegistry(privacy_root / rid / "registry.db")
     if backend == "flower":
         from agmesh.federated import flower
@@ -170,10 +270,12 @@ def federate(
     return cid, rid, result
 
 
-def _score_file(result: FederationResult) -> dict[str, np.ndarray]:
+def _score_file(
+    result: FederationResult, replies: list[Any] | None = None
+) -> dict[str, np.ndarray]:
     merged: dict[str, np.ndarray] = {}
     nodes: list[str] = []
-    for reply in result.final_replies:
+    for reply in result.final_replies if replies is None else replies:
         if reply.arrays is None:
             continue
         for key, value in reply.arrays.items():
@@ -203,6 +305,8 @@ def record(
     params_path: Path,
     backend: str = "inprocess",
     save_model: Path | None = None,
+    experiment: str = "X1",
+    mode: str = "federated",
 ) -> Path:
     val_losses = [r.val_loss for r in result.rounds]
     federation = {
@@ -225,7 +329,7 @@ def record(
     privacy = _privacy_block(result)
     extra = {
         "site": site,
-        "mode": "federated",
+        "mode": mode,
         "model": "vae" if site == "site_a" else "ae",
         "private": math.isfinite(epsilon),
         "target_epsilon": eps_label(epsilon),
@@ -277,9 +381,24 @@ def record(
             params_path=params_path,
         )
     weights_sha = sha256_bytes(b"".join(np.ascontiguousarray(w).tobytes() for w in result.weights))
+    h1c_replies = result.extras.get("h1c_replies") or {}
+    if h1c_replies and extra["h1c"] is not None:
+        # per-window records at the pooled threshold and at per-node thresholds (R0),
+        # for the event-level H1c test (ADR 0016 §4)
+        target = result_path(results, experiment, cid, seed)
+        extra["h1c"] = {
+            **extra["h1c"],
+            "scores_files": {
+                name: write_scores(
+                    target.with_name(f"{target.stem}.h1c_{name}.npz"),
+                    _score_file(result, replies),
+                )
+                for name, replies in sorted(h1c_replies.items())
+            },
+        }
     return write_result(
         results,
-        experiment="X1",
+        experiment=experiment,
         config_id=cid,
         seed=seed,
         split="val",
@@ -324,6 +443,13 @@ def main(argv: list[str] | None = None) -> int:
         help="write the final global model to <dir>/<config_id>/seed_<n>/ (edge runtime)",
     )
     parser.add_argument("--fixture", action="store_true")
+    parser.add_argument(
+        "--mode",
+        choices=MODES,
+        default="federated",
+        help="federated, or the pipeline-matched local-only / centralised baselines (ADR 0016)",
+    )
+    parser.add_argument("--experiment", choices=EXPERIMENTS, default="X1")
     args = parser.parse_args(argv)
     params = load_params(args.params)
     if args.backend == "flower" and (args.lr is not None or args.clip is not None):
@@ -361,6 +487,7 @@ def main(argv: list[str] | None = None) -> int:
             suffix=(f"__lr{args.lr:g}" if args.lr is not None else "")
             + (f"__clip{args.clip:g}" if args.clip is not None else "")
             + (f"__mu{args.mu:g}" if args.mu is not None else ""),
+            mode=args.mode,
         )
         path = record(
             params,
@@ -379,6 +506,8 @@ def main(argv: list[str] | None = None) -> int:
             params_path=args.params,
             backend=args.backend,
             save_model=args.save_model,
+            experiment=args.experiment,
+            mode=args.mode,
         )
         m = result.final["macro"]
         print(

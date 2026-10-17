@@ -69,6 +69,12 @@ def cmd_prepare(params: Params, args: argparse.Namespace) -> int:
 
 def cmd_partition(params: Params, args: argparse.Namespace) -> int:
     out = args.out or params.paths.partitions_dir
+    if args.scheme is not None:  # X2's IID arm (ADR 0016 §3), into its own directory
+        if args.out is None or args.site != "a":
+            raise SystemExit("--scheme needs --site a and an explicit --out directory")
+        raw = params.model_dump()
+        raw["data"]["partition"]["site_a"]["scheme"] = args.scheme
+        params = Params.model_validate(raw)
     if args.site in ("a", "all"):
         hai_dir = args.hai_dir or params.paths.hai_dir
         print(f"Site A from {hai_dir}")
@@ -147,6 +153,9 @@ def main(argv: list[str] | None = None) -> int:
     part.add_argument("--hai-dir", type=Path, default=None)
     part.add_argument("--interim-dir", type=Path, default=None)
     part.add_argument("--out", type=Path, default=None)
+    part.add_argument(
+        "--scheme", choices=("time", "iid"), default=None, help="override Site A's scheme"
+    )
 
     chk = sub.add_parser("check", help="integrity and label checks on the manifests")
     chk.add_argument("--out", type=Path, default=None, help="partitions directory")

@@ -131,7 +131,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate result artifacts")
     parser.add_argument("--results", type=Path, default=Path("results"))
     parser.add_argument("--access-log", type=Path, default=TEST_ACCESS_LOG)
-    parser.add_argument("--experiments", nargs="*", default=None)
+    parser.add_argument("--experiments", nargs="*", default=None, type=lambda v: v.strip(","))
     parser.add_argument(
         "--traces",
         nargs="+",
@@ -140,7 +140,34 @@ def main(argv: list[str] | None = None) -> int:
         metavar="MESH_RUN",
         help="check that every session of these mesh runs has a trace (EA3)",
     )
+    parser.add_argument(
+        "--matrix",
+        type=Path,
+        default=Path("configs/experiments/x1_x2.yaml"),
+        help="X1/X2 run matrix: report missing runs and the CC4 privacy rule (ADR 0016)",
+    )
     args = parser.parse_args(argv)
+    grid_exps = sorted(set(args.experiments or []) & {"X1", "X2"})
+    if grid_exps and args.matrix.is_file():
+        from agmesh.common.config import load_params
+        from agmesh.experiments.grid import completeness, privacy_violations
+
+        parts = load_params().paths.partitions_dir
+        missing = completeness(args.results, parts, grid_exps, args.matrix)
+        over = privacy_violations(args.results, grid_exps)
+        print(f"matrix {args.matrix}: {len(missing)} expected run(s) missing for {grid_exps}")
+        for m in missing[:50]:
+            print(f"  - missing {m}")
+        if len(missing) > 50:
+            print(f"  ... and {len(missing) - 50} more")
+        print(f"privacy rule (CC4): {len(over)} violation(s)")
+        for o in over:
+            print(f"  - {o}")
+        if missing or over:
+            findings = check(args.results, args.access_log, args.experiments)
+            bad = [f for f in findings if not f.ok]
+            print(f"{len(findings) - len(bad)}/{len(findings)} result artifacts accepted")
+            return 1
     if args.traces:
         failed = 0
         for run in args.traces:

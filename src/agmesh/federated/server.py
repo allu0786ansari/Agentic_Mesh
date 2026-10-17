@@ -54,7 +54,7 @@ from agmesh.privacy import noisy_stats
 
 
 class ClientPool(Protocol):
-    nodes: list[str]
+    nodes: list[str]  # every node evaluates the global model
 
     def hello(self, node: str) -> HelloReply: ...
 
@@ -137,16 +137,28 @@ def pooled_normalisation(replies: list[HelloReply]) -> Normalisation:
 class Server:
     def __init__(self, pool: ClientPool, config: ServerConfig, registry: NodeRegistry) -> None:
         self.pool, self.cfg, self.registry = pool, config, registry
+        self.h1c_arrays: dict[str, list[EvalReply]] = {}
 
     def _eval_all(self, ins: EvalInstruction) -> list[EvalReply]:
         return [self.pool.evaluate(node, ins) for node in self.pool.nodes]
 
+    def _index(self, node: str, default: int) -> int:
+        index_of: dict[str, int] = getattr(self.pool, "index_of", {}) or {}
+        return index_of.get(node, default)
+
+    def _train_nodes(self) -> list[str]:
+        """Who sends normalisation histograms and trains: every node, unless the pool
+        names its own training clients (the centralised baseline, ADR 0016 §2)."""
+        train: list[str] | None = getattr(self.pool, "train_nodes", None)
+        return list(train) if train else list(self.pool.nodes)
+
     def run(self) -> FederationResult:
         cfg = self.cfg
         started = time.perf_counter()
-        for node in self.pool.nodes:
+        train_nodes = self._train_nodes()
+        for node in train_nodes:
             self.registry.register(node, cfg.site, "vae" if cfg.site == "site_a" else "ae")
-        hello = [self.pool.hello(node) for node in self.pool.nodes]
+        hello = [self.pool.hello(node) for node in train_nodes]
         if len(hello) < cfg.min_fit_clients:
             raise RuntimeError("too few clients for the normalisation round")
         spec = hello[0].spec
@@ -160,7 +172,7 @@ class Server:
             rng = np.random.default_rng([cfg.seed, rnd])
             updates: list[Weights] = []
             participants, missed, declined, losses = [], [], [], []
-            for idx, node in enumerate(self.pool.nodes):
+            for idx, node in enumerate(train_nodes):
                 if self.registry.status(node)[0] == "exhausted":
                     continue
                 drop = rng.random() < cfg.dropout_prob
@@ -179,7 +191,7 @@ class Server:
                     norm,
                     epochs,
                     cfg.strategy.client_mu,
-                    seed=cfg.seed * 100_000 + rnd * 100 + idx,
+                    seed=cfg.seed * 100_000 + rnd * 100 + self._index(node, idx),
                 )
                 reply = self.pool.fit(node, ins)
                 if reply.declined is not None:
@@ -213,6 +225,11 @@ class Server:
         final_replies = self._eval_all(EvalInstruction(weights, norm, full=True))
         final = fed_eval.summary(final_replies, cfg.metric_keys)
         h1c = self._h1c(weights, norm) if cfg.h1c else None
+        extras = (
+            {"h1c_replies": self.h1c_arrays}
+            if cfg.h1c and h1c and h1c.get("threshold") is not None
+            else {}
+        )
         return FederationResult(
             spec,
             norm,
@@ -222,8 +239,9 @@ class Server:
             final_replies,
             h1c,
             self.registry.snapshot(),
-            {node: self.pool.privacy(node) for node in self.pool.nodes},
+            {node: self.pool.privacy(node) for node in train_nodes},
             time.perf_counter() - started,
+            extras,
         )
 
     def _h1c(self, weights: Weights, norm: Normalisation) -> dict[str, Any]:
@@ -242,6 +260,8 @@ class Server:
             EvalInstruction(weights, norm, full=True, threshold=tau, shift="r0")
         )
         per_node = self._eval_all(EvalInstruction(weights, norm, full=True, shift="r0"))
+        # per-window records at both thresholds, for the event-level H1c test (ADR 0016 §4)
+        self.h1c_arrays = {"pooled": at_tau, "r0_per_node": per_node}
         return {
             "threshold": tau,
             "noise_sd_summed": noise_sd,

@@ -1,0 +1,69 @@
+# X1 and X2 run matrix (ADR 0016), fixed before any run. `make grid` runs it in this
+# order, skipping runs whose artifact exists; the checker verifies completeness.
+# minutes: G2's measured per-run time on the laptop (ADR 0008), for the ETA only.
+seeds: [11, 23, 37, 41, 53]
+groups:
+  - id: X1-fed
+    experiment: X1
+    sites: [site_a, site_b]
+    mode: federated
+    strategies: [fedavg, fedprox]
+    epsilons: [1, 3, 10, .inf]
+    minutes: {site_a: 9.6, site_b: 7.0}
+  - id: X1-h1c
+    experiment: X1
+    sites: [site_a]
+    mode: federated
+    strategies: [fedprox]
+    epsilons: [10, 3]
+    h1c: true
+    minutes: {site_a: 10.0}
+  - id: X1-local
+    experiment: X1
+    sites: [site_a, site_b]
+    mode: local
+    strategies: [fedavg]
+    epsilons: [3, .inf]
+    minutes: {site_a: 9.6, site_b: 7.0}
+  - id: X1-central
+    experiment: X1
+    sites: [site_a, site_b]
+    mode: central
+    strategies: [fedavg]
+    epsilons: [3, .inf]
+    minutes: {site_a: 9.6, site_b: 7.0}
+  - id: X2-het
+    experiment: X2
+    sites: [site_a, site_b]
+    mode: federated
+    strategies: [fedavg, fedprox]
+    epsilons: [3]
+    heterogeneous: true
+    dropout: 0.2
+    minutes: {site_a: 19.0, site_b: 14.0}
+  - id: X2-iid
+    experiment: X2
+    sites: [site_a]
+    mode: federated
+    strategies: [fedavg, fedprox]
+    epsilons: [3]
+    partitions: data/partitions_iid
+    minutes: {site_a: 9.0}
+  - id: X2-mu-het
+    experiment: X2
+    sites: [site_a]
+    mode: federated
+    strategies: [fedprox]
+    epsilons: [3]
+    mus: [0.001, 0.1]
+    heterogeneous: true
+    dropout: 0.2
+    minutes: {site_a: 19.0}
+  - id: X2-mu-homog
+    experiment: X2
+    sites: [site_a]
+    mode: federated
+    strategies: [fedprox]
+    epsilons: [3]
+    mus: [0.001, 0.1]
+    minutes: {site_a: 9.6}
