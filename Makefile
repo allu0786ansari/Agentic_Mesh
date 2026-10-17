@@ -204,7 +204,7 @@ retrieval-eval:
 # Week 10 (ADR 0012): MODE = full | retrieval_only | llm_no_retrieval | rule_only
 mesh:
 	$(UV) run --group kb python -m agmesh.mesh.runner --site $(SITE) --mode $(or $(MODE),full) \
-		--split $(or $(SPLIT),val)
+		--split $(or $(SPLIT),val) $(ARGS)
 
 llm-calibrate:
-	$(UV) run --group kb python -m agmesh.mesh.llm_calibrate --mode $(MODE)
+	$(UV) run --group kb python -m agmesh.mesh.llm_calibrate --mode $(MODE) $(ARGS)

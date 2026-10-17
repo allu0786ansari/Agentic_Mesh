@@ -148,3 +148,88 @@ The following are not changed:
 If 3.1–3.4 still leave most calls failing, this ADR does not try a further fix. The
 result goes to Gate G3, where the Plan's rule applies: if latency or validity is
 poor, `retrieval_only` becomes the default, and the LLM explains after dispatch.
+
+## 6. Addendum, 17 October 2026: memory exhaustion on the laptop
+
+This addendum was written after the first ADR 0013 runs and before any further
+LLM run.
+
+**What the runs showed.**
+
+- **`full` calibration:** all 30 calls took 8.8–17.0 s and decoded at
+  7.2–8.2 tokens/s. p95 was 16.8 s, so the timeout is 26 s.
+- **`llm_no_retrieval` calibration:**
+  - 8 of the 30 calls decoded at 0.19–0.88 tokens/s, against 5–5.8 in healthy
+    calls;
+  - those calls took 124–405 s, against 47–67 s for healthy ones;
+  - prompt reading slowed only from about 48 to about 31 tokens/s;
+  - p95 was 387 s, so the timeout came out at 581 s.
+- **Site B `llm_no_retrieval` run:** you stopped it after 143 of 220 incidents and
+  7.7 h. It went through runs of 10–25 consecutive incidents at 290–540 s each.
+- **Site B `full` re-run:** 185 of 220 incidents were answered. The 35 failures
+  (34 `Deadline`, 1 `ReadTimeout`) came in four bursts.
+
+**Machine state afterwards (17 October, 10:21).**
+
+- **The server used about twice the memory Ollama reported:** `llama-server` held
+  5.0 GiB (86.3% of WSL's 5.8 GiB). `ollama ps` reported 2.6 GB at context 4096.
+- **Parallel slots are ruled out:** it ran with `-np 1`, one slot.
+- **Memory was exhausted:**
+  - `MemAvailable` was 160 MiB;
+  - the page cache was down to 64 MiB;
+  - 2.5 GiB of swap was in use.
+- **It had restarted during the run:** the server process was started at 07:32.
+- **It was the background service:** Ollama was running as a systemd service, so the
+  runbook's `ollama serve` never started and `~/ollama.log` is empty.
+
+**Interpretation.** The model's weights are memory-mapped. With the page cache gone,
+they are re-read from disk while decoding. Decoding reads every weight once per
+token, so it slows by 25–35×; prompt reading works in 512-token batches and slows
+much less. That is what was measured. Why the server's memory grows during a run is
+not identified. The per-incident readings in 6.3 will show it.
+
+**Constraint.** The laptop has 8 GB, and WSL keeps its 5.8 GiB. The machine is not
+enlarged.
+
+### 6.1 Which measurement stands
+
+- **`llm_no_retrieval`:** its calibration of 17 October is declared broken, because
+  it was measured under memory exhaustion. It stays in the repository and is
+  replaced once (`--force`).
+- **`full`:** its calibration stands.
+
+### 6.2 Conditions for every remaining LLM run
+
+- **The service is gone:** the Ollama systemd service is disabled.
+- **One server, started by hand:**
+  - `OLLAMA_NUM_PARALLEL=1` and `OLLAMA_MAX_LOADED_MODELS=1`;
+  - its log goes to `~/ollama.log`;
+  - it is restarted fresh before each calibration and each run.
+- **Nothing else heavy runs alongside.**
+- **Enough memory to start:** `MemAvailable` is at least 2 GB before each start.
+
+### 6.3 Observation only
+
+- The runner prints one line per incident.
+- The runner and the calibration record, per incident or per call, `MemAvailable`
+  and the LLM server's resident memory.
+- Nothing decides on these numbers.
+
+### 6.4 Stopping rule for the `llm_no_retrieval` re-calibration
+
+The rule is fixed before that re-calibration.
+
+- **When it stops:** if any calibration call decodes under 1 token/s, or p95 exceeds
+  120 s. For reference, the healthy calls above took 47–67 s.
+- **What follows from stopping:**
+  - the ablation is not run on this machine;
+  - the mode is removed from the lock, and the runner refuses it;
+  - the result is reported as a finding (an 8 GB laptop cannot hold the
+    92-candidate prompt at context 4096), with these memory readings.
+- **Otherwise:** the timeout follows §3.3, and both sites are run.
+
+### 6.5 The `full` runs
+
+- **Site B:** the re-run of 17 October stands and is not repeated. Its 35 failures
+  are reported together with the memory evidence.
+- **Site A:** it is run under 6.2.

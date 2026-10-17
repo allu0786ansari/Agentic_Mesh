@@ -124,3 +124,37 @@ def test_summary_counts_failures_by_class() -> None:
     assert b["calls"] == 4 and b["answered"] == 1
     assert b["failures"] == {"ReadTimeout": 2, "ConnectError": 1}
     assert b["prompt_tokens"]["p50"] == 480.0 and b["done_reason"] == {"stop": 1}
+
+
+def test_stopping_rule_flags_slow_decode_and_high_p95() -> None:
+    healthy: list[dict[str, Any]] = [{"decode_tok_s": 5.5}, {"decode_tok_s": None}]
+    assert cal.slow_spell(healthy, 65.0) == []
+    assert cal.decode_rate({"eval_count": 67, "eval_s": 349.9}) == 0.191
+    reasons = cal.slow_spell([*healthy, {"decode_tok_s": 0.19}], 387.0)
+    assert reasons == ["1 call(s) decoded under 1 token/s", "p95 387.0 s above 120 s"]
+
+
+def test_runner_refuses_a_stopped_mode(tmp_path: Path) -> None:
+    p = tmp_path / "lock.json"
+    p.write_text(json.dumps({"modes": {}, "stopped": {"llm_no_retrieval": {"reasons": ["x"]}}}))
+    with pytest.raises(SystemExit, match="stopped by ADR 0013"):
+        llm_settings(load_params(), "llm_no_retrieval", p)
+
+
+def test_progress_line_names_status_mode_latency_and_memory() -> None:
+    from agmesh.mesh.runner import progress
+
+    state = {
+        "status": "COMPLETED",
+        "attribution": {
+            "attribution_mode": "retrieval_fallback",
+            "technique_id": "T0814",
+            "llm": {"kind": "Deadline", "seconds": 26.4},
+        },
+        "latency_ms": {"incident_to_dispatch": 26900.0},
+    }
+    line = progress(7, state, {"mem_available_mb": 2100, "llm_server_rss_mb": 2600})
+    assert line == (
+        "[   7] COMPLETED | retrieval_fallback T0814 | dispatch 26.9s | llm 26.4s Deadline"
+        " | mem avail 2100 MB, llm server 2600 MB"
+    )

@@ -47,6 +47,7 @@ from agmesh.bus.sqlite_bus import SqliteBus
 from agmesh.common.artifacts import write_artifact, write_event
 from agmesh.common.config import DEFAULT_PARAMS_PATH, Params, load_params
 from agmesh.common.env import load_env
+from agmesh.common.sysmem import snapshot
 from agmesh.mesh.attribution import MODES, AttributionAgent
 from agmesh.mesh.breaker import CircuitBreaker
 from agmesh.mesh.graph import Mesh
@@ -195,6 +196,24 @@ def _llm_block(atts: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def progress(n: int, state: dict[str, Any], mem: dict[str, int | None]) -> str:
+    """One line per incident, so a long run shows that it is moving (ADR 0013 §6)."""
+    att = state.get("attribution") or {}
+    llm = att.get("llm") or {}
+    i2d = (state.get("latency_ms") or {}).get("incident_to_dispatch")
+    parts = [
+        f"[{n:4d}] {state.get('status')}",
+        f"{att.get('attribution_mode')} {att.get('technique_id') or '-'}",
+        f"dispatch {i2d / 1000:.1f}s" if i2d is not None else "no dispatch",
+    ]
+    if llm:
+        parts.append(f"llm {float(llm.get('seconds') or 0.0):.1f}s {llm.get('kind', 'ok')}")
+    parts.append(
+        f"mem avail {mem.get('mem_available_mb')} MB, llm server {mem.get('llm_server_rss_mb')} MB"
+    )
+    return " | ".join(parts)
+
+
 def summarise(
     store: SessionStore,
     results: list[dict[str, Any]],
@@ -252,7 +271,11 @@ def summarise(
 
 def llm_settings(params: Params, mode: str, lock_path: Path = LOCK) -> dict[str, Any]:
     """The calibrated timeout and options of an LLM mode; refuses a missing or stale lock."""
-    entry = read_lock(lock_path)["modes"].get(mode)
+    lock = read_lock(lock_path)
+    entry = lock["modes"].get(mode)
+    if entry is None and mode in lock.get("stopped", {}):
+        why = "; ".join(lock["stopped"][mode]["reasons"])
+        raise SystemExit(f"{mode} was stopped by ADR 0013 §6 on this machine ({why})")
     if entry is None:
         raise SystemExit(
             f"{mode} has no calibrated LLM timeout in {lock_path}: make llm-calibrate MODE={mode} "
@@ -370,6 +393,7 @@ def main(argv: list[str] | None = None) -> int:
 
     def logged(state: dict[str, Any]) -> None:
         att = state.get("attribution") or {}
+        mem = snapshot()
         write_event(
             events,
             "session",
@@ -379,10 +403,14 @@ def main(argv: list[str] | None = None) -> int:
                 "attribution_mode": att.get("attribution_mode"),
                 "technique_id": att.get("technique_id"),
                 "latency_ms": state.get("latency_ms"),
+                "llm_seconds": (att.get("llm") or {}).get("seconds"),
+                **mem,
             },
             run_id=run_id,
             data_source="runtime",
         )
+        done[0] += 1
+        print(progress(done[0], state, mem), flush=True)
         if llm is not None and "error" in (att.get("llm") or {}):
             # Between incidents, so it is not in any incident's latency (ADR 0013 §3.4).
             rec = llm.recover()
@@ -390,6 +418,8 @@ def main(argv: list[str] | None = None) -> int:
             write_event(events, "llm_recovery", rec, run_id=run_id, data_source="runtime")
 
     recoveries: list[dict[str, Any]] = []
+    done = [0]
+    print(f"{args.site} {mode}: running; one line per incident", flush=True)
     started = time.perf_counter()
     results = consume(
         mesh,

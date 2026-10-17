@@ -48,6 +48,7 @@ import numpy as np
 from agmesh.common.artifacts import write_artifact
 from agmesh.common.config import DEFAULT_PARAMS_PATH, load_params
 from agmesh.common.env import load_env
+from agmesh.common.sysmem import snapshot
 from agmesh.mesh.attribution import AttributionAgent
 from agmesh.mesh.llm import LLMUnavailableError, OllamaLLM, user_message, validate
 
@@ -104,6 +105,24 @@ def _q(values: list[float]) -> dict[str, float | int | None]:
     }
 
 
+def decode_rate(stats: dict[str, Any]) -> float | None:
+    n, s = stats.get("eval_count"), stats.get("eval_s")
+    if not isinstance(n, int | float) or not isinstance(s, int | float) or s <= 0:
+        return None
+    return round(float(n) / float(s), 3)
+
+
+def slow_spell(records: list[dict[str, Any]], p95_s: float) -> list[str]:
+    """ADR 0013 §6 stopping rule: any decode under 1 token/s, or p95 above 120 s."""
+    reasons = []
+    slow = [r for r in records if r.get("decode_tok_s") is not None and r["decode_tok_s"] < 1.0]
+    if slow:
+        reasons.append(f"{len(slow)} call(s) decoded under 1 token/s")
+    if p95_s > 120.0:
+        reasons.append(f"p95 {p95_s:.1f} s above 120 s")
+    return reasons
+
+
 def calibrate(
     llm: Any,
     agent: AttributionAgent,
@@ -118,7 +137,13 @@ def calibrate(
         try:
             reply = llm.choose(message, tuple(cands))
         except LLMUnavailableError as exc:
-            return {"site": site, "ok": False, "seconds": exc.seconds, "kind": exc.kind}
+            return {
+                "site": site,
+                "ok": False,
+                "seconds": exc.seconds,
+                "kind": exc.kind,
+                **snapshot(),
+            }
         v = validate(reply.content, tuple(cands), min_confidence)
         return {
             "site": site,
@@ -128,6 +153,8 @@ def calibrate(
             "grounded": v["grounded"],
             "prompt_chars": len(message),
             **reply.stats,
+            "decode_tok_s": decode_rate(reply.stats),
+            **snapshot(),
         }
 
     site, text, cands = prompts[0]
@@ -138,8 +165,10 @@ def calibrate(
         r = call(site, text, cands)
         records.append(r)
         log(
-            f"{i:2d}/{len(prompts)} {site} {r['seconds']:.1f} s ok={r['ok']} "
-            f"prompt={r.get('prompt_eval_count')} out={r.get('eval_count')}"
+            f"{i:2d}/{len(prompts)} {site} {float(r['seconds'] or 0.0):.1f} s ok={r['ok']} "
+            f"prompt={r.get('prompt_eval_count')} out={r.get('eval_count')} "
+            f"decode={r.get('decode_tok_s')} tok/s | mem avail {r.get('mem_available_mb')} MB, "
+            f"llm server {r.get('llm_server_rss_mb')} MB"
         )
     return records
 
@@ -224,6 +253,7 @@ def main(argv: list[str] | None = None) -> int:
     records = calibrate(llm, agent, prompts, params.mesh.attribution.min_confidence)
     result = summary(records)
     p95, timeout_s = timeout_rule([float(r["seconds"] or 0.0) for r in records])
+    stopped = slow_spell(records, p95)
     entry = {
         "timeout_s": timeout_s,
         "p95_s": round(p95, 3),
@@ -248,15 +278,31 @@ def main(argv: list[str] | None = None) -> int:
             "per_site": args.per_site,
             "seed": args.seed,
             "safety_cap_s": SAFETY_CAP_S,
-            "lock_entry": entry,
+            "lock_entry": None if stopped else entry,
+            "stopped_by_rule": stopped or None,
             "summary": result,
             "calls": records,
         },
         params_path=args.params,
     )
-    lock["modes"][args.mode] = {**entry, "record": path.as_posix()}
+    if stopped:
+        # ADR 0013 §6: the mode is not run; the runner refuses it from now on.
+        lock["modes"].pop(args.mode, None)
+        lock.setdefault("stopped", {})[args.mode] = {
+            "reasons": stopped,
+            "record": path.as_posix(),
+        }
+    else:
+        lock["modes"][args.mode] = {**entry, "record": path.as_posix()}
+        lock.get("stopped", {}).pop(args.mode, None)
     args.lock.parent.mkdir(parents=True, exist_ok=True)
     args.lock.write_text(json.dumps(lock, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if stopped:
+        print(
+            f"{args.mode}: STOPPED by ADR 0013 §6 ({'; '.join(stopped)}); not run on this "
+            f"machine.\n  -> {args.lock}\n  -> {path}"
+        )
+        return 0
     print(
         f"{args.mode}: p95 {p95:.1f} s over {len(records)} calls -> timeout {timeout_s} s "
         f"(ok {result['ok']}/{result['calls']}, valid {result['valid_rate']})\n"
