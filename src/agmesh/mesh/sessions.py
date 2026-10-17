@@ -47,6 +47,9 @@ CREATE TABLE IF NOT EXISTS session_alerts (session_id TEXT NOT NULL, alert_id TE
 CREATE TABLE IF NOT EXISTS session_steps (session_id TEXT NOT NULL, step TEXT NOT NULL,
   status TEXT NOT NULL, payload TEXT NOT NULL, at TEXT NOT NULL,
   PRIMARY KEY (session_id, step));
+
+CREATE TABLE IF NOT EXISTS session_traces (session_id TEXT NOT NULL, trace_id TEXT NOT NULL,
+  run_id TEXT NOT NULL, at TEXT NOT NULL, PRIMARY KEY (session_id, trace_id));
 """
 
 TERMINAL = frozenset({"COMPLETED", "COMPLETED_DEGRADED", "ABSTAINED", "FAILED"})
@@ -237,6 +240,22 @@ class SessionStore:
         return str(row[0]), cur.rowcount == 1
 
     # --------------------------------------------------------------------- steps
+    def record_trace(self, session_id: str, trace_id: str, run_id: str) -> None:
+        """Link a session to a trace (ADR 0014 §7): action -> session -> trace."""
+        self.conn.execute(
+            "INSERT OR IGNORE INTO session_traces VALUES (?, ?, ?, ?)",
+            (session_id, trace_id, run_id, utc_now_iso()),
+        )
+
+    def traces(self, session_id: str | None = None) -> list[tuple[str, str]]:
+        sql = "SELECT session_id, trace_id FROM session_traces"
+        rows = (
+            self.conn.execute(sql + " WHERE session_id = ?", (session_id,))
+            if session_id
+            else self.conn.execute(sql)
+        ).fetchall()
+        return [(str(a), str(b)) for a, b in rows]
+
     def record_step(self, session_id: str, step: str, status: str, payload: dict[str, Any]) -> bool:
         """Persist an agent step once (ADR 0012 §1); False if it was already recorded."""
         cur = self.conn.execute(

@@ -57,7 +57,7 @@ class FakeNodes:
     calls: list[str] = field(default_factory=list)
 
     def evidence(
-        self, node: str, start_s: float, end_s: float, timeout_s: float
+        self, node: str, start_s: float, end_s: float, timeout_s: float, session_id: str = ""
     ) -> list[EvidenceRecord]:
         self.calls.append(node)
         script = self.faults.get(node, [])

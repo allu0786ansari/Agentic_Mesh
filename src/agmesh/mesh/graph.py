@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from typing import Any, TypedDict
 
 from langgraph.graph import END, StateGraph
+from opentelemetry import trace
 
 from agmesh.bus.base import Bus
 from agmesh.common.schemas import EvidenceRecord
@@ -31,6 +32,7 @@ from agmesh.mesh import dispatcher
 from agmesh.mesh.attribution import Attribution, AttributionAgent
 from agmesh.mesh.investigator import Investigator
 from agmesh.mesh.sessions import TERMINAL, SessionStore
+from agmesh.observability.tracing import CHAIN, KIND, ROOT, SESSION_ID, noop_tracer, trace_id_hex
 
 
 class MeshState(TypedDict, total=False):
@@ -56,6 +58,9 @@ class Mesh:
     bus: Bus
     investigator: Investigator
     agent: AttributionAgent
+    tracer: Any = None  # ADR 0014 §7; a no-op tracer when None
+    _root: Any = None
+    _ctx: Any = None
 
     # ----------------------------------------------------------------- helpers
     def _advance(self, session_id: str, to: str) -> str:
@@ -150,12 +155,30 @@ class Mesh:
     def _after_attribute(self, state: MeshState) -> str:
         return END if state.get("status") in TERMINAL else "dispatch"
 
+    def _traced(self, name: str, fn: Any) -> Any:
+        """Run a graph node inside its own span, a child of the session's root span."""
+
+        def node(state: MeshState) -> MeshState:
+            attrs: dict[str, Any] = {KIND: CHAIN}
+            if state.get("session_id"):
+                attrs[SESSION_ID] = state["session_id"]
+            with self._tracer().start_as_current_span(name, context=self._ctx, attributes=attrs):
+                out: MeshState = fn(state)
+            if name == "triage" and self._root is not None:
+                self._root.set_attribute(SESSION_ID, out["session_id"])
+            return out
+
+        return node
+
+    def _tracer(self) -> Any:
+        return self.tracer if self.tracer is not None else noop_tracer()
+
     def compile(self) -> Any:
         g = StateGraph(MeshState)
-        g.add_node("triage", self.triage)
-        g.add_node("investigate", self.investigate)
-        g.add_node("attribute", self.attribute)
-        g.add_node("dispatch", self.dispatch)
+        g.add_node("triage", self._traced("triage", self.triage))
+        g.add_node("investigate", self._traced("investigate", self.investigate))
+        g.add_node("attribute", self._traced("attribute", self.attribute))
+        g.add_node("dispatch", self._traced("dispatch", self.dispatch))
         g.set_entry_point("triage")
         g.add_conditional_edges(
             "triage", self._after_triage, {"investigate": "investigate", END: END}
@@ -170,5 +193,18 @@ class Mesh:
     def run(self, site: str, incident: dict[str, Any], mode: str, run_id: str) -> MeshState:
         app = self.compile()
         state: MeshState = {"site": site, "incident": incident, "mode": mode, "run_id": run_id}
-        result: MeshState = app.invoke(state)
+        attrs = {KIND: CHAIN, "agmesh.run_id": run_id, "agmesh.site": site, "agmesh.mode": mode}
+        with self._tracer().start_as_current_span(ROOT, attributes=attrs) as root:
+            self._root, self._ctx = root, trace.set_span_in_context(root)
+            try:
+                result: MeshState = app.invoke(state)
+            finally:
+                self._root, self._ctx = None, None
+            att = result.get("attribution") or {}
+            root.set_attribute("agmesh.status", str(result.get("status")))
+            root.set_attribute("agmesh.attribution_mode", str(att.get("attribution_mode")))
+            root.set_attribute("agmesh.technique_id", str(att.get("technique_id")))
+            sid = result.get("session_id")
+            if sid and root.get_span_context().is_valid:
+                self.store.record_trace(sid, trace_id_hex(root), run_id)
         return result

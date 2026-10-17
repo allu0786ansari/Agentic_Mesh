@@ -8,7 +8,8 @@ PY := $(UV) run python
         checksums verify-checksums inspect-data bench-llm bench-ray feasibility \
         prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft \
         training-budget summarise shift-selection dp-sanity train x8 g2-pilot g2-tuning \
-        edge-model edge latency setup-kb kb kb-sources retrieval-queries retrieval-eval mesh llm-calibrate
+        edge-model edge latency setup-kb kb kb-sources retrieval-queries retrieval-eval mesh llm-calibrate \
+	certs stack-up stack-down approvals-api security-tests
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -44,6 +45,11 @@ help:
 	@echo "retrieval-eval    Week 9: Recall@5 and MRR (the first reference run is the PT6 measurement)"
 	@echo "mesh              Week 10: agent mesh over an edge run, e.g. make mesh SITE=site_b MODE=retrieval_only SPLIT=val"
 	@echo "llm-calibrate     ADR 0013: LLM timeout by G0's rule on 30 real prompts, e.g. make llm-calibrate MODE=full"
+	@echo "certs             Week 11: development PKI in certs/dev (3 CAs, server/client certs, JWT key)"
+	@echo "stack-up          Week 11: one site's node APIs as separate mTLS processes, e.g. make stack-up SITE=site_b"
+	@echo "stack-down        Week 11: stop the node API processes"
+	@echo "approvals-api     Week 11: operator approval API for one mesh run, e.g. make approvals-api RUN=results/mesh/<run>"
+	@echo "security-tests    Week 11: mTLS, JWT, egress and redaction negative tests"
 	@echo "g2-pilot          Week 7: FedAvg and FedProx at eps 10, both sites, 50 rounds -> results/federated/g2_pilot/"
 	@echo "g2-tuning         Week 7: ADR 0008 DP lr x clip grid and FedProx mu grid -> results/federated/g2_*"
 	@echo "train             Week 6: one federated run, e.g. make train SITE=site_a [ROUNDS=5 smoke] [EPS=3] [STRATEGY=fedavg] [BACKEND=flower]"
@@ -204,7 +210,22 @@ retrieval-eval:
 # Week 10 (ADR 0012): MODE = full | retrieval_only | llm_no_retrieval | rule_only
 mesh:
 	$(UV) run --group kb python -m agmesh.mesh.runner --site $(SITE) --mode $(or $(MODE),full) \
-		--split $(or $(SPLIT),val) $(ARGS)
+		--split $(or $(SPLIT),val) --nodes $(or $(NODES),local) $(ARGS)
+
+certs:
+	$(PY) -m agmesh.security.ca --out certs/dev
+
+stack-up:
+	$(PY) -m agmesh.stack up --site $(SITE) $(ARGS)
+
+stack-down:
+	$(PY) -m agmesh.stack down
+
+approvals-api:
+	$(PY) -m agmesh.mesh.approvals_api --run $(RUN)
+
+security-tests:
+	$(UV) run pytest tests/security -q
 
 llm-calibrate:
 	$(UV) run --group kb python -m agmesh.mesh.llm_calibrate --mode $(MODE) $(ARGS)

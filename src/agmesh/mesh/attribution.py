@@ -32,6 +32,8 @@ from agmesh.kb.render import render
 from agmesh.kb.retriever import Hit, excluded
 from agmesh.mesh import rules
 from agmesh.mesh.llm import LLM, LLMUnavailableError, user_message, validate
+from agmesh.observability.tracing import KIND, RETRIEVER, noop_tracer
+from agmesh.observability.tracing import LLM as LLM_KIND
 
 MODES = ("full", "retrieval_only", "llm_no_retrieval", "rule_only")
 TECHNIQUES_JSON = Path("data/kb/techniques.json")
@@ -79,6 +81,7 @@ class AttributionAgent:
         exclude_only_tactics: Sequence[str] = ("Impact",),
         min_confidence: float = 0.5,
         mitigations: dict[str, list[list[str]]] | None = None,
+        tracer: Any = None,
     ) -> None:
         self.rank, self.llm, self.k, self.min_confidence = rank, llm, k, min_confidence
         table = attack_ics.table()
@@ -88,6 +91,7 @@ class AttributionAgent:
         )
         self.names = {t: v["name"] for t, v in table.items()}
         self.mitigations = mitigations if mitigations is not None else load_mitigations()
+        self.tracer = tracer if tracer is not None else noop_tracer()
 
     def line(self, tid: str) -> tuple[str, str, list[str]]:
         """A candidate's prompt line: ID, name and tactics."""
@@ -119,6 +123,33 @@ class AttributionAgent:
             reason,
         )
 
+    def _retrieve(self, text: str) -> list[str]:
+        assert self.rank is not None
+        with self.tracer.start_as_current_span("retrieve", attributes={KIND: RETRIEVER}) as sp:
+            order = [h.technique_id for h in self.rank(text)]
+            sp.set_attribute("agmesh.candidates", order[: self.k])
+        return order
+
+    def _choose(self, message: str, cands: list[str]) -> Any:
+        """The one LLM call, in an ``llm`` span (no prompt text in the span)."""
+        assert self.llm is not None
+        with self.tracer.start_as_current_span(
+            "llm", attributes={KIND: LLM_KIND, "agmesh.candidates_n": len(cands)}
+        ) as sp:
+            try:
+                reply = self.llm.choose(message, tuple(cands))
+            except LLMUnavailableError as exc:
+                sp.set_attribute("agmesh.error_kind", exc.kind)
+                raise
+            sp.set_attribute("llm.model_name", reply.model)
+            stats = reply.stats or {}
+            if isinstance(stats.get("prompt_eval_count"), int):
+                sp.set_attribute("llm.token_count.prompt", stats["prompt_eval_count"])
+            if isinstance(stats.get("eval_count"), int):
+                sp.set_attribute("llm.token_count.completion", stats["eval_count"])
+            sp.set_attribute("agmesh.seconds", float(reply.seconds))
+        return reply
+
     def attribute(self, site: str, records: Sequence[EvidenceRecord], mode: str) -> Attribution:
         if mode not in MODES:
             raise ValueError(f"unknown attribution mode {mode!r}")
@@ -142,7 +173,7 @@ class AttributionAgent:
             return self._no_retrieval(text)
         if self.rank is None:
             raise RuntimeError(f"mode {mode} needs a retriever")
-        order = [h.technique_id for h in self.rank(text)]
+        order = self._retrieve(text)
         if mode == "retrieval_only":
             return self._result(mode, mode, order[0], None, order, order[: self.k], text)
         cands = order[: self.k]
@@ -159,7 +190,7 @@ class AttributionAgent:
             )
         message = user_message(text, [self.line(t) for t in cands])
         try:
-            reply = self.llm.choose(message, tuple(cands))
+            reply = self._choose(message, cands)
         except LLMUnavailableError as exc:
             return self._result(
                 mode,
@@ -201,7 +232,7 @@ class AttributionAgent:
             )
         message = user_message(text, [self.line(t) for t in cands])
         try:
-            reply = self.llm.choose(message, tuple(cands))
+            reply = self._choose(message, cands)
         except LLMUnavailableError as exc:
             return self._result(
                 mode,

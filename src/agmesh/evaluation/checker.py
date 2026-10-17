@@ -109,12 +109,47 @@ def check(
     return findings
 
 
+def check_traces(run_dir: Path, traces_root: Path = Path("results/traces")) -> list[str]:
+    """Every session of a mesh run has a trace with its ``session.id`` (ADR 0014 §7, EA3)."""
+    from agmesh.observability.tracing import check_run
+
+    summary = json.loads((run_dir / "summary.json").read_text(encoding="utf-8"))
+    run_id = summary["run_id"]
+    sessions = sorted(
+        {
+            str(e["payload"]["session_id"])
+            for e in map(json.loads, (run_dir / "events.jsonl").read_text().splitlines())
+            if e.get("event") == "session" and e["payload"].get("session_id")
+        }
+    )
+    if not sessions:
+        return [f"{run_dir}: no sessions"]
+    return check_run(traces_root / run_id, sessions)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate result artifacts")
     parser.add_argument("--results", type=Path, default=Path("results"))
     parser.add_argument("--access-log", type=Path, default=TEST_ACCESS_LOG)
     parser.add_argument("--experiments", nargs="*", default=None)
+    parser.add_argument(
+        "--traces",
+        nargs="+",
+        type=Path,
+        default=None,
+        metavar="MESH_RUN",
+        help="check that every session of these mesh runs has a trace (EA3)",
+    )
     args = parser.parse_args(argv)
+    if args.traces:
+        failed = 0
+        for run in args.traces:
+            problems = check_traces(run, args.results / "traces")
+            failed += bool(problems)
+            print(f"{run}: {'OK' if not problems else f'{len(problems)} problem(s)'}")
+            for p in problems[:20]:
+                print(f"  - {p}")
+        return 1 if failed else 0
     findings = check(args.results, args.access_log, args.experiments)
     bad = [f for f in findings if not f.ok]
     for f in bad:
