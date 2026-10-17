@@ -1,0 +1,205 @@
+{
+  "schema_version": "1.0",
+  "kind": "gate.g3",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-17T14:24:35Z",
+    "git_sha": "e7bdbcab87e93d833bf1bcd1102b7fe658246824",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.13",
+      "implementation": "CPython",
+      "platform": "Linux-6.18.44-fc-v139-x86_64-with-glibc2.39",
+      "machine": "x86_64",
+      "wsl": false,
+      "cpu_count_logical": 2,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 8030,
+      "swap_total_mb": 0,
+      "lockfile_sha256": "b3fd14867612fe268cf8cf7aa11ae2f4c0c807c34f5aed10d7c8ef9cf4d9afa1",
+      "hostname_hash": "5bce98f73f3e",
+      "pid": 2158
+    }
+  },
+  "rule": "docs/adr/0014-process-boundaries-security-tracing-week11.md \u00a79",
+  "thresholds": {
+    "validity_min": 0.95,
+    "incident_to_dispatch_p95_s_max": 24.0,
+    "investigation_p95_ms_max": 2000.0
+  },
+  "checks": {
+    "site_a": {
+      "validity": 1.0,
+      "validity_ok": true,
+      "incident_to_dispatch_p95_s": 16.185623231809586,
+      "latency_ok": true,
+      "investigation_p95_ms": 108.15846300683913,
+      "investigation_ok": true
+    },
+    "site_b": {
+      "validity": 1.0,
+      "validity_ok": true,
+      "incident_to_dispatch_p95_s": 17.816223405293567,
+      "latency_ok": true,
+      "investigation_p95_ms": 169.5818375003,
+      "investigation_ok": true
+    }
+  },
+  "default_mode": "full",
+  "l_llm_s": 24.0,
+  "runs": [
+    {
+      "run": "results/mesh/site_a__full__val__20261017T193228",
+      "site": "site_a",
+      "mode": "full",
+      "nodes": "https",
+      "sessions": 45,
+      "by_status": {
+        "COMPLETED": 45
+      },
+      "llm_answered": 45,
+      "llm_calls": 45,
+      "validity": 1.0,
+      "grounding": 1.0,
+      "failures": {},
+      "investigation_p95_ms": 108.15846300683913,
+      "incident_to_dispatch_p95_ms": 16185.623231809586,
+      "traces_problems": 0
+    },
+    {
+      "run": "results/mesh/site_b__full__val__20261017T182613",
+      "site": "site_b",
+      "mode": "full",
+      "nodes": "https",
+      "sessions": 220,
+      "by_status": {
+        "COMPLETED": 220
+      },
+      "llm_answered": 220,
+      "llm_calls": 220,
+      "validity": 1.0,
+      "grounding": 1.0,
+      "failures": {},
+      "investigation_p95_ms": 169.5818375003,
+      "incident_to_dispatch_p95_ms": 17816.223405293567,
+      "traces_problems": 0
+    },
+    {
+      "run": "results/mesh/site_a__retrieval_only__val__20261017T193158",
+      "site": "site_a",
+      "mode": "retrieval_only",
+      "nodes": "https",
+      "sessions": 45,
+      "by_status": {
+        "COMPLETED": 45
+      },
+      "llm_answered": 0,
+      "llm_calls": 0,
+      "validity": null,
+      "grounding": null,
+      "failures": {},
+      "investigation_p95_ms": 48.88679420400876,
+      "incident_to_dispatch_p95_ms": 139.8706664011115,
+      "traces_problems": 0
+    },
+    {
+      "run": "results/mesh/site_b__retrieval_only__val__20261017T182503",
+      "site": "site_b",
+      "mode": "retrieval_only",
+      "nodes": "https",
+      "sessions": 220,
+      "by_status": {
+        "COMPLETED": 220
+      },
+      "llm_answered": 0,
+      "llm_calls": 0,
+      "validity": null,
+      "grounding": null,
+      "failures": {},
+      "investigation_p95_ms": 79.75936114598876,
+      "incident_to_dispatch_p95_ms": 167.9375442035962,
+      "traces_problems": 0
+    },
+    {
+      "run": "results/mesh/site_a__full__val__20261017T104007",
+      "site": "site_a",
+      "mode": "full",
+      "nodes": "local",
+      "sessions": 45,
+      "by_status": {
+        "COMPLETED": 45
+      },
+      "llm_answered": 44,
+      "llm_calls": 45,
+      "validity": 1.0,
+      "grounding": 1.0,
+      "failures": {
+        "ReadTimeout": 1
+      },
+      "investigation_p95_ms": 31.218277996231322,
+      "incident_to_dispatch_p95_ms": 17568.985484403674,
+      "traces_problems": null
+    },
+    {
+      "run": "results/mesh/site_b__full__val__20261017T121017",
+      "site": "site_b",
+      "mode": "full",
+      "nodes": "local",
+      "sessions": 220,
+      "by_status": {
+        "COMPLETED": 220
+      },
+      "llm_answered": 220,
+      "llm_calls": 220,
+      "validity": 1.0,
+      "grounding": 1.0,
+      "failures": {},
+      "investigation_p95_ms": 77.9279216472787,
+      "incident_to_dispatch_p95_ms": 20608.662321446536,
+      "traces_problems": null
+    },
+    {
+      "run": "results/mesh/site_a__llm_no_retrieval__val__20261017T171042",
+      "site": "site_a",
+      "mode": "llm_no_retrieval",
+      "nodes": "local",
+      "sessions": 45,
+      "by_status": {
+        "COMPLETED": 44,
+        "ABSTAINED": 1
+      },
+      "llm_answered": 44,
+      "llm_calls": 45,
+      "validity": 1.0,
+      "grounding": 1.0,
+      "failures": {
+        "Deadline": 1
+      },
+      "investigation_p95_ms": 54.09385639795799,
+      "incident_to_dispatch_p95_ms": 60286.55170854545,
+      "traces_problems": null
+    },
+    {
+      "run": "results/mesh/site_b__llm_no_retrieval__val__20261017T141606",
+      "site": "site_b",
+      "mode": "llm_no_retrieval",
+      "nodes": "local",
+      "sessions": 220,
+      "by_status": {
+        "COMPLETED": 220
+      },
+      "llm_answered": 220,
+      "llm_calls": 220,
+      "validity": 1.0,
+      "grounding": 1.0,
+      "failures": {},
+      "investigation_p95_ms": 69.13150724576553,
+      "incident_to_dispatch_p95_ms": 50542.814595697564,
+      "traces_problems": null
+    }
+  ],
+  "split": "val"
+}
