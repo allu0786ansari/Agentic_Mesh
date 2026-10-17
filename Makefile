@@ -9,7 +9,7 @@ PY := $(UV) run python
         prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft \
         training-budget summarise shift-selection dp-sanity train x8 g2-pilot g2-tuning \
         edge-model edge latency setup-kb kb kb-sources retrieval-queries retrieval-eval mesh llm-calibrate \
-	certs stack-up stack-down approvals-api security-tests
+	certs stack-up stack-down approvals-api security-tests g3
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -50,6 +50,7 @@ help:
 	@echo "stack-down        Week 11: stop the node API processes"
 	@echo "approvals-api     Week 11: operator approval API for one mesh run, e.g. make approvals-api RUN=results/mesh/<run>"
 	@echo "security-tests    Week 11: mTLS, JWT, egress and redaction negative tests"
+	@echo "g3                Gate G3: ADR 0014 §9 rule over mesh runs, e.g. make g3 RUNS='results/mesh/<a> results/mesh/<b>'"
 	@echo "g2-pilot          Week 7: FedAvg and FedProx at eps 10, both sites, 50 rounds -> results/federated/g2_pilot/"
 	@echo "g2-tuning         Week 7: ADR 0008 DP lr x clip grid and FedProx mu grid -> results/federated/g2_*"
 	@echo "train             Week 6: one federated run, e.g. make train SITE=site_a [ROUNDS=5 smoke] [EPS=3] [STRATEGY=fedavg] [BACKEND=flower]"
@@ -223,6 +224,9 @@ stack-down:
 
 approvals-api:
 	$(PY) -m agmesh.mesh.approvals_api --run $(RUN)
+
+g3:
+	$(PY) -m agmesh.evaluation.g3 --runs $(RUNS)
 
 security-tests:
 	$(UV) run pytest tests/security -q

@@ -307,3 +307,20 @@ start), and its recovery took 58 s. A deployed mesh has the model loaded.
 - **Why:** the 17 October failures came from memory exhaustion, and its mechanism is
   now confirmed.
 - **The 17 October run stays in the repository,** and both runs are reported.
+
+## 8. Outcome, 17 October 2026
+
+All of the following ran on validation under §7 (prompt cache off, warm-up):
+
+| Run | Answered | Failures | LLM p50 / p95 | Incident-to-dispatch p95 |
+|---|---|---|---|---|
+| Site B `full` (in-process, 12:10) | 220 of 220 | 0 | 16.3 / 19.9 s | 20.6 s |
+| Site B `llm_no_retrieval` | 220 of 220 | 0 | 47.4 / 50.4 s | 50.5 s |
+| Site A `llm_no_retrieval` | 44 of 45 | 1 `Deadline` (74 s), abstained | 47.1 / 60.2 s | 60.3 s |
+
+- **Final calibration:** the §7.4 `llm_no_retrieval` calibration passed the §6.4
+  rule (p95 48.8 s, slowest decode 4.9 tokens/s), giving a timeout of 74 s.
+- **Memory:** the server's memory stayed flat at about 2.3–2.5 GB.
+- **Site A `full`:** see ADR 0015 for its run over mTLS (45 of 45 answered).
+
+Gate G3 (ADR 0015) uses these runs together with the Week 11 runs.
