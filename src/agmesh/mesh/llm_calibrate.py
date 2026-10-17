@@ -51,6 +51,8 @@ from agmesh.common.env import load_env
 from agmesh.common.sysmem import llm_server_info, snapshot
 from agmesh.mesh.attribution import AttributionAgent
 from agmesh.mesh.llm import LLMUnavailableError, OllamaLLM, user_message, validate
+from agmesh.security.egress import EgressDeniedError, require_allowlisted
+from agmesh.security.redaction import install as install_redaction
 
 LLM_MODES = ("full", "llm_no_retrieval")
 LOCK = Path("configs/mesh/llm_timeouts.lock.json")
@@ -222,7 +224,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=Path("results/llm_calibration"))
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args(argv)
+    install_redaction()
     params = load_params(args.params)
+    try:
+        require_allowlisted(params.llm.base_url, params.security.egress_allowlist)
+    except EgressDeniedError as exc:  # ADR 0014 §5
+        raise SystemExit(str(exc)) from exc
     lock = read_lock(args.lock)
     if args.mode in lock.get("stopped", {}) and not args.force:
         raise SystemExit(

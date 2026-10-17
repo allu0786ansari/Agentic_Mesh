@@ -17,6 +17,13 @@ dependencies = [
     "pydantic>=2.7",
     "pyyaml>=6.0",
     "scikit-learn>=1.9.1",
+    # Week 11 process boundaries (ADR 0014): node APIs over mTLS, per-request JWTs, traces
+    "cryptography>=43",
+    "fastapi>=0.115",
+    "openinference-semantic-conventions>=0.1.20",
+    "opentelemetry-sdk>=1.30",
+    "pyjwt[crypto]>=2.9",
+    "uvicorn>=0.49",  # ssl_context_factory (TLS 1.3-only server context)
 ]
 
 [dependency-groups]
@@ -46,6 +53,12 @@ kb = [
     "qdrant-client>=1.12,<2",
     "sentence-transformers>=3.0,<6",
     "torch>=2.5",
+]
+
+# Optional trace viewer (ADR 0014 §7): Phoenix and the OTLP exporter, not resident by default.
+obs = [
+    "arize-phoenix>=8",
+    "opentelemetry-exporter-otlp-proto-http>=1.30",
 ]
 
 [tool.uv]
@@ -95,7 +108,7 @@ warn_unreachable = true
 pretty = true
 
 [[tool.mypy.overrides]]
-module = ["flwr.*", "ray.*", "torch.*", "sklearn.*", "opacus.*", "qdrant_client.*", "sentence_transformers.*", "huggingface_hub.*", "pypdf.*", "langgraph.*"]
+module = ["flwr.*", "ray.*", "torch.*", "sklearn.*", "opacus.*", "qdrant_client.*", "sentence_transformers.*", "huggingface_hub.*", "pypdf.*", "langgraph.*", "opentelemetry.exporter.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

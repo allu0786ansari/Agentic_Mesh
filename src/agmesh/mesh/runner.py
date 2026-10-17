@@ -56,6 +56,9 @@ from agmesh.mesh.llm_calibrate import LLM_MODES, LOCK, read_lock
 from agmesh.mesh.nodeclient import LocalNodeClient, NodeClient
 from agmesh.mesh.sessions import SessionStore
 from agmesh.mesh.triage import ClosedIncident, Triage
+from agmesh.observability import tracing
+from agmesh.security.egress import EgressDeniedError, require_allowlisted
+from agmesh.security.redaction import install as install_redaction
 
 
 def latest_edge_run(root: Path, site: str, split: str) -> Path:
@@ -84,6 +87,7 @@ def build_mesh(
     agent: AttributionAgent,
     events: Path | None = None,
     run_id: str = "",
+    tracer: Any = None,
 ) -> Mesh:
     m = params.mesh
 
@@ -115,8 +119,10 @@ def build_mesh(
         max_retries=m.max_retries,
         deadline_s=m.investigation_deadline_s,
         breakers=breakers,
+        tracer=tracer,
     )
-    return Mesh(store, bus, inv, agent)
+    agent.tracer = tracer if tracer is not None else agent.tracer
+    return Mesh(store, bus, inv, agent, tracer=tracer)
 
 
 def consume(
@@ -356,6 +362,37 @@ def check_llm(params: Params) -> None:
         )
 
 
+def node_client(kind: str, site: str, edge: Path, stack_path: Path, params: Params) -> NodeClient:
+    """In-process stores (Week 10), or the node APIs over mTLS with JWTs (ADR 0014)."""
+    if kind == "local":
+        return LocalNodeClient(edge)
+    from agmesh.mesh.investigator import SITE_NODES
+    from agmesh.mesh.nodeclient import HttpsNodeClient
+    from agmesh.nodeapi.serve import load_stack
+    from agmesh.security.jwt import TokenMinter
+    from agmesh.security.tls import Pki, client_context
+
+    stack = load_stack(stack_path)
+    pki = Pki(Path(stack["pki"]))
+    pki.require("mesh")
+    ctx = client_context(pki.cert("mesh"), pki.key("mesh"), pki.cert("ca-server"))
+    minter = TokenMinter.from_file(pki.root / "jwt-mesh.key", ttl_s=params.security.jwt.ttl_s)
+    endpoints = {n: f"https://{stack['host']}:{int(stack['nodes'][n])}" for n in SITE_NODES[site]}
+    return HttpsNodeClient(endpoints, ctx, minter, connect_timeout_s=params.mesh.connect_timeout_s)
+
+
+def trace_summary(trace_dir: Path, store: SessionStore) -> dict[str, Any]:
+    sessions = [s.session_id for s in store.all_sessions()]
+    problems = tracing.check_run(trace_dir, sessions)
+    return {
+        "dir": trace_dir.as_posix(),
+        "sessions": len(sessions),
+        "linked": len({sid for sid, _t in store.traces()}),
+        "problems": problems[:20],
+        "problem_count": len(problems),
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     load_env()
     from agmesh.kb.retriever import version
@@ -371,9 +408,24 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--retrieval-version", default=None)
     parser.add_argument("--out", type=Path, default=Path("results/mesh"))
     parser.add_argument("--llm-lock", type=Path, default=LOCK)
+    parser.add_argument(
+        "--nodes",
+        choices=("local", "https"),
+        default="local",
+        help="evidence from the edge run's stores in-process, or from node APIs over mTLS",
+    )
+    parser.add_argument("--stack", type=Path, default=Path("configs/stack.yaml"))
+    parser.add_argument("--traces", type=Path, default=Path("results/traces"))
+    parser.add_argument("--no-traces", action="store_true")
     args = parser.parse_args(argv)
+    install_redaction()
     params = load_params(args.params)
     mode = args.mode or params.mesh.attribution.mode
+    if mode in LLM_MODES:
+        try:
+            require_allowlisted(params.llm.base_url, params.security.egress_allowlist)
+        except EgressDeniedError as exc:  # ADR 0014 §5 (ADV-5)
+            raise SystemExit(str(exc)) from exc
     llm_cfg = llm_settings(params, mode, args.llm_lock) if mode in LLM_MODES else None
     edge = args.edge_run or latest_edge_run(args.edge_root, args.site, args.split)
     stamp = time.strftime("%Y%m%dT%H%M%S")
@@ -385,7 +437,9 @@ def main(argv: list[str] | None = None) -> int:
     store = SessionStore(out / "storage.db", max_hops=params.mesh.max_hops)
     bus = SqliteBus(out / "storage.db")
     events = out / "events.jsonl"
-    mesh = build_mesh(params, store, bus, LocalNodeClient(edge), agent, events, run_id)
+    client = node_client(args.nodes, args.site, edge, args.stack, params)
+    tracer, provider = (None, None) if args.no_traces else tracing.setup(args.traces / run_id)
+    mesh = build_mesh(params, store, bus, client, agent, events, run_id, tracer)
     cfg = params.fusion.site_b
     triage = Triage(
         cfg.delta_t_s, exclude_latency=cfg.exclude_latency and args.site == "site_b", k=cfg.k_of_n
@@ -450,6 +504,10 @@ def main(argv: list[str] | None = None) -> int:
         + (llm_cfg["timeout_s"] if llm_cfg else 0.0)
         + 30,
     )
+    if provider is not None:
+        provider.shutdown()  # flushes every exporter (files, and Phoenix when set)
+    if hasattr(client, "close"):
+        client.close()
     payload = {
         "run_id": run_id,
         "site": args.site,
@@ -459,6 +517,8 @@ def main(argv: list[str] | None = None) -> int:
         "retrieval_version": version(args.retrieval_version)["name"],
         "llm_settings": llm_cfg,
         "llm_server": server,
+        "nodes": args.nodes,
+        "traces": None if args.no_traces else trace_summary(args.traces / run_id, store),
         "wall_seconds": round(time.perf_counter() - started, 1),
         **summarise(store, results, recoveries, params.mesh.attribution.l_llm_s),
     }

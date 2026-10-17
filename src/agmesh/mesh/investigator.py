@@ -21,11 +21,13 @@ import random
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
+from typing import Any
 
 from agmesh.common.schemas import EvidenceRecord
 from agmesh.mesh.breaker import CircuitBreaker
 from agmesh.mesh.nodeclient import NodeClient, TransientNodeError
 from agmesh.mesh.sessions import SessionStore
+from agmesh.observability.tracing import KIND, TOOL, noop_tracer
 
 SITE_NODES = {"site_a": ("a1", "a2", "a3", "a4"), "site_b": ("b1", "b2", "b3")}
 PAD_S = {"site_a": 120.0, "site_b": 60.0}
@@ -62,6 +64,7 @@ class Investigator:
         clock: Callable[[], float] = time.monotonic,
         sleep: Callable[[float], None] = time.sleep,
         seed: int = 0,
+        tracer: Any = None,
     ) -> None:
         self.client, self.store = client, store
         self.max_hops, self.max_retries, self.deadline_s = max_hops, max_retries, deadline_s
@@ -69,6 +72,7 @@ class Investigator:
         self.breakers = breakers if breakers is not None else {}
         self.clock, self.sleep = clock, sleep
         self.rng = random.Random(seed)  # noqa: S311 (backoff jitter, not security)
+        self.tracer = tracer if tracer is not None else noop_tracer()
 
     def breaker(self, node: str) -> CircuitBreaker:
         if node not in self.breakers:
@@ -97,8 +101,9 @@ class Investigator:
                 out.degraded, out.reason = True, "investigation deadline"
                 break
             br = self.breaker(node)
+            hop_ns = time.time_ns()
             if not br.allow():
-                self._hop(session_id, node, "breaker_open", 0.0, out)
+                self._hop(session_id, node, "breaker_open", 0.0, out, hop_ns)
                 out.degraded, out.reason = True, f"breaker open for {node}"
                 continue
             outcome, started = "error", self.clock()
@@ -108,7 +113,9 @@ class Investigator:
                     outcome = "deadline"
                     break
                 try:
-                    found = self.client.evidence(node, lo, hi, min(self.timeout_s, remaining))
+                    found = self.client.evidence(
+                        node, lo, hi, min(self.timeout_s, remaining), session_id=session_id
+                    )
                 except TransientNodeError:
                     if attempt < self.max_retries:
                         self.sleep(BACKOFF_S * (2**attempt) * (1 + self.rng.random()))
@@ -129,11 +136,31 @@ class Investigator:
                 br.failure()
                 out.degraded = True
                 out.reason = out.reason or f"{node}: {outcome}"
-            self._hop(session_id, node, outcome, ms, out)
+            self._hop(session_id, node, outcome, ms, out, hop_ns)
         out.records.sort(key=lambda r: (r.window_start, r.node_id))
         return out
 
-    def _hop(self, session_id: str, node: str, outcome: str, ms: float, out: Investigation) -> None:
+    def _hop(
+        self,
+        session_id: str,
+        node: str,
+        outcome: str,
+        ms: float,
+        out: Investigation,
+        start_ns: int | None = None,
+    ) -> None:
+        span = self.tracer.start_span(
+            "hop",
+            start_time=start_ns,
+            attributes={
+                KIND: TOOL,
+                "tool.name": "node_evidence",
+                "agmesh.node": node,
+                "agmesh.outcome": outcome,
+                "agmesh.ms": ms,
+            },
+        )
+        span.end()
         mine = [r.model_dump() for r in out.records if r.node_id == node]
         self.store.record_step(session_id, f"hop:{node}", outcome, {"records": mine})
         self.store.record_hop(session_id, node, outcome, ms)
