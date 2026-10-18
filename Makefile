@@ -9,7 +9,7 @@ PY := $(UV) run python
         prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft \
         training-budget summarise shift-selection dp-sanity train x8 g2-pilot g2-tuning \
         edge-model edge latency setup-kb kb kb-sources retrieval-queries retrieval-eval mesh llm-calibrate \
-	certs stack-up stack-down approvals-api security-tests g3 grid partitions-iid stats figures x3-models x4-export
+	certs stack-up stack-down approvals-api security-tests g3 grid partitions-iid stats figures x3-models x4-export chaos x3 x4 robustness x5
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -56,6 +56,11 @@ help:
 	@echo "figures           Week 12: figures and privacy table from artifacts -> results/figures/"
 	@echo "x3-models         Week 13: retrain FedProx eps 3 (5 seeds, both sites) with --save-model, then verify"
 	@echo "x4-export         Week 13: export mesh sessions (storage.db) to sessions.jsonl for X4"
+	@echo "chaos             Week 13: X6 fault tests on real mTLS node processes -> results/X6/chaos.json"
+	@echo "x5                Week 13: latency report per segment -> results/X5/latency_val.json"
+	@echo "x3                Week 13: fusion on Site B, five seeds -> results/X3/ (needs x3-models)"
+	@echo "x4                Week 13: attribution scoring -> results/X4/ (needs x4-export)"
+	@echo "robustness        Week 13: synthetic perturbation suite -> results/robustness/"
 	@echo "g3                Gate G3: ADR 0014 §9 rule over mesh runs, e.g. make g3 RUNS='results/mesh/<a> results/mesh/<b>'"
 	@echo "g2-pilot          Week 7: FedAvg and FedProx at eps 10, both sites, 50 rounds -> results/federated/g2_pilot/"
 	@echo "g2-tuning         Week 7: ADR 0008 DP lr x clip grid and FedProx mu grid -> results/federated/g2_*"
@@ -249,6 +254,21 @@ x3-models:
 
 x4-export:
 	$(PY) -m agmesh.experiments.x4_export
+
+chaos:
+	AGMESH_CHAOS_REPORT=1 $(UV) run pytest tests/chaos -q
+
+x5:
+	$(PY) -m agmesh.evaluation.latency --report
+
+x3:
+	$(PY) -m agmesh.experiments.x3_fusion
+
+x4:
+	$(PY) -m agmesh.experiments.x4_score
+
+robustness:
+	$(PY) -m agmesh.experiments.robustness
 
 g3:
 	$(PY) -m agmesh.evaluation.g3 --runs $(RUNS)

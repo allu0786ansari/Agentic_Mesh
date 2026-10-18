@@ -2,6 +2,7 @@
 
     python -m agmesh.evaluation.latency --segment detection --split val
     python -m agmesh.evaluation.latency --segment detection --runs results/edge/site_b__val__*
+    python -m agmesh.evaluation.latency --report          # X5 (ADR 0017 §5)
 
 The detection segment is the wall time from a window's emission by the replay to its
 alert committed on the bus. It is read from the ``detection`` events that the edge
@@ -58,6 +59,70 @@ def report(runs: list[Path], segment: str) -> dict[str, Any]:
     return out
 
 
+PT7_MS = {
+    "detection": 1000.0,
+    "investigation": 2000.0,
+    "incident_to_dispatch_retrieval_only": 3000.0,
+    "incident_to_dispatch_full": 24000.0,
+}
+
+
+def x5_report(edge_root: Path, mesh_root: Path, split: str = "val") -> dict[str, Any]:
+    """X5: p50/p95 per segment and site from committed run summaries (ADR 0017 §5).
+
+    Detection comes from the latest edge run per site. Investigation and
+    incident-to-dispatch come from the latest mesh runs over mTLS (``nodes = https``),
+    per mode.
+    """
+    sites: dict[str, Any] = {}
+    for site in ("site_a", "site_b"):
+        row: dict[str, Any] = {}
+        edges = sorted(
+            p for p in edge_root.glob(f"{site}__{split}__*") if (p / "summary.json").is_file()
+        )
+        if edges:
+            e = json.loads((edges[-1] / "summary.json").read_text())
+            d = e["detection_latency_ms"]
+            row["detection"] = {
+                "run": edges[-1].name,
+                "n": d["n"],
+                "p50_ms": d["p50"],
+                "p95_ms": d["p95"],
+            }
+        for mode in ("retrieval_only", "full"):
+            runs = []
+            for p in sorted(mesh_root.glob(f"{site}__{mode}__{split}__*/summary.json")):
+                s = json.loads(p.read_text())
+                if s.get("nodes") == "https":
+                    runs.append((p.parent.name, s))
+            if not runs:
+                continue
+            name, s = runs[-1]
+            lat = s["latency_ms"]
+            if mode == "full" or "investigation" not in row:
+                row["investigation" if mode == "full" else "investigation_retrieval_only"] = {
+                    "run": name, "n": lat["investigation"]["n"],
+                    "p50_ms": lat["investigation"]["p50"], "p95_ms": lat["investigation"]["p95"],
+                }  # fmt: skip
+            row[f"incident_to_dispatch_{mode}"] = {
+                "run": name,
+                "n": lat["incident_to_dispatch"]["n"],
+                "p50_ms": lat["incident_to_dispatch"]["p50"],
+                "p95_ms": lat["incident_to_dispatch"]["p95"],
+            }
+        for seg, v in row.items():
+            target = PT7_MS.get(seg) or PT7_MS.get(seg.removesuffix("_retrieval_only"))
+            v["target_p95_ms"] = target
+            v["meets_target"] = bool(target is not None and v["p95_ms"] <= target)
+        sites[site] = row
+    return {
+        "split": split,
+        "protocol": "docs/adr/0017-x3-x6-week13.md §5",
+        "sites": sites,
+        "note": "replay runs incidents back to back; queueing is not measured",
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Latency per segment from metric events")
     parser.add_argument("--segment", choices=tuple(TARGETS_MS), default="detection")
@@ -65,7 +130,26 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=Path("results/edge"))
     parser.add_argument("--runs", type=Path, nargs="*", default=None)
     parser.add_argument("--out", type=Path, default=Path("results/latency"))
+    parser.add_argument("--report", action="store_true", help="X5: every segment (ADR 0017 §5)")
+    parser.add_argument("--mesh-root", type=Path, default=Path("results/mesh"))
     args = parser.parse_args(argv)
+    if args.report:
+        rep = x5_report(args.root, args.mesh_root, args.split)
+        path = write_artifact(
+            Path("results/X5") / f"latency_{args.split}.json",
+            kind="X5.latency",
+            data_source="runtime",
+            payload=rep,
+        )
+        for site, row in rep["sites"].items():
+            for seg, v in row.items():
+                verdict = "OK" if v["meets_target"] else "MISSED"
+                print(
+                    f"{site} {seg}: p50 {v['p50_ms']:.1f} ms, p95 {v['p95_ms']:.1f} ms "
+                    f"(target {v['target_p95_ms']:.0f}) {verdict}"
+                )
+        print(path)
+        return 0
     runs = args.runs or [
         r
         for r in (_latest(args.root, s, args.split) for s in ("site_a", "site_b"))

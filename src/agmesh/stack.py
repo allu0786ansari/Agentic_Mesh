@@ -56,7 +56,14 @@ def healthy(host: str, port: int, node: str, pki: Pki, timeout_s: float = 30.0) 
     return False
 
 
-def up(site: str, edge_run: Path, stack_path: Path, state: Path = STATE) -> dict[str, int]:
+def up(
+    site: str,
+    edge_run: Path,
+    stack_path: Path,
+    state: Path = STATE,
+    fault_delay_s: dict[str, float] | None = None,
+) -> dict[str, int]:
+    """``fault_delay_s`` (node -> seconds) slows chosen nodes: X6 only (ADR 0017 §6)."""
     stack = load_stack(stack_path)
     pki = Pki(Path(stack["pki"]))
     pki.require("mesh", *(f"node-{n}" for n in SITE_NODES[site]))
@@ -77,6 +84,8 @@ def up(site: str, edge_run: Path, stack_path: Path, state: Path = STATE) -> dict
                 str(edge_run),
                 "--stack",
                 str(stack_path),
+                "--fault-delay-s",
+                str((fault_delay_s or {}).get(node, 0.0)),
             ],
             stdout=log,
             stderr=subprocess.STDOUT,

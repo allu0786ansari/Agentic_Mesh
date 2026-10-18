@@ -137,6 +137,7 @@ def consume(
     batch: int = 100,
     worker_timeout_s: float = 120.0,
     on_session: Any = None,
+    lease_s: float | None = None,
 ) -> list[dict[str, Any]]:
     """Drain ``alerts.<site>``: every closed incident runs the graph, then its alerts are acked."""
     topic = f"alerts.{site}"
@@ -155,7 +156,10 @@ def consume(
         seen: set[str] = set()  # a lease that expires while its incident is open is re-claimed
         while True:
             msgs = bus.claim(
-                topic, consumer, lease_s=max(3600.0, worker_timeout_s * 4), limit=batch
+                topic,
+                consumer,
+                lease_s=lease_s if lease_s is not None else max(3600.0, worker_timeout_s * 4),
+                limit=batch,
             )
             fresh = [m for m in msgs if m.msg_id not in seen]
             if not fresh:

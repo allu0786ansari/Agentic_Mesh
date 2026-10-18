@@ -11,6 +11,7 @@ else is served.
 from __future__ import annotations
 
 import logging
+import time
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Query
@@ -24,7 +25,16 @@ from agmesh.security.jwt import TokenVerifier
 log = logging.getLogger("agmesh.nodeapi")
 
 
-def create_app(node: str, site: str, evidence_db: Path, verifier: TokenVerifier) -> FastAPI:
+def create_app(
+    node: str,
+    site: str,
+    evidence_db: Path,
+    verifier: TokenVerifier,
+    *,
+    fault_delay_s: float = 0.0,
+) -> FastAPI:
+    """``fault_delay_s`` delays every evidence answer: X6's slow-node and mid-hop faults
+    (ADR 0017 §6). It is 0 outside the chaos tests."""
     app = FastAPI(title=f"node-api {node}", docs_url=None, redoc_url=None, openapi_url=None)
 
     @app.get("/healthz")
@@ -39,6 +49,8 @@ def create_app(node: str, site: str, evidence_db: Path, verifier: TokenVerifier)
     ) -> list[EvidenceRecord]:
         lo, hi = window(start, end)
         claims = authorise(verifier, token, lo, hi)
+        if fault_delay_s > 0:
+            time.sleep(fault_delay_s)
         store = EvidenceStore(evidence_db)
         try:
             records = store.between(node, iso(lo), iso(hi))
