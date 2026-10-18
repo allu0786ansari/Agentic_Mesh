@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0",
+  "kind": "X5.latency",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-18T20:07:26Z",
+    "git_sha": "f38de6409f096a9e2ca4e03264854d16c5fcd273",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.13",
+      "implementation": "CPython",
+      "platform": "Linux-6.18.44-fc-v139-x86_64-with-glibc2.39",
+      "machine": "x86_64",
+      "wsl": false,
+      "cpu_count_logical": 2,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 8030,
+      "swap_total_mb": 0,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "hostname_hash": "5bce98f73f3e",
+      "pid": 3866
+    }
+  },
+  "split": "val",
+  "protocol": "docs/adr/0017-x3-x6-week13.md \u00a75",
+  "sites": {
+    "site_a": {
+      "detection": {
+        "run": "site_a__val__20261015T222554",
+        "n": 448,
+        "p50_ms": 2.0253994999848146,
+        "p95_ms": 3.659673650099648,
+        "target_p95_ms": 1000.0,
+        "meets_target": true
+      },
+      "investigation_retrieval_only": {
+        "run": "site_a__retrieval_only__val__20261017T193158",
+        "n": 45,
+        "p50_ms": 27.434762989287265,
+        "p95_ms": 48.88679420400876,
+        "target_p95_ms": 2000.0,
+        "meets_target": true
+      },
+      "incident_to_dispatch_retrieval_only": {
+        "run": "site_a__retrieval_only__val__20261017T193158",
+        "n": 45,
+        "p50_ms": 107.55847299878951,
+        "p95_ms": 139.8706664011115,
+        "target_p95_ms": 3000.0,
+        "meets_target": true
+      },
+      "investigation": {
+        "run": "site_a__full__val__20261017T193228",
+        "n": 45,
+        "p50_ms": 32.39756199764088,
+        "p95_ms": 108.15846300683913,
+        "target_p95_ms": 2000.0,
+        "meets_target": true
+      },
+      "incident_to_dispatch_full": {
+        "run": "site_a__full__val__20261017T193228",
+        "n": 45,
+        "p50_ms": 14635.152142989682,
+        "p95_ms": 16185.623231809586,
+        "target_p95_ms": 24000.0,
+        "meets_target": true
+      }
+    },
+    "site_b": {
+      "detection": {
+        "run": "site_b__val__20261015T222546",
+        "n": 350,
+        "p50_ms": 0.6138434999911624,
+        "p95_ms": 1.7349541499697807,
+        "target_p95_ms": 1000.0,
+        "meets_target": true
+      },
+      "investigation_retrieval_only": {
+        "run": "site_b__retrieval_only__val__20261017T182503",
+        "n": 220,
+        "p50_ms": 58.169272502709646,
+        "p95_ms": 79.75936114598876,
+        "target_p95_ms": 2000.0,
+        "meets_target": true
+      },
+      "incident_to_dispatch_retrieval_only": {
+        "run": "site_b__retrieval_only__val__20261017T182503",
+        "n": 220,
+        "p50_ms": 132.71830550365848,
+        "p95_ms": 167.9375442035962,
+        "target_p95_ms": 3000.0,
+        "meets_target": true
+      },
+      "investigation": {
+        "run": "site_b__full__val__20261017T182613",
+        "n": 220,
+        "p50_ms": 64.61036799737485,
+        "p95_ms": 169.5818375003,
+        "target_p95_ms": 2000.0,
+        "meets_target": true
+      },
+      "incident_to_dispatch_full": {
+        "run": "site_b__full__val__20261017T182613",
+        "n": 220,
+        "p50_ms": 15499.876754998695,
+        "p95_ms": 17816.223405293567,
+        "target_p95_ms": 24000.0,
+        "meets_target": true
+      }
+    }
+  },
+  "note": "replay runs incidents back to back; queueing is not measured"
+}

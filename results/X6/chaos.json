@@ -1,0 +1,121 @@
+{
+  "schema_version": "1.0",
+  "kind": "X6.chaos",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-18T20:07:25Z",
+    "git_sha": "f38de6409f096a9e2ca4e03264854d16c5fcd273",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.13",
+      "implementation": "CPython",
+      "platform": "Linux-6.18.44-fc-v139-x86_64-with-glibc2.39",
+      "machine": "x86_64",
+      "wsl": false,
+      "cpu_count_logical": 2,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 8030,
+      "swap_total_mb": 0,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "hostname_hash": "5bce98f73f3e",
+      "pid": 3710
+    }
+  },
+  "protocol": "docs/adr/0017-x3-x6-week13.md \u00a76",
+  "scenarios": {
+    "node_down_before_hop": {
+      "status": "COMPLETED_DEGRADED",
+      "hops": [
+        [
+          "b1",
+          "ok"
+        ],
+        [
+          "b2",
+          "transient_error"
+        ],
+        [
+          "b3",
+          "ok"
+        ]
+      ],
+      "terminal": true,
+      "unique_dispatch": true,
+      "passed": true
+    },
+    "node_killed_during_hop": {
+      "status": "COMPLETED_DEGRADED",
+      "hops": [
+        [
+          "b1",
+          "ok"
+        ],
+        [
+          "b2",
+          "transient_error"
+        ],
+        [
+          "b3",
+          "ok"
+        ]
+      ],
+      "terminal": true,
+      "unique_dispatch": true,
+      "passed": true
+    },
+    "node_killed_after_hop": {
+      "statuses": [
+        "COMPLETED",
+        "COMPLETED_DEGRADED",
+        "COMPLETED_DEGRADED",
+        "COMPLETED_DEGRADED"
+      ],
+      "b2_outcomes": [
+        "transient_error",
+        "transient_error",
+        "breaker_open"
+      ],
+      "breaker_transitions": [
+        [
+          "b2",
+          "closed",
+          "open"
+        ]
+      ],
+      "terminal": true,
+      "unique_dispatch": true,
+      "passed": true
+    },
+    "slow_node": {
+      "status": "COMPLETED_DEGRADED",
+      "hops": {
+        "b1": "ok",
+        "b2": "ok",
+        "b3": "transient_error"
+      },
+      "session_seconds": 1.54,
+      "terminal": true,
+      "unique_dispatch": true,
+      "passed": true
+    },
+    "mesh_killed_and_restarted": {
+      "sessions_before_kill": 1,
+      "sessions_after_restart": 8,
+      "incidents": 8,
+      "terminal": true,
+      "unique_dispatch": true,
+      "passed": true
+    },
+    "duplicate_alert_replay": {
+      "sessions": 1,
+      "actions": 2,
+      "terminal": true,
+      "unique_dispatch": true,
+      "passed": true
+    }
+  },
+  "all_passed": true
+}
