@@ -224,14 +224,35 @@ def evaluate(
     }
 
 
+def verified_seeds(seeds: Sequence[int], problems: Sequence[str]) -> dict[str, Any]:
+    """Per site, the seeds whose retrained model reproduces X1 (ADR 0017 §1)."""
+    out: dict[str, Any] = {}
+    for site in x3_models.SITES:
+        cid = x3_models.CONFIG.format(site=site)
+        bad = {s: [p for p in problems if p.startswith(f"{cid} seed {s}:")] for s in seeds}
+        out[site] = {
+            "used": [s for s in seeds if not bad[s]],
+            "excluded": {str(s): v for s, v in bad.items() if v},
+        }
+    return out
+
+
 def run(
-    params: Params, models: Path, seeds: Sequence[int], partitions: Path, *, dev: bool
+    params: Params,
+    models: Path,
+    seeds: Sequence[int],
+    partitions: Path,
+    *,
+    dev: bool,
+    by_site: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     out: dict[str, Any] = {
         "protocol": "docs/adr/0017-x3-x6-week13.md §7",
         "synthetic": True,
         "development_run": dev,
         "seeds": list(seeds),
+        "seeds_by_site": by_site
+        or {site: {"used": list(seeds), "excluded": {}} for site in x3_models.SITES},
         "placement_seed": SEED,
         "per_kind_and_node": PER_KIND,
         "sites": {},
@@ -258,7 +279,7 @@ def run(
             }
             plans = {k: plan(site_t, node, normal, params, k) for k in KINDS}
             per_seed: dict[str, Any] = {}
-            for seed in seeds:
+            for seed in out["seeds_by_site"][site]["used"]:
                 model = GlobalModel.load(x3_models.model_dir(site, seed, models))
                 fitted = calibrate_node(site_t, node, model, data, params, constants)
                 clean_inp, clean_shift, clean_alert = alerts_of(site_t, fitted, normal, params)
@@ -300,7 +321,15 @@ def markdown(rep: dict[str, Any]) -> str:
     lines = [
         f"# Robustness suite — synthetic perturbations of normal validation{dev}",
         "",
-        f"Seeds {rep['seeds']}; {rep['per_kind_and_node']} injections per kind and node "
+        "Seeds per site (only models that reproduce X1, ADR 0017 §1): "
+        + "; ".join(
+            f"{site} {v['used']}"
+            + (f", excluded {sorted(v['excluded'], key=int)}" if v["excluded"] else "")
+            for site, v in rep["seeds_by_site"].items()
+        )
+        + ".",
+        "",
+        f"{rep['per_kind_and_node']} injections per kind and node "
         f"(placement seed {rep['placement_seed']}). Descriptive; nothing is selected or "
         "tuned on these numbers. SYNTHETIC.",
         "",
@@ -334,12 +363,20 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     params = load_params()
     dev = args.models != x3_models.MODELS or sorted(args.seeds) != sorted(x3_models.SEEDS)
-    if not dev and (problems := x3_models.verify()):
-        for p in problems:
-            print(p)
-        raise SystemExit("x3_models verify reports problems (ADR 0017 §1)")
+    by_site = None
+    if not dev:
+        by_site = verified_seeds(args.seeds, x3_models.verify())
+        for site, v in by_site.items():
+            print(f"{site}: seeds used {v['used']}; excluded {sorted(v['excluded'], key=int)}")
+            if not v["used"]:
+                raise SystemExit(f"{site}: no seed reproduces X1 (ADR 0017 §1)")
     rep = run(
-        params, args.models, args.seeds, args.partitions or params.paths.partitions_dir, dev=dev
+        params,
+        args.models,
+        args.seeds,
+        args.partitions or params.paths.partitions_dir,
+        dev=dev,
+        by_site=by_site,
     )
     write_artifact(
         args.out / "robustness_val.json", kind="robustness", data_source="synthetic", payload=rep

@@ -15,6 +15,11 @@ and it holds per session:
   * the LLM's schema validity, grounding, error class and seconds.
 
 It holds no evidence text and no prompt. Those stay in ``storage.db`` with the run.
+
+Only finished runs are exported: a run directory needs ``summary.json`` beside its
+``storage.db``. A run that stopped before it opened its session store (it copied
+the edge ``storage.db`` and went no further) has no ``sessions`` table and is
+skipped with a note.
 """
 
 from __future__ import annotations
@@ -33,10 +38,19 @@ def _step(con: sqlite3.Connection, sid: str, step: str) -> dict[str, Any] | None
     return json.loads(row[0]) if row else None
 
 
+class NoSessionsError(Exception):
+    """The run's storage.db has no session store."""
+
+
 def export(run: Path) -> Path:
     db = run / "storage.db"
     con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
     try:
+        has = con.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'sessions'"
+        ).fetchone()
+        if not has:
+            raise NoSessionsError(f"{run.name}: storage.db has no sessions table")
         sessions = con.execute(
             "SELECT session_id, status, site_id, opened_at, attribution_mode FROM sessions "
             "ORDER BY opened_at, session_id"
@@ -88,10 +102,22 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=Path("results/mesh"))
     args = parser.parse_args(argv)
     runs = args.runs or sorted(p.parent for p in args.root.glob("*/storage.db"))
+    exported, skipped = 0, []
     for run in runs:
-        out = export(run)
+        if not (run / "summary.json").is_file():
+            skipped.append(f"{run.name}: no summary.json (the run did not finish)")
+            continue
+        try:
+            out = export(run)
+        except NoSessionsError as exc:
+            skipped.append(str(exc))
+            continue
         n = sum(1 for _ in out.open(encoding="utf-8"))
         print(f"{run.name}: {n} sessions -> {out}")
+        exported += 1
+    for line in skipped:
+        print(f"skipped {line}")
+    print(f"exported {exported} run(s), skipped {len(skipped)}")
     return 0
 
 

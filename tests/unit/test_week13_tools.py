@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from agmesh.experiments import x3_models, x4_export
 from agmesh.mesh.sessions import SessionStore
 
@@ -50,3 +52,27 @@ def test_verify_flags_mismatches_and_missing_models(tmp_path: Path) -> None:
     (x3_models.model_dir("site_a", 11, models) / "model.json").unlink()
     problems = x3_models.verify(rerun, ref, models)
     assert any("seed 23: auroc" in p for p in problems) and any("no model" in p for p in problems)
+
+
+def test_export_skips_unfinished_runs_and_runs_without_sessions(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    import sqlite3
+
+    finished, aborted, copied = tmp_path / "a_done", tmp_path / "b_aborted", tmp_path / "c_copy"
+    for run in (finished, aborted, copied):
+        run.mkdir()
+    SessionStore(finished / "storage.db").conn.close()
+    (finished / "summary.json").write_text("{}")
+    sqlite3.connect(aborted / "storage.db").close()  # copied edge db, run stopped
+    con = sqlite3.connect(copied / "storage.db")
+    con.execute("CREATE TABLE bus (id TEXT)")
+    con.commit()
+    con.close()
+    (copied / "summary.json").write_text("{}")
+    assert x4_export.main(["--root", str(tmp_path)]) == 0
+    out = capsys.readouterr().out
+    assert (finished / "sessions.jsonl").is_file()
+    assert "skipped b_aborted: no summary.json" in out
+    assert "skipped c_copy: storage.db has no sessions table" in out
+    assert "exported 1 run(s), skipped 2" in out

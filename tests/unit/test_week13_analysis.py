@@ -198,3 +198,14 @@ def test_perturbations_change_only_the_planned_rows() -> None:
     assert touched.sum() == 1 + 4 + 3 + 2
     changed = np.flatnonzero((v != part.features.values).any(axis=1))
     assert set(changed) <= set(np.flatnonzero(touched))
+
+
+def test_robustness_uses_only_the_seeds_that_reproduce_per_site() -> None:
+    problems = [
+        "site_a__fedprox__eps3 seed 23: auroc 0.1 != X1 0.2",
+        "site_a__fedprox__eps3 seed 41: no model",
+    ]
+    by = rb.verified_seeds([11, 23, 41, 53], problems)
+    assert by["site_a"]["used"] == [11, 53]
+    assert sorted(by["site_a"]["excluded"]) == ["23", "41"]
+    assert by["site_b"] == {"used": [11, 23, 41, 53], "excluded": {}}
