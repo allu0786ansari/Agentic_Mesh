@@ -1,0 +1,1147 @@
+{
+  "schema_version": "1.0",
+  "kind": "X2.analysis",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-18T19:26:25Z",
+    "git_sha": "a20c9c65b25cf5eecee2a39a2a03cbcdc4777564",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.13",
+      "implementation": "CPython",
+      "platform": "Linux-6.18.44-fc-v139-x86_64-with-glibc2.39",
+      "machine": "x86_64",
+      "wsl": false,
+      "cpu_count_logical": 2,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 8030,
+      "swap_total_mb": 0,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "hostname_hash": "5bce98f73f3e",
+      "pid": 2965
+    }
+  },
+  "experiment": "X2",
+  "split": "val",
+  "protocol": "docs/adr/0016-x1-x2-matrix-week12.md \u00a74",
+  "method": "two-stage stratified block bootstrap (ADR 0005), paired per site",
+  "resamples": 10000,
+  "status": "development evidence (validation)",
+  "tests": [
+    {
+      "family": "H1b",
+      "label": "FedProx vs FedAvg, homogeneous, site_a",
+      "a": "X1/site_a__fedprox__eps3",
+      "b": "X1/site_a__fedavg__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.8914435392259513,
+      "observed_b": 0.8916762474683775,
+      "observed_difference": -0.00023270824242616062,
+      "ci": [
+        -0.0004610238540130124,
+        -4.493270251938758e-05
+      ],
+      "p_one_sided": 0.9937006299370063,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": -0.000232708242426094,
+        "ci": [
+          -0.0004442822488347264,
+          -1.9804129549627626e-05
+        ],
+        "p_two_sided_bootstrap": 0.035,
+        "p_wilcoxon": 0.1875
+      },
+      "p_holm": 1.0
+    },
+    {
+      "family": "H1b",
+      "label": "FedProx vs FedAvg, heterogeneous, site_a",
+      "a": "X2/site_a__fedprox__eps3__het__drop0.2",
+      "b": "X2/site_a__fedavg__eps3__het__drop0.2",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.8957296853849084,
+      "observed_b": 0.8960317785286858,
+      "observed_difference": -0.00030209314377738217,
+      "ci": [
+        -0.0007530760479081521,
+        2.9137424725420008e-05
+      ],
+      "p_one_sided": 0.961003899610039,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": -0.0003020931437775598,
+        "ci": [
+          -0.0005485945535577796,
+          -2.1996516966527045e-05
+        ],
+        "p_two_sided_bootstrap": 0.04,
+        "p_wilcoxon": 0.125
+      },
+      "p_holm": 1.0
+    },
+    {
+      "family": null,
+      "label": "heterogeneous vs homogeneous, fedavg, site_a",
+      "a": "X2/site_a__fedavg__eps3__het__drop0.2",
+      "b": "X1/site_a__fedavg__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.8960317785286858,
+      "observed_b": 0.8916762474683775,
+      "observed_difference": 0.004355531060308282,
+      "ci": [
+        0.00035385427511424873,
+        0.008196484305525345
+      ],
+      "p_one_sided": 0.0174982501749825,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.0043555310603084155,
+        "ci": [
+          0.0004530148223676145,
+          0.008128750710050103
+        ],
+        "p_two_sided_bootstrap": 0.03,
+        "p_wilcoxon": 0.1875
+      }
+    },
+    {
+      "family": null,
+      "label": "heterogeneous vs homogeneous, fedprox, site_a",
+      "a": "X2/site_a__fedprox__eps3__het__drop0.2",
+      "b": "X1/site_a__fedprox__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.8957296853849084,
+      "observed_b": 0.8914435392259513,
+      "observed_difference": 0.00428614615895706,
+      "ci": [
+        0.00024470211124060247,
+        0.008018577800160277
+      ],
+      "p_one_sided": 0.019498050194980503,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.004286146158956949,
+        "ci": [
+          0.0006789227666682774,
+          0.007816000742803818
+        ],
+        "p_two_sided_bootstrap": 0.023,
+        "p_wilcoxon": 0.1875
+      }
+    },
+    {
+      "family": "H1b",
+      "label": "FedProx vs FedAvg, homogeneous, site_b",
+      "a": "X1/site_b__fedprox__eps3",
+      "b": "X1/site_b__fedavg__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 1.0,
+      "observed_b": 1.0,
+      "observed_difference": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "p_one_sided": 1.0,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_two_sided_bootstrap": 1.0,
+        "p_wilcoxon": 1.0
+      },
+      "p_holm": 1.0
+    },
+    {
+      "family": "H1b",
+      "label": "FedProx vs FedAvg, heterogeneous, site_b",
+      "a": "X2/site_b__fedprox__eps3__het__drop0.2",
+      "b": "X2/site_b__fedavg__eps3__het__drop0.2",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 1.0,
+      "observed_b": 0.998641975308642,
+      "observed_difference": 0.0013580246913580396,
+      "ci": [
+        0.0010774410774410104,
+        0.001481481481481639
+      ],
+      "p_one_sided": 9.999000099990002e-05,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.0013580246913580175,
+        "ci": [
+          0.0,
+          0.004074074074074052
+        ],
+        "p_two_sided_bootstrap": 0.672,
+        "p_wilcoxon": 1.0
+      },
+      "p_holm": 0.00039996000399960006
+    },
+    {
+      "family": null,
+      "label": "heterogeneous vs homogeneous, fedavg, site_b",
+      "a": "X2/site_b__fedavg__eps3__het__drop0.2",
+      "b": "X1/site_b__fedavg__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.998641975308642,
+      "observed_b": 1.0,
+      "observed_difference": -0.0013580246913580396,
+      "ci": [
+        -0.001481481481481639,
+        -0.0010774410774410104
+      ],
+      "p_one_sided": 1.0,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": -0.0013580246913580175,
+        "ci": [
+          -0.004074074074074052,
+          0.0
+        ],
+        "p_two_sided_bootstrap": 0.672,
+        "p_wilcoxon": 1.0
+      }
+    },
+    {
+      "family": null,
+      "label": "heterogeneous vs homogeneous, fedprox, site_b",
+      "a": "X2/site_b__fedprox__eps3__het__drop0.2",
+      "b": "X1/site_b__fedprox__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 1.0,
+      "observed_b": 1.0,
+      "observed_difference": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "p_one_sided": 1.0,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_two_sided_bootstrap": 1.0,
+        "p_wilcoxon": 1.0
+      }
+    },
+    {
+      "family": null,
+      "label": "IID vs non-IID, fedavg, site_a",
+      "a": "X2/site_a__fedavg__eps3__iid",
+      "b": "X1/site_a__fedavg__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "unpaired",
+      "observed_a": 0.887838277263717,
+      "observed_b": 0.8916762474683775,
+      "observed_difference": -0.003837970204660479,
+      "ci": [
+        -0.006923074117499889,
+        -0.001512520425527359
+      ],
+      "p_one_sided": 0.9996000399960004,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": -0.0038379702046604123,
+        "ci": [
+          -0.0066562757867949076,
+          -0.0003354434226703784
+        ],
+        "p_two_sided_bootstrap": 0.035,
+        "p_wilcoxon": 0.125
+      }
+    },
+    {
+      "family": null,
+      "label": "IID vs non-IID, fedprox, site_a",
+      "a": "X2/site_a__fedprox__eps3__iid",
+      "b": "X1/site_a__fedprox__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "unpaired",
+      "observed_a": 0.8876280736525798,
+      "observed_b": 0.8914435392259513,
+      "observed_difference": -0.003815465573371535,
+      "ci": [
+        -0.006997848828298864,
+        -0.0014613881770329158
+      ],
+      "p_one_sided": 0.9995000499950005,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": -0.003815465573371557,
+        "ci": [
+          -0.006630933500848801,
+          -0.0005726683899378137
+        ],
+        "p_two_sided_bootstrap": 0.008,
+        "p_wilcoxon": 0.125
+      }
+    },
+    {
+      "family": null,
+      "label": "mu 0.001 vs 0.01, homogeneous, site_a",
+      "a": "X2/site_a__fedprox__eps3__mu0.001",
+      "b": "X1/site_a__fedprox__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.8916827121180384,
+      "observed_b": 0.8914435392259513,
+      "observed_difference": 0.0002391728920870806,
+      "ci": [
+        8.902442152797785e-05,
+        0.0004272811021321293
+      ],
+      "p_one_sided": 0.0010998900109989002,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.0002391728920870362,
+        "ci": [
+          5.179002556932044e-05,
+          0.00042655575860475194
+        ],
+        "p_two_sided_bootstrap": 0.006,
+        "p_wilcoxon": 0.125
+      }
+    },
+    {
+      "family": null,
+      "label": "mu 0.001 vs 0.01, heterogeneous, site_a",
+      "a": "X2/site_a__fedprox__eps3__het__drop0.2__mu0.001",
+      "b": "X2/site_a__fedprox__eps3__het__drop0.2",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.8960138472359735,
+      "observed_b": 0.8957296853849084,
+      "observed_difference": 0.0002841618510651678,
+      "ci": [
+        -3.9232745372144716e-05,
+        0.0007096493524555602
+      ],
+      "p_one_sided": 0.043795620437956206,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.00028416185106534543,
+        "ci": [
+          2.3753521416924883e-05,
+          0.0004990424042747188
+        ],
+        "p_two_sided_bootstrap": 0.033,
+        "p_wilcoxon": 0.1875
+      }
+    },
+    {
+      "family": null,
+      "label": "mu 0.1 vs 0.01, homogeneous, site_a",
+      "a": "X2/site_a__fedprox__eps3__mu0.1",
+      "b": "X1/site_a__fedprox__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.8892433461601117,
+      "observed_b": 0.8914435392259513,
+      "observed_difference": -0.0022001930658396285,
+      "ci": [
+        -0.0035883852947080465,
+        -0.0010872193750320947
+      ],
+      "p_one_sided": 1.0,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": -0.0022001930658397395,
+        "ci": [
+          -0.002849265660733192,
+          -0.0015341116773639918
+        ],
+        "p_two_sided_bootstrap": 0.0,
+        "p_wilcoxon": 0.0625
+      }
+    },
+    {
+      "family": null,
+      "label": "mu 0.1 vs 0.01, heterogeneous, site_a",
+      "a": "X2/site_a__fedprox__eps3__het__drop0.2__mu0.1",
+      "b": "X2/site_a__fedprox__eps3__het__drop0.2",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.893192231094163,
+      "observed_b": 0.8957296853849084,
+      "observed_difference": -0.0025374542907453668,
+      "ci": [
+        -0.005832367931520438,
+        8.591871206017853e-05
+      ],
+      "p_one_sided": 0.9707029297070293,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": -0.002537454290745411,
+        "ci": [
+          -0.004225566386858693,
+          -0.0005293901631933107
+        ],
+        "p_two_sided_bootstrap": 0.007,
+        "p_wilcoxon": 0.125
+      }
+    }
+  ],
+  "configs": {
+    "X1/site_a__fedavg__eps3": {
+      "auroc": {
+        "observed": 0.8916762474683775,
+        "low": 0.8389366753936779,
+        "high": 0.9314232158877155,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.6977720147109877,
+        "low": 0.566420601061252,
+        "high": 0.8041015400086603,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.9,
+        "low": 0.775,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.009987299638640418,
+        "low": 0.005288685021184713,
+        "high": 0.015602388583830269,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X1/site_a__fedprox__eps3": {
+      "auroc": {
+        "observed": 0.8914435392259513,
+        "low": 0.8386299322137949,
+        "high": 0.9312492850724953,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.6974781493956785,
+        "low": 0.565833849282421,
+        "high": 0.8035573083337718,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.9,
+        "low": 0.775,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.010092389798509802,
+        "low": 0.005315442922336512,
+        "high": 0.015818587066499835,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X1/site_b__fedavg__eps3": {
+      "auroc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.02816830435878055,
+        "low": 0.02816830435878055,
+        "high": 0.02816830435878055,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X1/site_b__fedprox__eps3": {
+      "auroc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.03175610985134795,
+        "low": 0.03175610985134795,
+        "high": 0.03175610985134795,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedavg__eps3__het__drop0.2": {
+      "auroc": {
+        "observed": 0.8960317785286858,
+        "low": 0.8451894291029877,
+        "high": 0.9346763522288648,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.7016802796499076,
+        "low": 0.5738481894154391,
+        "high": 0.8063775976361551,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.9125,
+        "low": 0.7875,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.009529795536062553,
+        "low": 0.004928405400315615,
+        "high": 0.015136472959563703,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedavg__eps3__iid": {
+      "auroc": {
+        "observed": 0.887838277263717,
+        "low": 0.833903388747887,
+        "high": 0.9286415349554356,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.6907581235479843,
+        "low": 0.5591698782411272,
+        "high": 0.7973931574854379,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.8875,
+        "low": 0.75,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.011142659115490101,
+        "low": 0.005736954670263843,
+        "high": 0.0180981733098261,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedprox__eps3__het__drop0.2": {
+      "auroc": {
+        "observed": 0.8957296853849084,
+        "low": 0.8445019034158928,
+        "high": 0.9344543501918989,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.7007219982481416,
+        "low": 0.5722112761056454,
+        "high": 0.8057462021375734,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.9125,
+        "low": 0.7875,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.009529987216971111,
+        "low": 0.004972187463452405,
+        "high": 0.01507167292752028,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedprox__eps3__het__drop0.2__mu0.001": {
+      "auroc": {
+        "observed": 0.8960138472359735,
+        "low": 0.8451526032263061,
+        "high": 0.9346883741650187,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.7015820531228669,
+        "low": 0.5734555079726733,
+        "high": 0.8062280962373091,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.9125,
+        "low": 0.7875,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.009426167818185944,
+        "low": 0.004868120292158906,
+        "high": 0.014952715342744161,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedprox__eps3__het__drop0.2__mu0.1": {
+      "auroc": {
+        "observed": 0.893192231094163,
+        "low": 0.8396107127954843,
+        "high": 0.9332143985847708,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.6958439507183823,
+        "low": 0.5653720927036909,
+        "high": 0.8022855879646494,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.925,
+        "low": 0.8,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.00977281812931558,
+        "low": 0.00510786520632515,
+        "high": 0.015489609586359815,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedprox__eps3__iid": {
+      "auroc": {
+        "observed": 0.8876280736525798,
+        "low": 0.8336273647180614,
+        "high": 0.928487735045663,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.6902784997001441,
+        "low": 0.5587194822479942,
+        "high": 0.7970275541043954,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.8875,
+        "low": 0.75,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.011216596627384407,
+        "low": 0.005767487820748932,
+        "high": 0.01818252242102428,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedprox__eps3__mu0.001": {
+      "auroc": {
+        "observed": 0.8916827121180384,
+        "low": 0.8389310131986035,
+        "high": 0.9314060990556128,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.6977783602241018,
+        "low": 0.5659812251980022,
+        "high": 0.8040693684233996,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.9,
+        "low": 0.775,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.009971975815076486,
+        "low": 0.005257174769961346,
+        "high": 0.015608002030591966,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedprox__eps3__mu0.1": {
+      "auroc": {
+        "observed": 0.8892433461601117,
+        "low": 0.8355099050109165,
+        "high": 0.9295994342895386,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.6952492804727167,
+        "low": 0.5630376758276417,
+        "high": 0.8013972593514159,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.9125,
+        "low": 0.7875,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.010026810795997595,
+        "low": 0.005292257679430177,
+        "high": 0.015850027086127805,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_b__fedavg__eps3__het__drop0.2": {
+      "auroc": {
+        "observed": 0.998641975308642,
+        "low": 0.9985185185185184,
+        "high": 0.998922558922559,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.9719977707477707,
+        "low": 0.9606349206349206,
+        "high": 0.9830716253443527,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.027755102040816326,
+        "low": 0.027755102040816326,
+        "high": 0.027755102040816326,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_b__fedprox__eps3__het__drop0.2": {
+      "auroc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.028248929201310148,
+        "low": 0.028248929201310148,
+        "high": 0.028248929201310148,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    }
+  }
+}
