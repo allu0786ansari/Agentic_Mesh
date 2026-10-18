@@ -9,7 +9,7 @@ PY := $(UV) run python
         prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft \
         training-budget summarise shift-selection dp-sanity train x8 g2-pilot g2-tuning \
         edge-model edge latency setup-kb kb kb-sources retrieval-queries retrieval-eval mesh llm-calibrate \
-	certs stack-up stack-down approvals-api security-tests g3 grid partitions-iid stats figures
+	certs stack-up stack-down approvals-api security-tests g3 grid partitions-iid stats figures x3-models x4-export
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -54,6 +54,8 @@ help:
 	@echo "grid              Week 12: X1/X2 matrix, resumable, e.g. make grid HOURS=9 (or ARGS=--dry-run)"
 	@echo "stats             Week 12: ADR 0016 §4 analysis -> results/X{1,2}/analysis_val.{json,md}"
 	@echo "figures           Week 12: figures and privacy table from artifacts -> results/figures/"
+	@echo "x3-models         Week 13: retrain FedProx eps 3 (5 seeds, both sites) with --save-model, then verify"
+	@echo "x4-export         Week 13: export mesh sessions (storage.db) to sessions.jsonl for X4"
 	@echo "g3                Gate G3: ADR 0014 §9 rule over mesh runs, e.g. make g3 RUNS='results/mesh/<a> results/mesh/<b>'"
 	@echo "g2-pilot          Week 7: FedAvg and FedProx at eps 10, both sites, 50 rounds -> results/federated/g2_pilot/"
 	@echo "g2-tuning         Week 7: ADR 0008 DP lr x clip grid and FedProx mu grid -> results/federated/g2_*"
@@ -241,6 +243,12 @@ stats:
 
 figures:
 	$(UV) run --group figures python -m agmesh.experiments.figures
+
+x3-models:
+	$(PY) -m agmesh.experiments.x3_models train
+
+x4-export:
+	$(PY) -m agmesh.experiments.x4_export
 
 g3:
 	$(PY) -m agmesh.evaluation.g3 --runs $(RUNS)
