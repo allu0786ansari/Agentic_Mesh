@@ -1,0 +1,1106 @@
+{
+  "schema_version": "1.0",
+  "kind": "result",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-18T16:05:09Z",
+    "git_sha": "8b3d97a1090cf2841dff49239a44698a7fa8c870",
+    "git_branch": "main",
+    "git_dirty": true,
+    "git_dirty_paths": [
+      "uv.lock"
+    ],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "hostname_hash": "89a720d64995",
+      "pid": 19520
+    },
+    "manifest_sha256": "61d66c7bf074bbc08d80bd527bf9b1dbf1c747b1df3bd4101cb6a2a4f51ccfb5",
+    "checkpoint_sha256": "d44659eced91f072032837c18088afd0c7232b38731cf9d3716872270c55d360",
+    "started_at": "2026-10-18T15:48:17Z",
+    "finished_at": "2026-10-18T16:05:09Z"
+  },
+  "experiment": "X2",
+  "config_id": "site_a__fedprox__eps3__het__drop0.2__mu0.1",
+  "seed": 37,
+  "split": "val",
+  "metrics": {
+    "auroc": 0.9020061635742973,
+    "auprc": 0.6990466308124061,
+    "event_recall": 0.9375,
+    "range_f1": 0.5222852795095387,
+    "window_fpr": 0.011186670120242777,
+    "window_fpr_excl_recovery": 0.0068772461146051084,
+    "ttd_median_s": 45.0,
+    "false_alarms_per_hour": 0.6990392366567583,
+    "abstained_share": 0.07216014605088872
+  },
+  "privacy": {
+    "clients": {
+      "a1": {
+        "node": "a1",
+        "delta": 1e-05,
+        "target_epsilon": 3.0,
+        "epsilon": 2.204988038938204,
+        "history": [
+          {
+            "name": "normalisation",
+            "noise_multiplier": 12.339813437242187,
+            "sample_rate": 1.0,
+            "steps": 1
+          },
+          {
+            "name": "dpsgd",
+            "noise_multiplier": 5.425643994086905,
+            "sample_rate": 0.08366013071895424,
+            "steps": 1020
+          }
+        ],
+        "plan": {
+          "accountant": "rdp",
+          "delta": 1e-05,
+          "fixed": [
+            {
+              "name": "normalisation",
+              "noise_multiplier": 12.339813437242187,
+              "sample_rate": 1.0,
+              "steps": 1
+            }
+          ],
+          "max_grad_norm": 1.0,
+          "n_windows": 3060,
+          "noise_multiplier": 5.425643994086905,
+          "planned_epsilon": 2.9993489663558957,
+          "sample_rate": 0.08366013071895424,
+          "steps": 1800,
+          "target_epsilon": 3.0
+        },
+        "stats_noise_multiplier": 12.339813437242187
+      },
+      "a2": {
+        "node": "a2",
+        "delta": 1e-05,
+        "target_epsilon": 3.0,
+        "epsilon": 2.259907700980877,
+        "history": [
+          {
+            "name": "normalisation",
+            "noise_multiplier": 12.339813437242187,
+            "sample_rate": 1.0,
+            "steps": 1
+          },
+          {
+            "name": "dpsgd",
+            "noise_multiplier": 5.377817735910674,
+            "sample_rate": 0.07967631497043262,
+            "steps": 1157
+          }
+        ],
+        "plan": {
+          "accountant": "rdp",
+          "delta": 1e-05,
+          "fixed": [
+            {
+              "name": "normalisation",
+              "noise_multiplier": 12.339813437242187,
+              "sample_rate": 1.0,
+              "steps": 1
+            }
+          ],
+          "max_grad_norm": 1.0,
+          "n_windows": 3213,
+          "noise_multiplier": 5.377817735910674,
+          "planned_epsilon": 2.9995153804284747,
+          "sample_rate": 0.07967631497043262,
+          "steps": 1950,
+          "target_epsilon": 3.0
+        },
+        "stats_noise_multiplier": 12.339813437242187
+      },
+      "a3": {
+        "node": "a3",
+        "delta": 1e-05,
+        "target_epsilon": 3.0,
+        "epsilon": 2.246295133189404,
+        "history": [
+          {
+            "name": "normalisation",
+            "noise_multiplier": 12.339813437242187,
+            "sample_rate": 1.0,
+            "steps": 1
+          },
+          {
+            "name": "dpsgd",
+            "noise_multiplier": 5.1033484758746885,
+            "sample_rate": 0.07549395458566795,
+            "steps": 1144
+          }
+        ],
+        "plan": {
+          "accountant": "rdp",
+          "delta": 1e-05,
+          "fixed": [
+            {
+              "name": "normalisation",
+              "noise_multiplier": 12.339813437242187,
+              "sample_rate": 1.0,
+              "steps": 1
+            }
+          ],
+          "max_grad_norm": 1.0,
+          "n_windows": 3391,
+          "noise_multiplier": 5.1033484758746885,
+          "planned_epsilon": 2.9990665195793804,
+          "sample_rate": 0.07549395458566795,
+          "steps": 1950,
+          "target_epsilon": 3.0
+        },
+        "stats_noise_multiplier": 12.339813437242187
+      },
+      "a4": {
+        "node": "a4",
+        "delta": 1e-05,
+        "target_epsilon": 3.0,
+        "epsilon": 2.5329414202699057,
+        "history": [
+          {
+            "name": "normalisation",
+            "noise_multiplier": 12.339813437242187,
+            "sample_rate": 1.0,
+            "steps": 1
+          },
+          {
+            "name": "dpsgd",
+            "noise_multiplier": 5.1033484758746885,
+            "sample_rate": 0.07549395458566795,
+            "steps": 1430
+          }
+        ],
+        "plan": {
+          "accountant": "rdp",
+          "delta": 1e-05,
+          "fixed": [
+            {
+              "name": "normalisation",
+              "noise_multiplier": 12.339813437242187,
+              "sample_rate": 1.0,
+              "steps": 1
+            }
+          ],
+          "max_grad_norm": 1.0,
+          "n_windows": 3391,
+          "noise_multiplier": 5.1033484758746885,
+          "planned_epsilon": 2.9990665195793804,
+          "sample_rate": 0.07549395458566795,
+          "steps": 1950,
+          "target_epsilon": 3.0
+        },
+        "stats_noise_multiplier": 12.339813437242187
+      }
+    },
+    "max_client_epsilon": 2.5329414202699057
+  },
+  "federation": {
+    "run_id": "site_a__fedprox__eps3__het__drop0.2__mu0.1__seed37__20261018T211817",
+    "strategy": "fedprox",
+    "proximal_mu": 0.1,
+    "rounds": 50,
+    "rounds_to_target": 47,
+    "aggregation": "uniform mean",
+    "round_log": [
+      {
+        "round": 1,
+        "participants": [
+          "a1",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a2"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.9154435968042439,
+        "val_loss": 1.0452226251363754,
+        "seconds": 17.42764936099411
+      },
+      {
+        "round": 2,
+        "participants": [
+          "a1",
+          "a4"
+        ],
+        "missed": [
+          "a2",
+          "a3"
+        ],
+        "declined": [],
+        "aggregated": false,
+        "train_loss": 0.8297089550357599,
+        "val_loss": 1.0452226251363754,
+        "seconds": 12.850456210988341
+      },
+      {
+        "round": 3,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.8495200406282375,
+        "val_loss": 1.007758617401123,
+        "seconds": 26.557929291011533
+      },
+      {
+        "round": 4,
+        "participants": [
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a1"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.7903904807873262,
+        "val_loss": 0.9551251232624054,
+        "seconds": 19.043330892018275
+      },
+      {
+        "round": 5,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.7738217227160931,
+        "val_loss": 0.9268277883529663,
+        "seconds": 21.53105976601364
+      },
+      {
+        "round": 6,
+        "participants": [
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a1"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.7195453552099375,
+        "val_loss": 0.9140788316726685,
+        "seconds": 18.96020018600393
+      },
+      {
+        "round": 7,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.7139777838228605,
+        "val_loss": 0.9087041467428207,
+        "seconds": 31.955666658002883
+      },
+      {
+        "round": 8,
+        "participants": [
+          "a1",
+          "a2",
+          "a4"
+        ],
+        "missed": [
+          "a3"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.7001624075520753,
+        "val_loss": 0.9011036604642868,
+        "seconds": 14.060019010998076
+      },
+      {
+        "round": 9,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.7221466155770497,
+        "val_loss": 0.8808608800172806,
+        "seconds": 21.262702605017694
+      },
+      {
+        "round": 10,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.6654313215269493,
+        "val_loss": 0.8277182132005692,
+        "seconds": 24.70719243498752
+      },
+      {
+        "round": 11,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.637173740623089,
+        "val_loss": 0.7691342681646347,
+        "seconds": 17.530040304001886
+      },
+      {
+        "round": 12,
+        "participants": [
+          "a1",
+          "a2",
+          "a4"
+        ],
+        "missed": [
+          "a3"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.5571675417769668,
+        "val_loss": 0.7167940735816956,
+        "seconds": 18.155443563009612
+      },
+      {
+        "round": 13,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.5512116776827054,
+        "val_loss": 0.6858163475990295,
+        "seconds": 24.346407508011907
+      },
+      {
+        "round": 14,
+        "participants": [
+          "a1",
+          "a2",
+          "a4"
+        ],
+        "missed": [
+          "a3"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.5341730824647805,
+        "val_loss": 0.6881747841835022,
+        "seconds": 19.18656925301184
+      },
+      {
+        "round": 15,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.5347044611206422,
+        "val_loss": 0.6711744964122772,
+        "seconds": 24.422744605020853
+      },
+      {
+        "round": 16,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.5229144553916576,
+        "val_loss": 0.6538339406251907,
+        "seconds": 24.428394857997773
+      },
+      {
+        "round": 17,
+        "participants": [
+          "a1",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a2"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.5319721558664599,
+        "val_loss": 0.6311099529266357,
+        "seconds": 14.110520360001829
+      },
+      {
+        "round": 18,
+        "participants": [
+          "a1",
+          "a2",
+          "a3"
+        ],
+        "missed": [
+          "a4"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.49081878357718134,
+        "val_loss": 0.6173434406518936,
+        "seconds": 13.133391747018322
+      },
+      {
+        "round": 19,
+        "participants": [
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a1"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.4538779847132854,
+        "val_loss": 0.5754955559968948,
+        "seconds": 21.43918852301431
+      },
+      {
+        "round": 20,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.41874672725605655,
+        "val_loss": 0.5171522349119186,
+        "seconds": 25.96724412200274
+      },
+      {
+        "round": 21,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.3834372309442514,
+        "val_loss": 0.4726060554385185,
+        "seconds": 23.781891785998596
+      },
+      {
+        "round": 22,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.351586033948339,
+        "val_loss": 0.4343716949224472,
+        "seconds": 23.451627827016637
+      },
+      {
+        "round": 23,
+        "participants": [
+          "a1",
+          "a2",
+          "a4"
+        ],
+        "missed": [
+          "a3"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.33006541628358715,
+        "val_loss": 0.4175448566675186,
+        "seconds": 23.223239548999118
+      },
+      {
+        "round": 24,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.32020664367920315,
+        "val_loss": 0.395469531416893,
+        "seconds": 28.520427509996807
+      },
+      {
+        "round": 25,
+        "participants": [
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a1"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.3167912937127627,
+        "val_loss": 0.39338432997465134,
+        "seconds": 14.530143001000397
+      },
+      {
+        "round": 26,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.31760733388364315,
+        "val_loss": 0.3855630233883858,
+        "seconds": 21.349337414023466
+      },
+      {
+        "round": 27,
+        "participants": [
+          "a1",
+          "a3"
+        ],
+        "missed": [
+          "a2",
+          "a4"
+        ],
+        "declined": [],
+        "aggregated": false,
+        "train_loss": 0.3154143156149448,
+        "val_loss": 0.3855630233883858,
+        "seconds": 13.147693915001582
+      },
+      {
+        "round": 28,
+        "participants": [
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a1"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.3113070825735728,
+        "val_loss": 0.38398377597332,
+        "seconds": 21.582129268004792
+      },
+      {
+        "round": 29,
+        "participants": [
+          "a1",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a2"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.31493605418592435,
+        "val_loss": 0.3792773261666298,
+        "seconds": 16.064599394012475
+      },
+      {
+        "round": 30,
+        "participants": [
+          "a1",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a2"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.3114435425044125,
+        "val_loss": 0.37495651841163635,
+        "seconds": 13.807951030990807
+      },
+      {
+        "round": 31,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.30302544334569037,
+        "val_loss": 0.3713769093155861,
+        "seconds": 25.81725545899826
+      },
+      {
+        "round": 32,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.29768902474106884,
+        "val_loss": 0.36463623493909836,
+        "seconds": 24.15023244600161
+      },
+      {
+        "round": 33,
+        "participants": [
+          "a1",
+          "a2",
+          "a4"
+        ],
+        "missed": [
+          "a3"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.29034598471007794,
+        "val_loss": 0.36871257424354553,
+        "seconds": 16.23522083699936
+      },
+      {
+        "round": 34,
+        "participants": [
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a1"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.29208246102699864,
+        "val_loss": 0.36446425318717957,
+        "seconds": 14.223981844988884
+      },
+      {
+        "round": 35,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.28749668082365626,
+        "val_loss": 0.35550280660390854,
+        "seconds": 23.736228352994658
+      },
+      {
+        "round": 36,
+        "participants": [
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a1"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.2796476299946125,
+        "val_loss": 0.35270290821790695,
+        "seconds": 21.29984088501078
+      },
+      {
+        "round": 37,
+        "participants": [
+          "a1",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a2"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.2817151121731497,
+        "val_loss": 0.34448879212141037,
+        "seconds": 15.986757448001299
+      },
+      {
+        "round": 38,
+        "participants": [
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a1"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.27255274011538577,
+        "val_loss": 0.3426397815346718,
+        "seconds": 21.45189303898951
+      },
+      {
+        "round": 39,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.27214695498920405,
+        "val_loss": 0.33666636049747467,
+        "seconds": 16.86637359598535
+      },
+      {
+        "round": 40,
+        "participants": [
+          "a2",
+          "a4"
+        ],
+        "missed": [
+          "a1",
+          "a3"
+        ],
+        "declined": [],
+        "aggregated": false,
+        "train_loss": 0.2643854073607005,
+        "val_loss": 0.33666636049747467,
+        "seconds": 6.121745364973322
+      },
+      {
+        "round": 41,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.26883981725535333,
+        "val_loss": 0.3314846083521843,
+        "seconds": 21.144741586002056
+      },
+      {
+        "round": 42,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.26990989638635743,
+        "val_loss": 0.3296371176838875,
+        "seconds": 19.149764387024334
+      },
+      {
+        "round": 43,
+        "participants": [
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a1"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.25978868435590696,
+        "val_loss": 0.3267308995127678,
+        "seconds": 21.32100577899837
+      },
+      {
+        "round": 44,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.26014105383402264,
+        "val_loss": 0.32063110172748566,
+        "seconds": 23.678222866001306
+      },
+      {
+        "round": 45,
+        "participants": [
+          "a1",
+          "a2",
+          "a4"
+        ],
+        "missed": [
+          "a3"
+        ],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.25852966474162203,
+        "val_loss": 0.32254596054553986,
+        "seconds": 16.064233394979965
+      },
+      {
+        "round": 46,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.25670443140925503,
+        "val_loss": 0.3148685693740845,
+        "seconds": 24.434472822991665
+      },
+      {
+        "round": 47,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.2513206792422212,
+        "val_loss": 0.31292494386434555,
+        "seconds": 23.978127681009937
+      },
+      {
+        "round": 48,
+        "participants": [
+          "a3",
+          "a4"
+        ],
+        "missed": [
+          "a1",
+          "a2"
+        ],
+        "declined": [],
+        "aggregated": false,
+        "train_loss": 0.24722651736094403,
+        "val_loss": 0.31292494386434555,
+        "seconds": 8.837006063986337
+      },
+      {
+        "round": 49,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.24889340913162017,
+        "val_loss": 0.30907245352864265,
+        "seconds": 26.306223329011118
+      },
+      {
+        "round": 50,
+        "participants": [
+          "a1",
+          "a2",
+          "a3",
+          "a4"
+        ],
+        "missed": [],
+        "declined": [],
+        "aggregated": true,
+        "train_loss": 0.24538265209262955,
+        "val_loss": 0.30730796605348587,
+        "seconds": 19.083891299000243
+      }
+    ],
+    "registry": {
+      "a1": {
+        "status": "active",
+        "missed_rounds": 0
+      },
+      "a2": {
+        "status": "active",
+        "missed_rounds": 0
+      },
+      "a3": {
+        "status": "active",
+        "missed_rounds": 0
+      },
+      "a4": {
+        "status": "active",
+        "missed_rounds": 0
+      }
+    },
+    "pooled_auroc_hist": 0.8953098034011646,
+    "pooled_auroc_bin_error": 0.001302917893086515,
+    "seconds": 1011.9,
+    "seconds_per_round": 20.24,
+    "backend": "inprocess"
+  },
+  "site": "site_a",
+  "mode": "federated",
+  "model": "vae",
+  "private": true,
+  "target_epsilon": "3",
+  "per_client": {
+    "a1": {
+      "auroc": 0.9284848484848485,
+      "auprc": 0.6773342104755227,
+      "event_recall": 1.0,
+      "range_f1": 0.41938250428816465,
+      "window_fpr": 0.008259587020648967,
+      "window_fpr_excl_recovery": 0.0,
+      "ttd_median_s": 38.5,
+      "false_alarms_per_hour": 0.6371681415929203,
+      "abstained_share": 0.08759124087591241,
+      "threshold": 6.182808390088421,
+      "threshold_val_fpr": 0.009727016002510198
+    },
+    "a2": {
+      "auroc": 0.8836544837539494,
+      "auprc": 0.7332073278223643,
+      "event_recall": 1.0,
+      "range_f1": 0.6499913749784137,
+      "window_fpr": 0.02357920193470375,
+      "window_fpr_excl_recovery": 0.01805337519623234,
+      "ttd_median_s": 78.5,
+      "false_alarms_per_hour": 1.0882708585247884,
+      "abstained_share": 0.08633093525179858,
+      "threshold": 8.844859272424856,
+      "threshold_val_fpr": 0.009853687667960586
+    },
+    "a3": {
+      "auroc": 0.8605452726996505,
+      "auprc": 0.6276400063452462,
+      "event_recall": 0.75,
+      "range_f1": 0.3649026695238916,
+      "window_fpr": 0.009792626728110598,
+      "window_fpr_excl_recovery": 0.00646830530401035,
+      "ttd_median_s": 27.0,
+      "false_alarms_per_hour": 0.6221198156682028,
+      "abstained_share": 0.04502814258911825,
+      "threshold": 7.6427741905595035,
+      "threshold_val_fpr": 0.009892594686263426
+    },
+    "a4": {
+      "auroc": 0.9353400493587409,
+      "auprc": 0.7580049786064917,
+      "event_recall": 1.0,
+      "range_f1": 0.6548645692476849,
+      "window_fpr": 0.003115264797507788,
+      "window_fpr_excl_recovery": 0.002987303958177745,
+      "ttd_median_s": 36.0,
+      "false_alarms_per_hour": 0.44859813084112155,
+      "abstained_share": 0.06969026548672563,
+      "threshold": 6.192678900414335,
+      "threshold_val_fpr": 0.009892594686263426
+    }
+  },
+  "h1c": null,
+  "scoring": {
+    "aggregation": "mean",
+    "smooth": 1,
+    "top_k": 3,
+    "shift": "r3"
+  },
+  "evaluation": {
+    "threshold_from": "val_normal (per node)",
+    "evaluated_on": "val_attack",
+    "target_window_fpr": 0.01,
+    "event_tolerance_s": 60
+  },
+  "model_spec": {
+    "kind": "vae",
+    "n_inputs": 330,
+    "hidden": [
+      256,
+      128
+    ],
+    "latent": 16
+  },
+  "scores_file": {
+    "path": "seed_37.scores.npz",
+    "sha256": "53d48492618d9c1e391cbdce5da7e96a6ddfdc3e69cb780fbbcbb402af924014"
+  }
+}
