@@ -1,0 +1,2355 @@
+{
+  "schema_version": "1.0",
+  "kind": "X4.attribution",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-18T23:13:30Z",
+    "git_sha": "39f14103bb003d46ed51352cbfa1da28a3adcf7d",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.13",
+      "implementation": "CPython",
+      "platform": "Linux-6.18.44-fc-v139-x86_64-with-glibc2.39",
+      "machine": "x86_64",
+      "wsl": false,
+      "cpu_count_logical": 2,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 8030,
+      "swap_total_mb": 0,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "hostname_hash": "5bce98f73f3e",
+      "pid": 644
+    }
+  },
+  "protocol": "docs/adr/0017-x3-x6-week13.md \u00a74",
+  "split": "val",
+  "tolerance_s": 60.0,
+  "resamples": 10000,
+  "seed": 2026,
+  "mappings": {
+    "site_a": "7adb933617498b6f820435539fafde8aec07499481d40e73bedbc14771f57a53",
+    "site_b": "b820037789095479908a845f4494de0321569a7ae2eb4b3dee26a01d297472d3"
+  },
+  "runs": {
+    "site_a/full": "site_a__full__val__20261017T193228",
+    "site_a/retrieval_only": "site_a__retrieval_only__val__20261017T193158",
+    "site_a/llm_no_retrieval": "site_a__llm_no_retrieval__val__20261017T171042",
+    "site_a/rule_only": "site_a__rule_only__val__20261016T015627",
+    "site_b/full": "site_b__full__val__20261017T182613",
+    "site_b/retrieval_only": "site_b__retrieval_only__val__20261017T182503",
+    "site_b/llm_no_retrieval": "site_b__llm_no_retrieval__val__20261017T141606",
+    "site_b/rule_only": "site_b__rule_only__val__20261015T234348"
+  },
+  "development_evidence": true,
+  "site_a": {
+    "events": [
+      {
+        "event": "test1:e00",
+        "node": "a2",
+        "start_s": 1594136111.0,
+        "end_s": 1594136303.0
+      },
+      {
+        "event": "test2:e01",
+        "node": "a2",
+        "start_s": 1594316280.0,
+        "end_s": 1594316702.0
+      },
+      {
+        "event": "test2:e15",
+        "node": "a1",
+        "start_s": 1594395606.0,
+        "end_s": 1594395671.0
+      },
+      {
+        "event": "test2:e16",
+        "node": "a3",
+        "start_s": 1594398124.0,
+        "end_s": 1594398308.0
+      },
+      {
+        "event": "test2:e17",
+        "node": "a3",
+        "start_s": 1594405273.0,
+        "end_s": 1594405372.0
+      },
+      {
+        "event": "test2:e18",
+        "node": "a3",
+        "start_s": 1594416303.0,
+        "end_s": 1594416422.0
+      },
+      {
+        "event": "test3:e03",
+        "node": "a4",
+        "start_s": 1594673582.0,
+        "end_s": 1594673688.0
+      },
+      {
+        "event": "test3:e04",
+        "node": "a1",
+        "start_s": 1594675380.0,
+        "end_s": 1594675464.0
+      },
+      {
+        "event": "test3:e05",
+        "node": "a4",
+        "start_s": 1594684511.0,
+        "end_s": 1594684749.0
+      },
+      {
+        "event": "test3:e06",
+        "node": "a1",
+        "start_s": 1594691462.0,
+        "end_s": 1594691572.0
+      },
+      {
+        "event": "test4:e00",
+        "node": "a4",
+        "start_s": 1595940183.0,
+        "end_s": 1595940437.0
+      },
+      {
+        "event": "test4:e01",
+        "node": "a2",
+        "start_s": 1595943900.0,
+        "end_s": 1595944162.0
+      },
+      {
+        "event": "test5:e07",
+        "node": "a1",
+        "start_s": 1596158106.0,
+        "end_s": 1596158157.0
+      },
+      {
+        "event": "test5:e09",
+        "node": "a3",
+        "start_s": 1596189241.0,
+        "end_s": 1596189503.0
+      },
+      {
+        "event": "test5:e10",
+        "node": "a2",
+        "start_s": 1596192000.0,
+        "end_s": 1596192120.0
+      }
+    ],
+    "baselines": {
+      "majority_class": {
+        "technique": "T0836",
+        "top1": {
+          "estimate": 0.7333333333333333,
+          "low": 0.4666666666666667,
+          "high": 0.9333333333333333
+        }
+      },
+      "constant_answer": {
+        "T0806": {
+          "all_50": 0.2,
+          "these_events": 0.13333333333333333
+        },
+        "T0836": {
+          "all_50": 0.64,
+          "these_events": 0.7333333333333333
+        },
+        "T1692.001": {
+          "all_50": 0.64,
+          "these_events": 0.6666666666666666
+        },
+        "T1692.002": {
+          "all_50": 0.38,
+          "these_events": 0.26666666666666666
+        }
+      }
+    },
+    "modes": {
+      "full": {
+        "events": 15,
+        "matched": 14,
+        "missed": 1,
+        "abstained": 0,
+        "top1": {
+          "estimate": 0.4666666666666667,
+          "low": 0.2,
+          "high": 0.7333333333333333
+        },
+        "top3": {
+          "estimate": 0.5333333333333333,
+          "low": 0.26666666666666666,
+          "high": 0.8
+        },
+        "top1_answered": 0.5,
+        "top3_answered": 0.5714285714285714,
+        "answered": 14,
+        "tactic_accuracy_answered": 0.5714285714285714,
+        "incidents": 45,
+        "false_positive_incidents": 31,
+        "llm": {
+          "calls": 45,
+          "answered": 45,
+          "schema_valid_rate": 1.0,
+          "raw_grounding_rate": 1.0,
+          "valid_rate": 1.0,
+          "errors": {}
+        },
+        "per_event": [
+          {
+            "event": "test1:e00",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "5c39d9f6c66a4919b7839d5eda2853fa",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "full",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001",
+              "T0868",
+              "T0801"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": true
+          },
+          {
+            "event": "test2:e01",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.002"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "8e2beb888fe9442db23dd4749096b9a2",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0836",
+            "top3": [
+              "T0836",
+              "T0868",
+              "T0801"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test2:e15",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0806"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "e112b49bdb5f4e94816a6a61ca627aad",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0801",
+            "top3": [
+              "T0801",
+              "T0893",
+              "T0814"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test2:e16",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "71cf402670c945aba1a016657600bbb4",
+            "incident_nodes": [
+              "a3"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0893",
+            "top3": [
+              "T0893",
+              "T0816",
+              "T0821"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test2:e17",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T1692.001"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "be84e826c3324ac892410ab940098fbf",
+            "incident_nodes": [
+              "a3"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0801",
+            "top3": [
+              "T0801",
+              "T0814",
+              "T0820"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test2:e18",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T1692.001"
+            ],
+            "matched": false,
+            "matching_incidents": 0,
+            "session_id": null,
+            "incident_nodes": null,
+            "attribution_mode": null,
+            "technique": null,
+            "top3": [],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test3:e03",
+            "nodes": [
+              "a4"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "53bec52d690c4083b13277ec7f009a45",
+            "incident_nodes": [
+              "a4"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0836",
+            "top3": [
+              "T0836",
+              "T0821",
+              "T0816"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test3:e04",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "b277f64791e646398184714487254b6d",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0836",
+            "top3": [
+              "T0836",
+              "T0821",
+              "T0816"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test3:e05",
+            "nodes": [
+              "a4"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "9913d59ebd924c2c85f847d23df9cbfd",
+            "incident_nodes": [
+              "a4"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0809",
+            "top3": [
+              "T0809",
+              "T0814",
+              "T0881"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test3:e06",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "520d409f285045a9a26578d664ba8216",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0893",
+            "top3": [
+              "T0893",
+              "T0801",
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": true,
+            "tactic": false
+          },
+          {
+            "event": "test4:e00",
+            "nodes": [
+              "a4"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0836",
+              "T1692.002"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "efaf89f6087e40bc944321e741b438ba",
+            "incident_nodes": [
+              "a4"
+            ],
+            "attribution_mode": "full",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001",
+              "T0801",
+              "T0814"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test4:e01",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.002",
+              "T1692.001"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "9c11f47a54024c8884664f98307cc2b7",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0836",
+            "top3": [
+              "T0836",
+              "T0868",
+              "T0801"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test5:e07",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0806"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "c4b0877af52d4598be524128ef91d2e9",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "full",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001",
+              "T0801",
+              "T0893"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test5:e09",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.001",
+              "T1692.002"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "fe84a4835396440ba8320efbfd543459",
+            "incident_nodes": [
+              "a3"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0893",
+            "top3": [
+              "T0893",
+              "T0801",
+              "T0814"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test5:e10",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.001"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "31d6a80f522f44d2ae2d1d24281ce863",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0836",
+            "top3": [
+              "T0836",
+              "T0821",
+              "T0816"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          }
+        ]
+      },
+      "retrieval_only": {
+        "events": 15,
+        "matched": 14,
+        "missed": 1,
+        "abstained": 0,
+        "top1": {
+          "estimate": 0.0,
+          "low": 0.0,
+          "high": 0.0
+        },
+        "top3": {
+          "estimate": 0.3333333333333333,
+          "low": 0.13333333333333333,
+          "high": 0.6
+        },
+        "top1_answered": 0.0,
+        "top3_answered": 0.35714285714285715,
+        "answered": 14,
+        "tactic_accuracy_answered": 0.0,
+        "incidents": 45,
+        "false_positive_incidents": 31,
+        "llm": {
+          "calls": 0
+        },
+        "per_event": [
+          {
+            "event": "test1:e00",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "6c7bd4161d514ed5a25ff7543196a0d1",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0868",
+            "top3": [
+              "T0868",
+              "T1692.001",
+              "T0801"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test2:e01",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.002"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "3db81484c4dd4f98be604cb275d7e053",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0868",
+            "top3": [
+              "T0868",
+              "T0801",
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": true,
+            "tactic": false
+          },
+          {
+            "event": "test2:e15",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0806"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "1a82fa19736043afa178f3dd3f4ac7b0",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0801",
+            "top3": [
+              "T0801",
+              "T0893",
+              "T0814"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test2:e16",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "7e7ccebba0cb4be38f040ffc32af66d4",
+            "incident_nodes": [
+              "a3"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0816",
+            "top3": [
+              "T0816",
+              "T0821",
+              "T0801"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test2:e17",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T1692.001"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "30d4546fda794ceeb0af578332c6a004",
+            "incident_nodes": [
+              "a3"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0814",
+            "top3": [
+              "T0814",
+              "T0801",
+              "T0820"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test2:e18",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T1692.001"
+            ],
+            "matched": false,
+            "matching_incidents": 0,
+            "session_id": null,
+            "incident_nodes": null,
+            "attribution_mode": null,
+            "technique": null,
+            "top3": [],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test3:e03",
+            "nodes": [
+              "a4"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "ca6b3a67037d4bbf9487cdfb4be4a676",
+            "incident_nodes": [
+              "a4"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0821",
+            "top3": [
+              "T0821",
+              "T0816",
+              "T0801"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test3:e04",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "b4f005c9b6ff4e7a98e1bdb403a3dc9d",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0821",
+            "top3": [
+              "T0821",
+              "T0816",
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": true,
+            "tactic": false
+          },
+          {
+            "event": "test3:e05",
+            "nodes": [
+              "a4"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "8b731ee348d44fcb9f863089448cbe80",
+            "incident_nodes": [
+              "a4"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0814",
+            "top3": [
+              "T0814",
+              "T0881",
+              "T0816"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test3:e06",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "3983211e820a4bffa5b434677daee21f",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0801",
+            "top3": [
+              "T0801",
+              "T0836",
+              "T0821"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": true,
+            "tactic": false
+          },
+          {
+            "event": "test4:e00",
+            "nodes": [
+              "a4"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0836",
+              "T1692.002"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "5da3975b791c48559ca47346a1a53301",
+            "incident_nodes": [
+              "a4"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0801",
+            "top3": [
+              "T0801",
+              "T0814",
+              "T0881"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test4:e01",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.002",
+              "T1692.001"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "ce1d28558e8f44cbb1643fd0857b4563",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0868",
+            "top3": [
+              "T0868",
+              "T0801",
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": true,
+            "tactic": false
+          },
+          {
+            "event": "test5:e07",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0806"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "ec329804114a4d4c9e5e36692af6cf31",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0801",
+            "top3": [
+              "T0801",
+              "T0893",
+              "T0843.001"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test5:e09",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.001",
+              "T1692.002"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "109c600c753d4dd28e91bbfa4b063edc",
+            "incident_nodes": [
+              "a3"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0801",
+            "top3": [
+              "T0801",
+              "T0814",
+              "T0893"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test5:e10",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.001"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "414764c12991404db9340fbbdb1f3fcf",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0821",
+            "top3": [
+              "T0821",
+              "T0816",
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": true,
+            "tactic": false
+          }
+        ]
+      },
+      "llm_no_retrieval": {
+        "events": 15,
+        "matched": 14,
+        "missed": 1,
+        "abstained": 0,
+        "top1": {
+          "estimate": 0.7333333333333333,
+          "low": 0.4666666666666667,
+          "high": 0.9333333333333333
+        },
+        "top3": {
+          "estimate": 0.7333333333333333,
+          "low": 0.4666666666666667,
+          "high": 0.9333333333333333
+        },
+        "top1_answered": 0.7857142857142857,
+        "top3_answered": 0.7857142857142857,
+        "answered": 14,
+        "tactic_accuracy_answered": 1.0,
+        "incidents": 45,
+        "false_positive_incidents": 31,
+        "llm": {
+          "calls": 45,
+          "answered": 44,
+          "schema_valid_rate": 1.0,
+          "raw_grounding_rate": 1.0,
+          "valid_rate": 1.0,
+          "errors": {
+            "Deadline": 1
+          }
+        },
+        "per_event": [
+          {
+            "event": "test1:e00",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "ad8ecfa491a7423288d875d6795b3d92",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test2:e01",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.002"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "0f7466f56814460bb35e701e546d8d0b",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test2:e15",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0806"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "b80392f7adb1491fbfd0177f4f7c7eee",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": true
+          },
+          {
+            "event": "test2:e16",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "ae668d7cda084effaadc3546b84c5547",
+            "incident_nodes": [
+              "a3"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test2:e17",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T1692.001"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "03a92aeee84440e0b608999d45f475fa",
+            "incident_nodes": [
+              "a3"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": true
+          },
+          {
+            "event": "test2:e18",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T1692.001"
+            ],
+            "matched": false,
+            "matching_incidents": 0,
+            "session_id": null,
+            "incident_nodes": null,
+            "attribution_mode": null,
+            "technique": null,
+            "top3": [],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test3:e03",
+            "nodes": [
+              "a4"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "12ae02d3879e4531920f8e29d1775fa8",
+            "incident_nodes": [
+              "a4"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test3:e04",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "865766342eb849b09a193d4758f5fa76",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test3:e05",
+            "nodes": [
+              "a4"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "e62d6b2b627e4962a2b9f9b87291ee09",
+            "incident_nodes": [
+              "a4"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test3:e06",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "f5f5861f03f14767a4e82a2662a8cc34",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test4:e00",
+            "nodes": [
+              "a4"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0836",
+              "T1692.002"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "7c4a8d9e9dab43efb8de992984c67629",
+            "incident_nodes": [
+              "a4"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test4:e01",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.002",
+              "T1692.001"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "e262fb871d5e426aa0a2eb0b877ad5ef",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test5:e07",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0806"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "8ee97351a1c94a74b13b9c5cc064dbd5",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": true
+          },
+          {
+            "event": "test5:e09",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.001",
+              "T1692.002"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "fd20f15a325444adb59fc659f9f7b3cb",
+            "incident_nodes": [
+              "a3"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test5:e10",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.001"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "66bebed23a3b48b6957a048700ec34b0",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          }
+        ]
+      },
+      "rule_only": {
+        "events": 15,
+        "matched": 14,
+        "missed": 1,
+        "abstained": 0,
+        "top1": {
+          "estimate": 0.5333333333333333,
+          "low": 0.26666666666666666,
+          "high": 0.8
+        },
+        "top3": {
+          "estimate": 0.5333333333333333,
+          "low": 0.26666666666666666,
+          "high": 0.8
+        },
+        "top1_answered": 0.5714285714285714,
+        "top3_answered": 0.5714285714285714,
+        "answered": 14,
+        "tactic_accuracy_answered": 1.0,
+        "incidents": 45,
+        "false_positive_incidents": 31,
+        "llm": {
+          "calls": 0
+        },
+        "per_event": [
+          {
+            "event": "test1:e00",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "08f31f198a88445694961e36fc7b7d72",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T1692.002",
+            "top3": [
+              "T1692.002"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": true
+          },
+          {
+            "event": "test2:e01",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.002"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "b8aa4e2875fe440bade75c46ecc85e18",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": true
+          },
+          {
+            "event": "test2:e15",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0806"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "47b599e303ed4c2db9e908d968a89b4e",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test2:e16",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "ec5e415fe6654a81b89ddfc381ee4f2c",
+            "incident_nodes": [
+              "a3"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T1692.002",
+            "top3": [
+              "T1692.002"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": true
+          },
+          {
+            "event": "test2:e17",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T1692.001"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "f011da7bd7534533910d568709dea001",
+            "incident_nodes": [
+              "a3"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test2:e18",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T1692.001"
+            ],
+            "matched": false,
+            "matching_incidents": 0,
+            "session_id": null,
+            "incident_nodes": null,
+            "attribution_mode": null,
+            "technique": null,
+            "top3": [],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": false
+          },
+          {
+            "event": "test3:e03",
+            "nodes": [
+              "a4"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "6f8b4777c1914276a95d7fbafda83ef9",
+            "incident_nodes": [
+              "a4"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": true
+          },
+          {
+            "event": "test3:e04",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "d673face4efa44c9830ade7fda40734e",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test3:e05",
+            "nodes": [
+              "a4"
+            ],
+            "acceptable": [
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "3b6b537e486b4e17987fa99cbc76cae7",
+            "incident_nodes": [
+              "a4"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": true
+          },
+          {
+            "event": "test3:e06",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0836"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "196f7e1664c54208863ac76778945476",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test4:e00",
+            "nodes": [
+              "a4"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0836",
+              "T1692.002"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "82e5b47efd41468cbbc68b5be2425ccd",
+            "incident_nodes": [
+              "a4"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test4:e01",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.002",
+              "T1692.001"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "f500d6dd097b405f9f3eb916d6ea9bae",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test5:e07",
+            "nodes": [
+              "a1"
+            ],
+            "acceptable": [
+              "T1692.001",
+              "T0806"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "0c22c764485e4d12a596302915fb2a2a",
+            "incident_nodes": [
+              "a1"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "top1": false,
+            "top3_hit": false,
+            "tactic": true
+          },
+          {
+            "event": "test5:e09",
+            "nodes": [
+              "a3"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.001",
+              "T1692.002"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "e268bf4eca404a31ae033c49f77a20ee",
+            "incident_nodes": [
+              "a3"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          },
+          {
+            "event": "test5:e10",
+            "nodes": [
+              "a2"
+            ],
+            "acceptable": [
+              "T0836",
+              "T1692.001"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "e484b3e6939643959cb53557e3d15fd5",
+            "incident_nodes": [
+              "a2"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T1692.001",
+            "top3": [
+              "T1692.001"
+            ],
+            "abstained": false,
+            "top1": true,
+            "top3_hit": true,
+            "tactic": true
+          }
+        ]
+      }
+    },
+    "full_vs_retrieval_only_top3": {
+      "difference": 0.2,
+      "low": 0.0,
+      "high": 0.4,
+      "p_two_sided": 0.0666
+    }
+  },
+  "site_b": {
+    "episodes": [
+      {
+        "episode": "0",
+        "nodes": [
+          "b1"
+        ],
+        "start_s": 1675223490.0,
+        "end_s": 1675223570.0
+      },
+      {
+        "episode": "1",
+        "nodes": [
+          "b1"
+        ],
+        "start_s": 1675223900.0,
+        "end_s": 1675224090.0
+      },
+      {
+        "episode": "2",
+        "nodes": [
+          "b1"
+        ],
+        "start_s": 1675224250.0,
+        "end_s": 1675224360.0
+      },
+      {
+        "episode": "3",
+        "nodes": [
+          "b1"
+        ],
+        "start_s": 1675224490.0,
+        "end_s": 1675224560.0
+      }
+    ],
+    "modes": {
+      "full": {
+        "incidents": 220,
+        "by_status": {
+          "COMPLETED": 220
+        },
+        "by_attribution_mode": {
+          "full": 220
+        },
+        "techniques": {
+          "T0814": 136,
+          "T0806": 28,
+          "T0801": 38,
+          "T1691.002": 14,
+          "T0869.002": 3,
+          "T0861": 1
+        },
+        "llm": {
+          "calls": 220,
+          "answered": 220,
+          "schema_valid_rate": 1.0,
+          "raw_grounding_rate": 1.0,
+          "valid_rate": 1.0,
+          "errors": {}
+        },
+        "per_episode": [
+          {
+            "event": "0",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0888",
+              "T0861",
+              "T0846",
+              "T0814"
+            ],
+            "matched": true,
+            "matching_incidents": 2,
+            "session_id": "ea448146999c4065b1b8840842a2c702",
+            "incident_nodes": [
+              "b1"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0806",
+            "top3": [
+              "T0806",
+              "T0814",
+              "T0861"
+            ],
+            "abstained": false,
+            "in_acceptable": false
+          },
+          {
+            "event": "1",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0861",
+              "T0888",
+              "T0814"
+            ],
+            "matched": true,
+            "matching_incidents": 2,
+            "session_id": "0068b69dfa5243da83f759576fc998b0",
+            "incident_nodes": [
+              "b1"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0806",
+            "top3": [
+              "T0806",
+              "T0814",
+              "T0861"
+            ],
+            "abstained": false,
+            "in_acceptable": false
+          },
+          {
+            "event": "2",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0861",
+              "T0888"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "8910be04850a4a6cb122fd43b499c820",
+            "incident_nodes": [
+              "b1",
+              "b2"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0806",
+            "top3": [
+              "T0806",
+              "T0814",
+              "T0861"
+            ],
+            "abstained": false,
+            "in_acceptable": false
+          },
+          {
+            "event": "3",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0861",
+              "T0801"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "3f31d16e5cfd4a05bdb6aa7d50ca29db",
+            "incident_nodes": [
+              "b1"
+            ],
+            "attribution_mode": "full",
+            "technique": "T0806",
+            "top3": [
+              "T0806",
+              "T0814",
+              "T0861"
+            ],
+            "abstained": false,
+            "in_acceptable": false
+          }
+        ]
+      },
+      "retrieval_only": {
+        "incidents": 220,
+        "by_status": {
+          "COMPLETED": 220
+        },
+        "by_attribution_mode": {
+          "retrieval_only": 220
+        },
+        "techniques": {
+          "T0814": 220
+        },
+        "llm": {
+          "calls": 0
+        },
+        "per_episode": [
+          {
+            "event": "0",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0888",
+              "T0861",
+              "T0846",
+              "T0814"
+            ],
+            "matched": true,
+            "matching_incidents": 2,
+            "session_id": "b0b0d6eeea124712820a3ef541ae278a",
+            "incident_nodes": [
+              "b1"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0814",
+            "top3": [
+              "T0814",
+              "T0861",
+              "T0801"
+            ],
+            "abstained": false,
+            "in_acceptable": true
+          },
+          {
+            "event": "1",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0861",
+              "T0888",
+              "T0814"
+            ],
+            "matched": true,
+            "matching_incidents": 2,
+            "session_id": "f6b73ea9ab064846989a26aad6286e23",
+            "incident_nodes": [
+              "b1"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0814",
+            "top3": [
+              "T0814",
+              "T0861",
+              "T0801"
+            ],
+            "abstained": false,
+            "in_acceptable": true
+          },
+          {
+            "event": "2",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0861",
+              "T0888"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "265d29b190ea475f87cfc53491bc8cf1",
+            "incident_nodes": [
+              "b1",
+              "b2"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0814",
+            "top3": [
+              "T0814",
+              "T0861",
+              "T0801"
+            ],
+            "abstained": false,
+            "in_acceptable": false
+          },
+          {
+            "event": "3",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0861",
+              "T0801"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "ac0422f455c641fca5736d3f482691c9",
+            "incident_nodes": [
+              "b1"
+            ],
+            "attribution_mode": "retrieval_only",
+            "technique": "T0814",
+            "top3": [
+              "T0814",
+              "T0861",
+              "T0801"
+            ],
+            "abstained": false,
+            "in_acceptable": false
+          }
+        ]
+      },
+      "llm_no_retrieval": {
+        "incidents": 220,
+        "by_status": {
+          "COMPLETED": 220
+        },
+        "by_attribution_mode": {
+          "llm_no_retrieval": 220
+        },
+        "techniques": {
+          "T0835": 175,
+          "T0830": 3,
+          "T0836": 37,
+          "T0806": 5
+        },
+        "llm": {
+          "calls": 220,
+          "answered": 220,
+          "schema_valid_rate": 1.0,
+          "raw_grounding_rate": 1.0,
+          "valid_rate": 1.0,
+          "errors": {}
+        },
+        "per_episode": [
+          {
+            "event": "0",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0888",
+              "T0861",
+              "T0846",
+              "T0814"
+            ],
+            "matched": true,
+            "matching_incidents": 2,
+            "session_id": "b5b477e289b6452eb958b8cf7e7de908",
+            "incident_nodes": [
+              "b1"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "in_acceptable": false
+          },
+          {
+            "event": "1",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0861",
+              "T0888",
+              "T0814"
+            ],
+            "matched": true,
+            "matching_incidents": 2,
+            "session_id": "3386b0c8866841aeb857e9d596baecc3",
+            "incident_nodes": [
+              "b1"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "in_acceptable": false
+          },
+          {
+            "event": "2",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0861",
+              "T0888"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "d4b2cd1a068841c2b1712f74528c2e7a",
+            "incident_nodes": [
+              "b1",
+              "b2"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "in_acceptable": false
+          },
+          {
+            "event": "3",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0861",
+              "T0801"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "17d25f8326494afa883ef2ef774ddcfc",
+            "incident_nodes": [
+              "b1"
+            ],
+            "attribution_mode": "llm_no_retrieval",
+            "technique": "T0836",
+            "top3": [
+              "T0836"
+            ],
+            "abstained": false,
+            "in_acceptable": false
+          }
+        ]
+      },
+      "rule_only": {
+        "incidents": 220,
+        "by_status": {
+          "COMPLETED": 220
+        },
+        "by_attribution_mode": {
+          "rule_only": 220
+        },
+        "techniques": {
+          "T1692.001": 41,
+          "T0861": 173,
+          "T0814": 6
+        },
+        "llm": {
+          "calls": 0
+        },
+        "per_episode": [
+          {
+            "event": "0",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0888",
+              "T0861",
+              "T0846",
+              "T0814"
+            ],
+            "matched": true,
+            "matching_incidents": 2,
+            "session_id": "2e2f542140614d659ad8fb64404b0d44",
+            "incident_nodes": [
+              "b1"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T0814",
+            "top3": [
+              "T0814"
+            ],
+            "abstained": false,
+            "in_acceptable": true
+          },
+          {
+            "event": "1",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0861",
+              "T0888",
+              "T0814"
+            ],
+            "matched": true,
+            "matching_incidents": 2,
+            "session_id": "1afd369f94724ce48f0dd89b495fbf84",
+            "incident_nodes": [
+              "b1"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T0814",
+            "top3": [
+              "T0814"
+            ],
+            "abstained": false,
+            "in_acceptable": true
+          },
+          {
+            "event": "2",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0861",
+              "T0888"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "179c04d936fa4b6aa472e5af578dbb8c",
+            "incident_nodes": [
+              "b1",
+              "b2"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T0814",
+            "top3": [
+              "T0814"
+            ],
+            "abstained": false,
+            "in_acceptable": false
+          },
+          {
+            "event": "3",
+            "nodes": [
+              "b1"
+            ],
+            "acceptable": [
+              "T0861",
+              "T0801"
+            ],
+            "matched": true,
+            "matching_incidents": 1,
+            "session_id": "fe933f11d57e4818ae6a4349da3b0329",
+            "incident_nodes": [
+              "b1"
+            ],
+            "attribution_mode": "rule_only",
+            "technique": "T0814",
+            "top3": [
+              "T0814"
+            ],
+            "abstained": false,
+            "in_acceptable": false
+          }
+        ]
+      }
+    }
+  },
+  "checks": {
+    "passed": true,
+    "problems": []
+  }
+}

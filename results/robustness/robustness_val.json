@@ -1,0 +1,4504 @@
+{
+  "schema_version": "1.0",
+  "kind": "robustness",
+  "data_source": "synthetic",
+  "provenance": {
+    "created_at": "2026-10-18T23:16:13Z",
+    "git_sha": "39f14103bb003d46ed51352cbfa1da28a3adcf7d",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.13",
+      "implementation": "CPython",
+      "platform": "Linux-6.18.44-fc-v139-x86_64-with-glibc2.39",
+      "machine": "x86_64",
+      "wsl": false,
+      "cpu_count_logical": 2,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 8030,
+      "swap_total_mb": 0,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "hostname_hash": "5bce98f73f3e",
+      "pid": 677
+    }
+  },
+  "protocol": "docs/adr/0017-x3-x6-week13.md \u00a77",
+  "synthetic": true,
+  "development_run": false,
+  "seeds": [
+    11,
+    23,
+    37,
+    41,
+    53
+  ],
+  "seeds_by_site": {
+    "site_a": {
+      "used": [
+        11,
+        53
+      ],
+      "excluded": {
+        "23": [
+          "site_a__fedprox__eps3 seed 23: auprc 0.7029025037077782 != X1 0.702874709604068",
+          "site_a__fedprox__eps3 seed 23: auroc 0.8958792254545642 != X1 0.8958869626176336"
+        ],
+        "37": [
+          "site_a__fedprox__eps3 seed 37: auprc 0.6987864762913997 != X1 0.6988100789592224",
+          "site_a__fedprox__eps3 seed 37: auroc 0.8975761255878063 != X1 0.8975903457377221"
+        ],
+        "41": [
+          "site_a__fedprox__eps3 seed 41: auprc 0.6860534278135104 != X1 0.685927571450563",
+          "site_a__fedprox__eps3 seed 41: auroc 0.8849511883940879 != X1 0.8849262063226686",
+          "site_a__fedprox__eps3 seed 41: false_alarms_per_hour 0.7020166578791551 != X1 0.7564302008053946",
+          "site_a__fedprox__eps3 seed 41: window_fpr 0.010847802817306162 != X1 0.010998951547656828",
+          "site_a__fedprox__eps3 seed 41: window_fpr_excl_recovery 0.006836864186173306 != X1 0.007033096525262788"
+        ]
+      }
+    },
+    "site_b": {
+      "used": [
+        11,
+        23,
+        37,
+        41,
+        53
+      ],
+      "excluded": {}
+    }
+  },
+  "placement_seed": 2026,
+  "per_kind_and_node": 20,
+  "sites": {
+    "site_a": {
+      "a1": {
+        "injections": {
+          "spike": [
+            {
+              "kind": "spike",
+              "start_s": 1594612530.0,
+              "end_s": 1594612590.0,
+              "feature": "P1_TIT02"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594615946.0,
+              "end_s": 1594616006.0,
+              "feature": "P4_ST_PO"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594618883.0,
+              "end_s": 1594618943.0,
+              "feature": "P4_LD"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594626209.0,
+              "end_s": 1594626269.0,
+              "feature": "P1_LCV01Z"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594630540.0,
+              "end_s": 1594630600.0,
+              "feature": "P2_CO_rpm"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594634755.0,
+              "end_s": 1594634815.0,
+              "feature": "P2_VYT02"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594637883.0,
+              "end_s": 1594637943.0,
+              "feature": "P4_HT_FD"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594640743.0,
+              "end_s": 1594640803.0,
+              "feature": "P3_LCP01D"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594613251.0,
+              "end_s": 1594613311.0,
+              "feature": "P4_HT_PO"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594619388.0,
+              "end_s": 1594619448.0,
+              "feature": "P4_ST_FD"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594623755.0,
+              "end_s": 1594623815.0,
+              "feature": "P4_HT_LD"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594626930.0,
+              "end_s": 1594626990.0,
+              "feature": "P1_FT02Z"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594630624.0,
+              "end_s": 1594630684.0,
+              "feature": "P4_HT_PO"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594634896.0,
+              "end_s": 1594634956.0,
+              "feature": "P1_FT02Z"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594638225.0,
+              "end_s": 1594638285.0,
+              "feature": "P1_FT03"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594614457.0,
+              "end_s": 1594614517.0,
+              "feature": "P4_ST_TT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594621339.0,
+              "end_s": 1594621399.0,
+              "feature": "P1_FT02Z"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594626492.0,
+              "end_s": 1594626552.0,
+              "feature": "P4_ST_PT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594636718.0,
+              "end_s": 1594636778.0,
+              "feature": "P1_FCV03Z"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1594627231.0,
+              "end_s": 1594627291.0,
+              "feature": "P1_FT01Z"
+            }
+          ],
+          "drift": [
+            {
+              "kind": "drift",
+              "start_s": 1594612132.0,
+              "end_s": 1594612732.0,
+              "feature": "P1_FT01Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594623824.0,
+              "end_s": 1594624424.0,
+              "feature": "P4_LD"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594627011.0,
+              "end_s": 1594627611.0,
+              "feature": "P1_PIT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594632305.0,
+              "end_s": 1594632905.0,
+              "feature": "P1_FT03"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594636816.0,
+              "end_s": 1594637416.0,
+              "feature": "P1_FT01Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594640235.0,
+              "end_s": 1594640835.0,
+              "feature": "P2_24Vdc"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594612338.0,
+              "end_s": 1594612938.0,
+              "feature": "P1_PCV01D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594621997.0,
+              "end_s": 1594622597.0,
+              "feature": "P4_ST_LD"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594625263.0,
+              "end_s": 1594625863.0,
+              "feature": "P1_FT03Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594630399.0,
+              "end_s": 1594630999.0,
+              "feature": "P1_FT03Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594633371.0,
+              "end_s": 1594633971.0,
+              "feature": "P1_FT03"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594636734.0,
+              "end_s": 1594637334.0,
+              "feature": "P1_B4022"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594639905.0,
+              "end_s": 1594640505.0,
+              "feature": "P1_FT02Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594612082.0,
+              "end_s": 1594612682.0,
+              "feature": "P2_VT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594622289.0,
+              "end_s": 1594622889.0,
+              "feature": "P2_VT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594629300.0,
+              "end_s": 1594629900.0,
+              "feature": "P1_FT02Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594631960.0,
+              "end_s": 1594632560.0,
+              "feature": "P1_FT02"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594636568.0,
+              "end_s": 1594637168.0,
+              "feature": "P1_FT03Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594631721.0,
+              "end_s": 1594632321.0,
+              "feature": "P4_ST_TT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1594637709.0,
+              "end_s": 1594638309.0,
+              "feature": "P4_ST_FD"
+            }
+          ],
+          "stuck": [
+            {
+              "kind": "stuck",
+              "start_s": 1594611385.0,
+              "end_s": 1594611985.0,
+              "feature": "P4_HT_FD"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594615607.0,
+              "end_s": 1594616207.0,
+              "feature": "P1_FT03"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594619565.0,
+              "end_s": 1594620165.0,
+              "feature": "P1_TIT02"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594623211.0,
+              "end_s": 1594623811.0,
+              "feature": "P1_B400B"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594625937.0,
+              "end_s": 1594626537.0,
+              "feature": "P1_B4022"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594629637.0,
+              "end_s": 1594630237.0,
+              "feature": "P4_ST_PO"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594633064.0,
+              "end_s": 1594633664.0,
+              "feature": "P4_ST_FD"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594635848.0,
+              "end_s": 1594636448.0,
+              "feature": "P2_VT01"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594639852.0,
+              "end_s": 1594640452.0,
+              "feature": "P3_LCP01D"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594618762.0,
+              "end_s": 1594619362.0,
+              "feature": "P1_PIT01"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594621828.0,
+              "end_s": 1594622428.0,
+              "feature": "P1_B3004"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594625490.0,
+              "end_s": 1594626090.0,
+              "feature": "P3_LCP01D"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594629671.0,
+              "end_s": 1594630271.0,
+              "feature": "P1_PIT02"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594639763.0,
+              "end_s": 1594640363.0,
+              "feature": "P1_PCV01D"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594617924.0,
+              "end_s": 1594618524.0,
+              "feature": "P2_VT01"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594620694.0,
+              "end_s": 1594621294.0,
+              "feature": "P2_CO_rpm"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594625052.0,
+              "end_s": 1594625652.0,
+              "feature": "P4_ST_LD"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594617450.0,
+              "end_s": 1594618050.0,
+              "feature": "P1_FT01"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594621698.0,
+              "end_s": 1594622298.0,
+              "feature": "P1_FT03"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1594624278.0,
+              "end_s": 1594624878.0,
+              "feature": "P4_ST_PS"
+            }
+          ],
+          "replay": [
+            {
+              "kind": "replay",
+              "start_s": 1594611807.0,
+              "end_s": 1594612407.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594614643.0,
+              "end_s": 1594615243.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594619876.0,
+              "end_s": 1594620476.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594623942.0,
+              "end_s": 1594624542.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594628866.0,
+              "end_s": 1594629466.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594631430.0,
+              "end_s": 1594632030.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594636812.0,
+              "end_s": 1594637412.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594639466.0,
+              "end_s": 1594640066.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594614712.0,
+              "end_s": 1594615312.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594627114.0,
+              "end_s": 1594627714.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594636471.0,
+              "end_s": 1594637071.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594639047.0,
+              "end_s": 1594639647.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594615105.0,
+              "end_s": 1594615705.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594627928.0,
+              "end_s": 1594628528.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594634349.0,
+              "end_s": 1594634949.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594638813.0,
+              "end_s": 1594639413.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594615195.0,
+              "end_s": 1594615795.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594627762.0,
+              "end_s": 1594628362.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594635310.0,
+              "end_s": 1594635910.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1594638629.0,
+              "end_s": 1594639229.0,
+              "feature": null
+            }
+          ]
+        },
+        "per_seed": {
+          "11": {
+            "clean_window_fpr": 0.009727016002510198,
+            "spike": {
+              "injections": 20,
+              "detected": 9,
+              "rate": 0.45,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.009192645883293365,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.01006036217303823,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 4,
+              "rate": 0.2,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.009886264216972878,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 4,
+              "rate": 0.2,
+              "clean_stream_rate": 0.2,
+              "untouched_window_fpr": 0.010237116108145945,
+              "streams": 4
+            }
+          },
+          "53": {
+            "clean_window_fpr": 0.009727016002510198,
+            "spike": {
+              "injections": 20,
+              "detected": 10,
+              "rate": 0.5,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.009272581934452438,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.009885399352637565,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 4,
+              "rate": 0.2,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.009361329833770778,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 5,
+              "rate": 0.25,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.010849593140257241,
+              "streams": 4
+            }
+          }
+        },
+        "seed_mean": {
+          "spike": {
+            "rate": 0.475,
+            "clean_stream_rate": 0.0,
+            "untouched_window_fpr": 0.009232613908872901
+          },
+          "drift": {
+            "rate": 0.05,
+            "clean_stream_rate": 0.0,
+            "untouched_window_fpr": 0.009972880762837897
+          },
+          "stuck": {
+            "rate": 0.2,
+            "clean_stream_rate": 0.15,
+            "untouched_window_fpr": 0.009623797025371828
+          },
+          "replay": {
+            "rate": 0.225,
+            "clean_stream_rate": 0.15000000000000002,
+            "untouched_window_fpr": 0.010543354624201593
+          },
+          "clean_window_fpr": 0.009727016002510198
+        }
+      },
+      "a2": {
+        "injections": {
+          "spike": [
+            {
+              "kind": "spike",
+              "start_s": 1596429475.0,
+              "end_s": 1596429535.0,
+              "feature": "P2_24Vdc"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596435007.0,
+              "end_s": 1596435067.0,
+              "feature": "P1_FT01Z"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596438982.0,
+              "end_s": 1596439042.0,
+              "feature": "P1_TIT02"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596444216.0,
+              "end_s": 1596444276.0,
+              "feature": "P1_PIT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596448838.0,
+              "end_s": 1596448898.0,
+              "feature": "P2_VXT03"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596451630.0,
+              "end_s": 1596451690.0,
+              "feature": "P1_FT02Z"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596456442.0,
+              "end_s": 1596456502.0,
+              "feature": "P2_HILout"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596459255.0,
+              "end_s": 1596459315.0,
+              "feature": "P4_ST_PO"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596429795.0,
+              "end_s": 1596429855.0,
+              "feature": "P1_FT02Z"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596439533.0,
+              "end_s": 1596439593.0,
+              "feature": "P4_ST_TT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596444670.0,
+              "end_s": 1596444730.0,
+              "feature": "P1_LCV01Z"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596450428.0,
+              "end_s": 1596450488.0,
+              "feature": "P3_FIT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596456840.0,
+              "end_s": 1596456900.0,
+              "feature": "P3_LCV01D"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596438263.0,
+              "end_s": 1596438323.0,
+              "feature": "P1_B4005"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596443593.0,
+              "end_s": 1596443653.0,
+              "feature": "P4_HT_PO"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596446120.0,
+              "end_s": 1596446180.0,
+              "feature": "P1_FCV03Z"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596452183.0,
+              "end_s": 1596452243.0,
+              "feature": "P1_FCV03D"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596459347.0,
+              "end_s": 1596459407.0,
+              "feature": "P3_LIT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596438122.0,
+              "end_s": 1596438182.0,
+              "feature": "P4_ST_FD"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596443989.0,
+              "end_s": 1596444049.0,
+              "feature": "P1_FCV01Z"
+            }
+          ],
+          "drift": [
+            {
+              "kind": "drift",
+              "start_s": 1596429436.0,
+              "end_s": 1596430036.0,
+              "feature": "P1_FT03"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596434554.0,
+              "end_s": 1596435154.0,
+              "feature": "P1_B4005"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596438023.0,
+              "end_s": 1596438623.0,
+              "feature": "P1_FCV02Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596444668.0,
+              "end_s": 1596445268.0,
+              "feature": "P1_FCV01D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596448519.0,
+              "end_s": 1596449119.0,
+              "feature": "P3_LCP01D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596451725.0,
+              "end_s": 1596452325.0,
+              "feature": "P1_B2016"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596454863.0,
+              "end_s": 1596455463.0,
+              "feature": "P1_LCV01D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596427704.0,
+              "end_s": 1596428304.0,
+              "feature": "P1_FCV01D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596430494.0,
+              "end_s": 1596431094.0,
+              "feature": "P4_ST_GOV"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596434564.0,
+              "end_s": 1596435164.0,
+              "feature": "P1_B3005"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596438452.0,
+              "end_s": 1596439052.0,
+              "feature": "P1_LCV01Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596446376.0,
+              "end_s": 1596446976.0,
+              "feature": "P4_HT_FD"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596450768.0,
+              "end_s": 1596451368.0,
+              "feature": "P1_LIT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596453540.0,
+              "end_s": 1596454140.0,
+              "feature": "P1_FCV02D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596456416.0,
+              "end_s": 1596457016.0,
+              "feature": "P2_SIT02"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596430243.0,
+              "end_s": 1596430843.0,
+              "feature": "P1_B400B"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596438999.0,
+              "end_s": 1596439599.0,
+              "feature": "P4_ST_GOV"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596452289.0,
+              "end_s": 1596452889.0,
+              "feature": "P3_FIT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596429412.0,
+              "end_s": 1596430012.0,
+              "feature": "P1_TIT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596453337.0,
+              "end_s": 1596453937.0,
+              "feature": "P1_FCV01D"
+            }
+          ],
+          "stuck": [
+            {
+              "kind": "stuck",
+              "start_s": 1596428362.0,
+              "end_s": 1596428962.0,
+              "feature": "P4_HT_LD"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596432326.0,
+              "end_s": 1596432926.0,
+              "feature": "P1_FCV02Z"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596436760.0,
+              "end_s": 1596437360.0,
+              "feature": "P1_FCV03D"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596441816.0,
+              "end_s": 1596442416.0,
+              "feature": "P1_B3004"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596445244.0,
+              "end_s": 1596445844.0,
+              "feature": "P4_ST_PO"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596450596.0,
+              "end_s": 1596451196.0,
+              "feature": "P1_B400B"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596454177.0,
+              "end_s": 1596454777.0,
+              "feature": "P2_VYT02"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596458144.0,
+              "end_s": 1596458744.0,
+              "feature": "P1_FT01Z"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596431818.0,
+              "end_s": 1596432418.0,
+              "feature": "P4_LD"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596434821.0,
+              "end_s": 1596435421.0,
+              "feature": "P1_B2016"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596438299.0,
+              "end_s": 1596438899.0,
+              "feature": "P3_LIT01"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596443479.0,
+              "end_s": 1596444079.0,
+              "feature": "P2_CO_rpm"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596448218.0,
+              "end_s": 1596448818.0,
+              "feature": "P1_B400B"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596450841.0,
+              "end_s": 1596451441.0,
+              "feature": "P2_VYT03"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596433277.0,
+              "end_s": 1596433877.0,
+              "feature": "P1_FCV02D"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596441942.0,
+              "end_s": 1596442542.0,
+              "feature": "P1_FT01Z"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596445722.0,
+              "end_s": 1596446322.0,
+              "feature": "P1_B2004"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596451205.0,
+              "end_s": 1596451805.0,
+              "feature": "P4_ST_LD"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596433569.0,
+              "end_s": 1596434169.0,
+              "feature": "P4_ST_PT01"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596449671.0,
+              "end_s": 1596450271.0,
+              "feature": "P1_LCV01Z"
+            }
+          ],
+          "replay": [
+            {
+              "kind": "replay",
+              "start_s": 1596428059.0,
+              "end_s": 1596428659.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596430902.0,
+              "end_s": 1596431502.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596433918.0,
+              "end_s": 1596434518.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596437717.0,
+              "end_s": 1596438317.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596441482.0,
+              "end_s": 1596442082.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596447896.0,
+              "end_s": 1596448496.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596451332.0,
+              "end_s": 1596451932.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596453991.0,
+              "end_s": 1596454591.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596456687.0,
+              "end_s": 1596457287.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596433032.0,
+              "end_s": 1596433632.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596438326.0,
+              "end_s": 1596438926.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596443833.0,
+              "end_s": 1596444433.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596447328.0,
+              "end_s": 1596447928.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596452105.0,
+              "end_s": 1596452705.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596454949.0,
+              "end_s": 1596455549.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596458260.0,
+              "end_s": 1596458860.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596431431.0,
+              "end_s": 1596432031.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596434624.0,
+              "end_s": 1596435224.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596437151.0,
+              "end_s": 1596437751.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596446999.0,
+              "end_s": 1596447599.0,
+              "feature": null
+            }
+          ]
+        },
+        "per_seed": {
+          "11": {
+            "clean_window_fpr": 0.009853687667960586,
+            "spike": {
+              "injections": 20,
+              "detected": 8,
+              "rate": 0.4,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.007221039829735482,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.009026167605167274,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.009934597234870435,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.011912943871706758,
+              "streams": 3
+            }
+          },
+          "53": {
+            "clean_window_fpr": 0.009853687667960586,
+            "spike": {
+              "injections": 20,
+              "detected": 6,
+              "rate": 0.3,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.008361204013377926,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 2,
+              "rate": 0.1,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.009274594236502154,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.009934597234870435,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.011912943871706758,
+              "streams": 3
+            }
+          }
+        },
+        "seed_mean": {
+          "spike": {
+            "rate": 0.35,
+            "clean_stream_rate": 0.15,
+            "untouched_window_fpr": 0.007791121921556704
+          },
+          "drift": {
+            "rate": 0.125,
+            "clean_stream_rate": 0.0,
+            "untouched_window_fpr": 0.009150380920834714
+          },
+          "stuck": {
+            "rate": 0.05,
+            "clean_stream_rate": 0.05,
+            "untouched_window_fpr": 0.009934597234870435
+          },
+          "replay": {
+            "rate": 0.05,
+            "clean_stream_rate": 0.05,
+            "untouched_window_fpr": 0.011912943871706758
+          },
+          "clean_window_fpr": 0.009853687667960586
+        }
+      },
+      "a3": {
+        "injections": {
+          "spike": [
+            {
+              "kind": "spike",
+              "start_s": 1596786451.0,
+              "end_s": 1596786511.0,
+              "feature": "P4_ST_PO"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596790358.0,
+              "end_s": 1596790418.0,
+              "feature": "P1_FCV03D"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596796374.0,
+              "end_s": 1596796434.0,
+              "feature": "P1_FT03"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596800190.0,
+              "end_s": 1596800250.0,
+              "feature": "P2_VT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596806325.0,
+              "end_s": 1596806385.0,
+              "feature": "P3_PIT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596809009.0,
+              "end_s": 1596809069.0,
+              "feature": "P3_LIT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596813588.0,
+              "end_s": 1596813648.0,
+              "feature": "P2_VYT02"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596817320.0,
+              "end_s": 1596817380.0,
+              "feature": "P2_24Vdc"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596785702.0,
+              "end_s": 1596785762.0,
+              "feature": "P2_VT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596789274.0,
+              "end_s": 1596789334.0,
+              "feature": "P4_ST_LD"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596794378.0,
+              "end_s": 1596794438.0,
+              "feature": "P4_HT_LD"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596796906.0,
+              "end_s": 1596796966.0,
+              "feature": "P1_FCV01D"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596800791.0,
+              "end_s": 1596800851.0,
+              "feature": "P2_24Vdc"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596804015.0,
+              "end_s": 1596804075.0,
+              "feature": "P1_FCV01Z"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596807240.0,
+              "end_s": 1596807300.0,
+              "feature": "P3_FIT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596817355.0,
+              "end_s": 1596817415.0,
+              "feature": "P1_PCV01Z"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596787532.0,
+              "end_s": 1596787592.0,
+              "feature": "P2_VXT02"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596806273.0,
+              "end_s": 1596806333.0,
+              "feature": "P4_ST_PS"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596805045.0,
+              "end_s": 1596805105.0,
+              "feature": "P2_VYT02"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1596808509.0,
+              "end_s": 1596808569.0,
+              "feature": "P3_LCP01D"
+            }
+          ],
+          "drift": [
+            {
+              "kind": "drift",
+              "start_s": 1596784122.0,
+              "end_s": 1596784722.0,
+              "feature": "P1_FT02Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596790955.0,
+              "end_s": 1596791555.0,
+              "feature": "P1_PIT02"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596793719.0,
+              "end_s": 1596794319.0,
+              "feature": "P1_FCV02Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596798203.0,
+              "end_s": 1596798803.0,
+              "feature": "P2_SIT02"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596804783.0,
+              "end_s": 1596805383.0,
+              "feature": "P1_PCV01Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596808136.0,
+              "end_s": 1596808736.0,
+              "feature": "P1_FCV03D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596811482.0,
+              "end_s": 1596812082.0,
+              "feature": "P2_VYT03"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596816578.0,
+              "end_s": 1596817178.0,
+              "feature": "P3_LCP01D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596785584.0,
+              "end_s": 1596786184.0,
+              "feature": "P1_B4022"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596792902.0,
+              "end_s": 1596793502.0,
+              "feature": "P4_ST_PT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596795568.0,
+              "end_s": 1596796168.0,
+              "feature": "P1_B3005"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596806758.0,
+              "end_s": 1596807358.0,
+              "feature": "P3_LCP01D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596809604.0,
+              "end_s": 1596810204.0,
+              "feature": "P2_VXT03"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596783901.0,
+              "end_s": 1596784501.0,
+              "feature": "P3_LCP01D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596791273.0,
+              "end_s": 1596791873.0,
+              "feature": "P3_LCP01D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596794903.0,
+              "end_s": 1596795503.0,
+              "feature": "P4_LD"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596807618.0,
+              "end_s": 1596808218.0,
+              "feature": "P4_HT_FD"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596792374.0,
+              "end_s": 1596792974.0,
+              "feature": "P1_TIT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596795608.0,
+              "end_s": 1596796208.0,
+              "feature": "P1_PCV01D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1596807936.0,
+              "end_s": 1596808536.0,
+              "feature": "P3_LIT01"
+            }
+          ],
+          "stuck": [
+            {
+              "kind": "stuck",
+              "start_s": 1596784809.0,
+              "end_s": 1596785409.0,
+              "feature": "P1_FT03Z"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596789459.0,
+              "end_s": 1596790059.0,
+              "feature": "P2_SIT02"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596791992.0,
+              "end_s": 1596792592.0,
+              "feature": "P2_SIT01"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596796975.0,
+              "end_s": 1596797575.0,
+              "feature": "P1_LCV01Z"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596800433.0,
+              "end_s": 1596801033.0,
+              "feature": "P2_CO_rpm"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596803163.0,
+              "end_s": 1596803763.0,
+              "feature": "P1_LCV01Z"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596807951.0,
+              "end_s": 1596808551.0,
+              "feature": "P3_LIT01"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596812395.0,
+              "end_s": 1596812995.0,
+              "feature": "P4_HT_LD"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596815327.0,
+              "end_s": 1596815927.0,
+              "feature": "P4_LD"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596786770.0,
+              "end_s": 1596787370.0,
+              "feature": "P2_SIT01"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596791884.0,
+              "end_s": 1596792484.0,
+              "feature": "P4_ST_GOV"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596795546.0,
+              "end_s": 1596796146.0,
+              "feature": "P1_FT02"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596800831.0,
+              "end_s": 1596801431.0,
+              "feature": "P1_LCV01Z"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596807381.0,
+              "end_s": 1596807981.0,
+              "feature": "P1_PCV01Z"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596815576.0,
+              "end_s": 1596816176.0,
+              "feature": "P3_LIT01"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596785237.0,
+              "end_s": 1596785837.0,
+              "feature": "P1_LCV01Z"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596788653.0,
+              "end_s": 1596789253.0,
+              "feature": "P4_ST_PS"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596797848.0,
+              "end_s": 1596798448.0,
+              "feature": "P1_FCV02Z"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596801308.0,
+              "end_s": 1596801908.0,
+              "feature": "P4_ST_PO"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1596816488.0,
+              "end_s": 1596817088.0,
+              "feature": "P4_ST_LD"
+            }
+          ],
+          "replay": [
+            {
+              "kind": "replay",
+              "start_s": 1596786168.0,
+              "end_s": 1596786768.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596790012.0,
+              "end_s": 1596790612.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596797482.0,
+              "end_s": 1596798082.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596800196.0,
+              "end_s": 1596800796.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596806243.0,
+              "end_s": 1596806843.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596811725.0,
+              "end_s": 1596812325.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596816048.0,
+              "end_s": 1596816648.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596784112.0,
+              "end_s": 1596784712.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596786974.0,
+              "end_s": 1596787574.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596796503.0,
+              "end_s": 1596797103.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596801783.0,
+              "end_s": 1596802383.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596805290.0,
+              "end_s": 1596805890.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596814035.0,
+              "end_s": 1596814635.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596800861.0,
+              "end_s": 1596801461.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596806230.0,
+              "end_s": 1596806830.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596811679.0,
+              "end_s": 1596812279.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596815958.0,
+              "end_s": 1596816558.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596800190.0,
+              "end_s": 1596800790.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596807471.0,
+              "end_s": 1596808071.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1596812199.0,
+              "end_s": 1596812799.0,
+              "feature": null
+            }
+          ]
+        },
+        "per_seed": {
+          "11": {
+            "clean_window_fpr": 0.009892594686263426,
+            "spike": {
+              "injections": 20,
+              "detected": 9,
+              "rate": 0.45,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.00955803090190442,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.008728179551122194,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.009897794513179129,
+              "streams": 3
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 2,
+              "rate": 0.1,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.011141410206466692,
+              "streams": 4
+            }
+          },
+          "53": {
+            "clean_window_fpr": 0.009892594686263426,
+            "spike": {
+              "injections": 20,
+              "detected": 12,
+              "rate": 0.6,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.00955803090190442,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.009429551122194514,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.010220548682087143,
+              "streams": 3
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.011219322165952474,
+              "streams": 4
+            }
+          }
+        },
+        "seed_mean": {
+          "spike": {
+            "rate": 0.525,
+            "clean_stream_rate": 0.0,
+            "untouched_window_fpr": 0.00955803090190442
+          },
+          "drift": {
+            "rate": 0.15,
+            "clean_stream_rate": 0.1,
+            "untouched_window_fpr": 0.009078865336658354
+          },
+          "stuck": {
+            "rate": 0.15,
+            "clean_stream_rate": 0.15,
+            "untouched_window_fpr": 0.010059171597633136
+          },
+          "replay": {
+            "rate": 0.125,
+            "clean_stream_rate": 0.05,
+            "untouched_window_fpr": 0.011180366186209583
+          },
+          "clean_window_fpr": 0.009892594686263426
+        }
+      },
+      "a4": {
+        "injections": {
+          "spike": [
+            {
+              "kind": "spike",
+              "start_s": 1597024143.0,
+              "end_s": 1597024203.0,
+              "feature": "P4_ST_PO"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597029239.0,
+              "end_s": 1597029299.0,
+              "feature": "P1_FCV02D"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597032426.0,
+              "end_s": 1597032486.0,
+              "feature": "P4_ST_PT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597037416.0,
+              "end_s": 1597037476.0,
+              "feature": "P3_LCP01D"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597041639.0,
+              "end_s": 1597041699.0,
+              "feature": "P2_SIT02"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597048774.0,
+              "end_s": 1597048834.0,
+              "feature": "P1_B2016"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597051358.0,
+              "end_s": 1597051418.0,
+              "feature": "P1_PIT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597054457.0,
+              "end_s": 1597054517.0,
+              "feature": "P3_LCV01D"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597027499.0,
+              "end_s": 1597027559.0,
+              "feature": "P4_HT_PO"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597032607.0,
+              "end_s": 1597032667.0,
+              "feature": "P2_VT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597036292.0,
+              "end_s": 1597036352.0,
+              "feature": "P1_PIT02"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597042035.0,
+              "end_s": 1597042095.0,
+              "feature": "P2_CO_rpm"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597049962.0,
+              "end_s": 1597050022.0,
+              "feature": "P2_24Vdc"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597053948.0,
+              "end_s": 1597054008.0,
+              "feature": "P2_VYT02"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597034579.0,
+              "end_s": 1597034639.0,
+              "feature": "P2_VT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597040737.0,
+              "end_s": 1597040797.0,
+              "feature": "P1_FT03Z"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597048977.0,
+              "end_s": 1597049037.0,
+              "feature": "P1_FT02"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597055881.0,
+              "end_s": 1597055941.0,
+              "feature": "P1_PIT01"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597039692.0,
+              "end_s": 1597039752.0,
+              "feature": "P1_B4022"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1597050103.0,
+              "end_s": 1597050163.0,
+              "feature": "P1_FCV03Z"
+            }
+          ],
+          "drift": [
+            {
+              "kind": "drift",
+              "start_s": 1597026655.0,
+              "end_s": 1597027255.0,
+              "feature": "P1_B3005"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597035146.0,
+              "end_s": 1597035746.0,
+              "feature": "P1_FCV03D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597038592.0,
+              "end_s": 1597039192.0,
+              "feature": "P1_TIT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597041859.0,
+              "end_s": 1597042459.0,
+              "feature": "P1_FT02Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597045956.0,
+              "end_s": 1597046556.0,
+              "feature": "P3_PIT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597049285.0,
+              "end_s": 1597049885.0,
+              "feature": "P1_B4022"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597054389.0,
+              "end_s": 1597054989.0,
+              "feature": "P1_FT01Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597033657.0,
+              "end_s": 1597034257.0,
+              "feature": "P4_ST_PO"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597036310.0,
+              "end_s": 1597036910.0,
+              "feature": "P4_ST_PT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597040337.0,
+              "end_s": 1597040937.0,
+              "feature": "P2_VXT02"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597046543.0,
+              "end_s": 1597047143.0,
+              "feature": "P1_FT01Z"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597050930.0,
+              "end_s": 1597051530.0,
+              "feature": "P1_FT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597054452.0,
+              "end_s": 1597055052.0,
+              "feature": "P1_FCV01D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597037541.0,
+              "end_s": 1597038141.0,
+              "feature": "P1_PIT01"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597041033.0,
+              "end_s": 1597041633.0,
+              "feature": "P4_HT_PO"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597045852.0,
+              "end_s": 1597046452.0,
+              "feature": "P1_LCV01D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597052028.0,
+              "end_s": 1597052628.0,
+              "feature": "P4_ST_PO"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597054569.0,
+              "end_s": 1597055169.0,
+              "feature": "P2_CO_rpm"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597038639.0,
+              "end_s": 1597039239.0,
+              "feature": "P1_LCV01D"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1597053902.0,
+              "end_s": 1597054502.0,
+              "feature": "P1_PCV01D"
+            }
+          ],
+          "stuck": [
+            {
+              "kind": "stuck",
+              "start_s": 1597026759.0,
+              "end_s": 1597027359.0,
+              "feature": "P4_HT_LD"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597031823.0,
+              "end_s": 1597032423.0,
+              "feature": "P1_FCV03D"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597035391.0,
+              "end_s": 1597035991.0,
+              "feature": "P4_HT_PO"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597038324.0,
+              "end_s": 1597038924.0,
+              "feature": "P2_VXT03"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597041416.0,
+              "end_s": 1597042016.0,
+              "feature": "P1_B400B"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597044729.0,
+              "end_s": 1597045329.0,
+              "feature": "P1_B2016"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597048014.0,
+              "end_s": 1597048614.0,
+              "feature": "P4_HT_PO"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597051953.0,
+              "end_s": 1597052553.0,
+              "feature": "P1_FT02Z"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597056103.0,
+              "end_s": 1597056703.0,
+              "feature": "P4_ST_LD"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597024712.0,
+              "end_s": 1597025312.0,
+              "feature": "P1_PIT02"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597030909.0,
+              "end_s": 1597031509.0,
+              "feature": "P2_VXT02"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597037080.0,
+              "end_s": 1597037680.0,
+              "feature": "P1_B2004"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597043911.0,
+              "end_s": 1597044511.0,
+              "feature": "P3_LIT01"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597049314.0,
+              "end_s": 1597049914.0,
+              "feature": "P1_FCV03Z"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597055025.0,
+              "end_s": 1597055625.0,
+              "feature": "P1_B4022"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597025570.0,
+              "end_s": 1597026170.0,
+              "feature": "P3_FIT01"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597037073.0,
+              "end_s": 1597037673.0,
+              "feature": "P1_TIT01"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597041861.0,
+              "end_s": 1597042461.0,
+              "feature": "P4_LD"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597044673.0,
+              "end_s": 1597045273.0,
+              "feature": "P3_LCP01D"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1597043004.0,
+              "end_s": 1597043604.0,
+              "feature": "P1_PCV01Z"
+            }
+          ],
+          "replay": [
+            {
+              "kind": "replay",
+              "start_s": 1597025873.0,
+              "end_s": 1597026473.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597031840.0,
+              "end_s": 1597032440.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597037113.0,
+              "end_s": 1597037713.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597042068.0,
+              "end_s": 1597042668.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597045632.0,
+              "end_s": 1597046232.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597051846.0,
+              "end_s": 1597052446.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597054446.0,
+              "end_s": 1597055046.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597025275.0,
+              "end_s": 1597025875.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597031388.0,
+              "end_s": 1597031988.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597037057.0,
+              "end_s": 1597037657.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597040608.0,
+              "end_s": 1597041208.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597044533.0,
+              "end_s": 1597045133.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597047412.0,
+              "end_s": 1597048012.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597050722.0,
+              "end_s": 1597051322.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597053589.0,
+              "end_s": 1597054189.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597040610.0,
+              "end_s": 1597041210.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597044328.0,
+              "end_s": 1597044928.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597050190.0,
+              "end_s": 1597050790.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597039088.0,
+              "end_s": 1597039688.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1597052296.0,
+              "end_s": 1597052896.0,
+              "feature": null
+            }
+          ]
+        },
+        "per_seed": {
+          "11": {
+            "clean_window_fpr": 0.009892594686263426,
+            "spike": {
+              "injections": 20,
+              "detected": 6,
+              "rate": 0.3,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.00905627830086969,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 0,
+              "rate": 0.0,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.010441829657913192,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 0,
+              "rate": 0.0,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.011141410206466692,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 0,
+              "rate": 0.0,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.01059850374064838,
+              "streams": 4
+            }
+          },
+          "53": {
+            "clean_window_fpr": 0.009892594686263426,
+            "spike": {
+              "injections": 20,
+              "detected": 8,
+              "rate": 0.4,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.009128153525479767,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.010130133250214291,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.01098558628749513,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 2,
+              "rate": 0.1,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.010364713216957606,
+              "streams": 4
+            }
+          }
+        },
+        "seed_mean": {
+          "spike": {
+            "rate": 0.35,
+            "clean_stream_rate": 0.1,
+            "untouched_window_fpr": 0.009092215913174728
+          },
+          "drift": {
+            "rate": 0.025,
+            "clean_stream_rate": 0.025,
+            "untouched_window_fpr": 0.010285981454063741
+          },
+          "stuck": {
+            "rate": 0.025,
+            "clean_stream_rate": 0.025,
+            "untouched_window_fpr": 0.011063498246980911
+          },
+          "replay": {
+            "rate": 0.05,
+            "clean_stream_rate": 0.1,
+            "untouched_window_fpr": 0.010481608478802994
+          },
+          "clean_window_fpr": 0.009892594686263426
+        }
+      }
+    },
+    "site_b": {
+      "b1": {
+        "injections": {
+          "spike": [
+            {
+              "kind": "spike",
+              "start_s": 1675077220.0,
+              "end_s": 1675077230.0,
+              "feature": "req_sent"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675078240.0,
+              "end_s": 1675078250.0,
+              "feature": "latency_median_ms"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675090380.0,
+              "end_s": 1675090390.0,
+              "feature": "tcp_rst"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675101090.0,
+              "end_s": 1675101100.0,
+              "feature": "req_recv"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675113150.0,
+              "end_s": 1675113160.0,
+              "feature": "slow_responses"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675116070.0,
+              "end_s": 1675116080.0,
+              "feature": "latency_median_ms"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675121820.0,
+              "end_s": 1675121830.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675124570.0,
+              "end_s": 1675124580.0,
+              "feature": "latency_median_ms"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675128350.0,
+              "end_s": 1675128360.0,
+              "feature": "oversized_qty"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675130450.0,
+              "end_s": 1675130460.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675141900.0,
+              "end_s": 1675141910.0,
+              "feature": "req_recv"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675149660.0,
+              "end_s": 1675149670.0,
+              "feature": "slow_responses"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675163150.0,
+              "end_s": 1675163160.0,
+              "feature": "stacked_frames"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675166290.0,
+              "end_s": 1675166300.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675167600.0,
+              "end_s": 1675167610.0,
+              "feature": "req_recv"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675169310.0,
+              "end_s": 1675169320.0,
+              "feature": "slow_responses"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675078380.0,
+              "end_s": 1675078390.0,
+              "feature": "tcp_syn"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675101660.0,
+              "end_s": 1675101670.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675149090.0,
+              "end_s": 1675149100.0,
+              "feature": "latency_median_ms"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675163270.0,
+              "end_s": 1675163280.0,
+              "feature": "unanswered"
+            }
+          ],
+          "drift": [
+            {
+              "kind": "drift",
+              "start_s": 1675070160.0,
+              "end_s": 1675070760.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675078920.0,
+              "end_s": 1675079520.0,
+              "feature": "oversized_qty"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675081240.0,
+              "end_s": 1675081840.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675091780.0,
+              "end_s": 1675092380.0,
+              "feature": "resp_exception"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675099650.0,
+              "end_s": 1675100250.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675102970.0,
+              "end_s": 1675103570.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675106980.0,
+              "end_s": 1675107580.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675108500.0,
+              "end_s": 1675109100.0,
+              "feature": "unanswered"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675111900.0,
+              "end_s": 1675112500.0,
+              "feature": "stacked_frames"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675122060.0,
+              "end_s": 1675122660.0,
+              "feature": "resp_exception"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675122960.0,
+              "end_s": 1675123560.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675137030.0,
+              "end_s": 1675137630.0,
+              "feature": "req_sent"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675138600.0,
+              "end_s": 1675139200.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675144300.0,
+              "end_s": 1675144900.0,
+              "feature": "slow_responses"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675147980.0,
+              "end_s": 1675148580.0,
+              "feature": "tcp_rst"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675154420.0,
+              "end_s": 1675155020.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675176440.0,
+              "end_s": 1675177040.0,
+              "feature": "resp_exception"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675177720.0,
+              "end_s": 1675178320.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675180290.0,
+              "end_s": 1675180890.0,
+              "feature": "latency_median_ms"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675122360.0,
+              "end_s": 1675122960.0,
+              "feature": "unseen_addr"
+            }
+          ],
+          "stuck": [
+            {
+              "kind": "stuck",
+              "start_s": 1675075260.0,
+              "end_s": 1675075860.0,
+              "feature": "unseen_addr"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675077050.0,
+              "end_s": 1675077650.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675084150.0,
+              "end_s": 1675084750.0,
+              "feature": "oversized_qty"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675085290.0,
+              "end_s": 1675085890.0,
+              "feature": "slow_responses"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675110240.0,
+              "end_s": 1675110840.0,
+              "feature": "latency_median_ms"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675120760.0,
+              "end_s": 1675121360.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675132100.0,
+              "end_s": 1675132700.0,
+              "feature": "unanswered"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675132850.0,
+              "end_s": 1675133450.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675134540.0,
+              "end_s": 1675135140.0,
+              "feature": "latency_median_ms"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675137880.0,
+              "end_s": 1675138480.0,
+              "feature": "oversized_qty"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675143660.0,
+              "end_s": 1675144260.0,
+              "feature": "resp_exception"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675154140.0,
+              "end_s": 1675154740.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675157460.0,
+              "end_s": 1675158060.0,
+              "feature": "oversized_qty"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675159340.0,
+              "end_s": 1675159940.0,
+              "feature": "req_read"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675163450.0,
+              "end_s": 1675164050.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675165640.0,
+              "end_s": 1675166240.0,
+              "feature": "unseen_addr_write"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675175670.0,
+              "end_s": 1675176270.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675120160.0,
+              "end_s": 1675120760.0,
+              "feature": "unanswered"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675154450.0,
+              "end_s": 1675155050.0,
+              "feature": "unseen_addr_write"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675175280.0,
+              "end_s": 1675175880.0,
+              "feature": "malformed_frames"
+            }
+          ],
+          "replay": [
+            {
+              "kind": "replay",
+              "start_s": 1675073320.0,
+              "end_s": 1675073920.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675085140.0,
+              "end_s": 1675085740.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675087530.0,
+              "end_s": 1675088130.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675099170.0,
+              "end_s": 1675099770.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675102990.0,
+              "end_s": 1675103590.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675107320.0,
+              "end_s": 1675107920.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675108550.0,
+              "end_s": 1675109150.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675112330.0,
+              "end_s": 1675112930.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675113670.0,
+              "end_s": 1675114270.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675117740.0,
+              "end_s": 1675118340.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675124610.0,
+              "end_s": 1675125210.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675137120.0,
+              "end_s": 1675137720.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675167920.0,
+              "end_s": 1675168520.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675168970.0,
+              "end_s": 1675169570.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675175060.0,
+              "end_s": 1675175660.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675177160.0,
+              "end_s": 1675177760.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675181410.0,
+              "end_s": 1675182010.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675073770.0,
+              "end_s": 1675074370.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675118200.0,
+              "end_s": 1675118800.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675168350.0,
+              "end_s": 1675168950.0,
+              "feature": null
+            }
+          ]
+        },
+        "per_seed": {
+          "11": {
+            "clean_window_fpr": 0.009971136184728419,
+            "spike": {
+              "injections": 20,
+              "detected": 9,
+              "rate": 0.45,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.009936093845749804,
+              "streams": 2
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 15,
+              "rate": 0.75,
+              "clean_stream_rate": 0.45,
+              "untouched_window_fpr": 0.009969537524231515,
+              "streams": 2
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 14,
+              "rate": 0.7,
+              "clean_stream_rate": 0.65,
+              "untouched_window_fpr": 0.009415674328440876,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 6,
+              "rate": 0.3,
+              "clean_stream_rate": 0.35,
+              "untouched_window_fpr": 0.010015692790547401,
+              "streams": 2
+            }
+          },
+          "23": {
+            "clean_window_fpr": 0.009971136184728419,
+            "spike": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.009979865184277336,
+              "streams": 2
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 13,
+              "rate": 0.65,
+              "clean_stream_rate": 0.55,
+              "untouched_window_fpr": 0.010015692790547401,
+              "streams": 2
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 14,
+              "rate": 0.7,
+              "clean_stream_rate": 0.65,
+              "untouched_window_fpr": 0.009600295393704422,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 7,
+              "rate": 0.35,
+              "clean_stream_rate": 0.35,
+              "untouched_window_fpr": 0.010108003323179175,
+              "streams": 2
+            }
+          },
+          "37": {
+            "clean_window_fpr": 0.009971136184728419,
+            "spike": {
+              "injections": 20,
+              "detected": 8,
+              "rate": 0.4,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.009936093845749804,
+              "streams": 2
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 13,
+              "rate": 0.65,
+              "clean_stream_rate": 0.55,
+              "untouched_window_fpr": 0.010015692790547401,
+              "streams": 2
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 9,
+              "rate": 0.45,
+              "clean_stream_rate": 0.45,
+              "untouched_window_fpr": 0.009969537524231515,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 7,
+              "rate": 0.35,
+              "clean_stream_rate": 0.45,
+              "untouched_window_fpr": 0.009969537524231515,
+              "streams": 2
+            }
+          },
+          "41": {
+            "clean_window_fpr": 0.009971136184728419,
+            "spike": {
+              "injections": 20,
+              "detected": 7,
+              "rate": 0.35,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.009979865184277336,
+              "streams": 2
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 12,
+              "rate": 0.6,
+              "clean_stream_rate": 0.5,
+              "untouched_window_fpr": 0.010154158589495062,
+              "streams": 2
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 16,
+              "rate": 0.8,
+              "clean_stream_rate": 0.75,
+              "untouched_window_fpr": 0.009554140127388535,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 9,
+              "rate": 0.45,
+              "clean_stream_rate": 0.4,
+              "untouched_window_fpr": 0.010015692790547401,
+              "streams": 2
+            }
+          },
+          "53": {
+            "clean_window_fpr": 0.008484212367707513,
+            "spike": {
+              "injections": 20,
+              "detected": 6,
+              "rate": 0.3,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.00844786833581371,
+              "streams": 2
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 12,
+              "rate": 0.6,
+              "clean_stream_rate": 0.35,
+              "untouched_window_fpr": 0.00867719006738669,
+              "streams": 2
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 13,
+              "rate": 0.65,
+              "clean_stream_rate": 0.6,
+              "untouched_window_fpr": 0.008400258469491368,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 8,
+              "rate": 0.4,
+              "clean_stream_rate": 0.45,
+              "untouched_window_fpr": 0.008446413735807255,
+              "streams": 2
+            }
+          }
+        },
+        "seed_mean": {
+          "spike": {
+            "rate": 0.33,
+            "clean_stream_rate": 0.030000000000000006,
+            "untouched_window_fpr": 0.009655957279173597
+          },
+          "drift": {
+            "rate": 0.65,
+            "clean_stream_rate": 0.48,
+            "untouched_window_fpr": 0.009766454352441615
+          },
+          "stuck": {
+            "rate": 0.6599999999999999,
+            "clean_stream_rate": 0.62,
+            "untouched_window_fpr": 0.009387981168651343
+          },
+          "replay": {
+            "rate": 0.37,
+            "clean_stream_rate": 0.39999999999999997,
+            "untouched_window_fpr": 0.009711068032862551
+          },
+          "clean_window_fpr": 0.009673751421324237
+        }
+      },
+      "b2": {
+        "injections": {
+          "spike": [
+            {
+              "kind": "spike",
+              "start_s": 1675077110.0,
+              "end_s": 1675077120.0,
+              "feature": "stacked_frames"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675078040.0,
+              "end_s": 1675078050.0,
+              "feature": "req_recv"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675080320.0,
+              "end_s": 1675080330.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675087430.0,
+              "end_s": 1675087440.0,
+              "feature": "tcp_syn"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675095490.0,
+              "end_s": 1675095500.0,
+              "feature": "req_read"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675099530.0,
+              "end_s": 1675099540.0,
+              "feature": "resp_exception"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675114850.0,
+              "end_s": 1675114860.0,
+              "feature": "slow_responses"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675135140.0,
+              "end_s": 1675135150.0,
+              "feature": "unseen_addr_write"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675137400.0,
+              "end_s": 1675137410.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675139970.0,
+              "end_s": 1675139980.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675143200.0,
+              "end_s": 1675143210.0,
+              "feature": "req_read"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675144820.0,
+              "end_s": 1675144830.0,
+              "feature": "slow_responses"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675146820.0,
+              "end_s": 1675146830.0,
+              "feature": "req_recv"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675152680.0,
+              "end_s": 1675152690.0,
+              "feature": "tcp_syn"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675155830.0,
+              "end_s": 1675155840.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675165340.0,
+              "end_s": 1675165350.0,
+              "feature": "oversized_qty"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675182170.0,
+              "end_s": 1675182180.0,
+              "feature": "req_recv"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675079670.0,
+              "end_s": 1675079680.0,
+              "feature": "unanswered"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675146290.0,
+              "end_s": 1675146300.0,
+              "feature": "unseen_addr_write"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675165160.0,
+              "end_s": 1675165170.0,
+              "feature": "unseen_addr_write"
+            }
+          ],
+          "drift": [
+            {
+              "kind": "drift",
+              "start_s": 1675079400.0,
+              "end_s": 1675080000.0,
+              "feature": "req_read"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675089850.0,
+              "end_s": 1675090450.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675090630.0,
+              "end_s": 1675091230.0,
+              "feature": "req_sent"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675099320.0,
+              "end_s": 1675099920.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675104280.0,
+              "end_s": 1675104880.0,
+              "feature": "unseen_addr"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675107380.0,
+              "end_s": 1675107980.0,
+              "feature": "latency_median_ms"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675109310.0,
+              "end_s": 1675109910.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675110570.0,
+              "end_s": 1675111170.0,
+              "feature": "req_recv"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675115430.0,
+              "end_s": 1675116030.0,
+              "feature": "oversized_qty"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675116750.0,
+              "end_s": 1675117350.0,
+              "feature": "oversized_qty"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675118530.0,
+              "end_s": 1675119130.0,
+              "feature": "unseen_addr"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675122500.0,
+              "end_s": 1675123100.0,
+              "feature": "unseen_addr_write"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675139970.0,
+              "end_s": 1675140570.0,
+              "feature": "tcp_syn"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675157360.0,
+              "end_s": 1675157960.0,
+              "feature": "unseen_addr"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675161640.0,
+              "end_s": 1675162240.0,
+              "feature": "tcp_rst"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675163990.0,
+              "end_s": 1675164590.0,
+              "feature": "stacked_frames"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675167760.0,
+              "end_s": 1675168360.0,
+              "feature": "unanswered"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675171080.0,
+              "end_s": 1675171680.0,
+              "feature": "req_recv"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675174620.0,
+              "end_s": 1675175220.0,
+              "feature": "slow_responses"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675091210.0,
+              "end_s": 1675091810.0,
+              "feature": "oversized_qty"
+            }
+          ],
+          "stuck": [
+            {
+              "kind": "stuck",
+              "start_s": 1675079460.0,
+              "end_s": 1675080060.0,
+              "feature": "req_sent"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675084540.0,
+              "end_s": 1675085140.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675089700.0,
+              "end_s": 1675090300.0,
+              "feature": "oversized_qty"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675091580.0,
+              "end_s": 1675092180.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675095800.0,
+              "end_s": 1675096400.0,
+              "feature": "resp_exception"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675100890.0,
+              "end_s": 1675101490.0,
+              "feature": "unseen_addr"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675112230.0,
+              "end_s": 1675112830.0,
+              "feature": "tcp_syn"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675117020.0,
+              "end_s": 1675117620.0,
+              "feature": "unanswered"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675119970.0,
+              "end_s": 1675120570.0,
+              "feature": "req_recv"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675125800.0,
+              "end_s": 1675126400.0,
+              "feature": "latency_median_ms"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675128100.0,
+              "end_s": 1675128700.0,
+              "feature": "unseen_addr"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675129100.0,
+              "end_s": 1675129700.0,
+              "feature": "latency_median_ms"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675131180.0,
+              "end_s": 1675131780.0,
+              "feature": "tcp_rst"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675132970.0,
+              "end_s": 1675133570.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675136640.0,
+              "end_s": 1675137240.0,
+              "feature": "unseen_addr_write"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675146520.0,
+              "end_s": 1675147120.0,
+              "feature": "tcp_syn"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675168210.0,
+              "end_s": 1675168810.0,
+              "feature": "resp_exception"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675178910.0,
+              "end_s": 1675179510.0,
+              "feature": "tcp_syn"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675091370.0,
+              "end_s": 1675091970.0,
+              "feature": "unseen_addr_write"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675168010.0,
+              "end_s": 1675168610.0,
+              "feature": "tcp_rst"
+            }
+          ],
+          "replay": [
+            {
+              "kind": "replay",
+              "start_s": 1675094650.0,
+              "end_s": 1675095250.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675098270.0,
+              "end_s": 1675098870.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675100530.0,
+              "end_s": 1675101130.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675107660.0,
+              "end_s": 1675108260.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675108900.0,
+              "end_s": 1675109500.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675110800.0,
+              "end_s": 1675111400.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675120300.0,
+              "end_s": 1675120900.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675128680.0,
+              "end_s": 1675129280.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675130450.0,
+              "end_s": 1675131050.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675138300.0,
+              "end_s": 1675138900.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675140880.0,
+              "end_s": 1675141480.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675144570.0,
+              "end_s": 1675145170.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675147090.0,
+              "end_s": 1675147690.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675160670.0,
+              "end_s": 1675161270.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675161780.0,
+              "end_s": 1675162380.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675165320.0,
+              "end_s": 1675165920.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675172780.0,
+              "end_s": 1675173380.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675177840.0,
+              "end_s": 1675178440.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675178920.0,
+              "end_s": 1675179520.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675108230.0,
+              "end_s": 1675108830.0,
+              "feature": null
+            }
+          ]
+        },
+        "per_seed": {
+          "11": {
+            "clean_window_fpr": 0.009913954358398803,
+            "spike": {
+              "injections": 20,
+              "detected": 10,
+              "rate": 0.5,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.009876427635274293,
+              "streams": 2
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 9,
+              "rate": 0.45,
+              "clean_stream_rate": 0.2,
+              "untouched_window_fpr": 0.01025564803804994,
+              "streams": 2
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 8,
+              "rate": 0.4,
+              "clean_stream_rate": 0.25,
+              "untouched_window_fpr": 0.01020610384462941,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 14,
+              "rate": 0.7,
+              "clean_stream_rate": 0.45,
+              "untouched_window_fpr": 0.010007927070947284,
+              "streams": 2
+            }
+          },
+          "23": {
+            "clean_window_fpr": 0.009913954358398803,
+            "spike": {
+              "injections": 20,
+              "detected": 7,
+              "rate": 0.35,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.009876427635274293,
+              "streams": 2
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 12,
+              "rate": 0.6,
+              "clean_stream_rate": 0.45,
+              "untouched_window_fpr": 0.009562029330162505,
+              "streams": 2
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 6,
+              "rate": 0.3,
+              "clean_stream_rate": 0.3,
+              "untouched_window_fpr": 0.01020610384462941,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 8,
+              "rate": 0.4,
+              "clean_stream_rate": 0.3,
+              "untouched_window_fpr": 0.010057471264367816,
+              "streams": 2
+            }
+          },
+          "37": {
+            "clean_window_fpr": 0.009913954358398803,
+            "spike": {
+              "injections": 20,
+              "detected": 4,
+              "rate": 0.2,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.009923235349185546,
+              "streams": 2
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 10,
+              "rate": 0.5,
+              "clean_stream_rate": 0.35,
+              "untouched_window_fpr": 0.009859294490685691,
+              "streams": 2
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 9,
+              "rate": 0.45,
+              "clean_stream_rate": 0.35,
+              "untouched_window_fpr": 0.010107015457788348,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 13,
+              "rate": 0.65,
+              "clean_stream_rate": 0.45,
+              "untouched_window_fpr": 0.010007927070947284,
+              "streams": 2
+            }
+          },
+          "41": {
+            "clean_window_fpr": 0.009913954358398803,
+            "spike": {
+              "injections": 20,
+              "detected": 10,
+              "rate": 0.5,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.009876427635274293,
+              "streams": 2
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 9,
+              "rate": 0.45,
+              "clean_stream_rate": 0.2,
+              "untouched_window_fpr": 0.01020610384462941,
+              "streams": 2
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 8,
+              "rate": 0.4,
+              "clean_stream_rate": 0.25,
+              "untouched_window_fpr": 0.01020610384462941,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 14,
+              "rate": 0.7,
+              "clean_stream_rate": 0.45,
+              "untouched_window_fpr": 0.010007927070947284,
+              "streams": 2
+            }
+          },
+          "53": {
+            "clean_window_fpr": 0.009913954358398803,
+            "spike": {
+              "injections": 20,
+              "detected": 10,
+              "rate": 0.5,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.009876427635274293,
+              "streams": 2
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 10,
+              "rate": 0.5,
+              "clean_stream_rate": 0.25,
+              "untouched_window_fpr": 0.01025564803804994,
+              "streams": 2
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 7,
+              "rate": 0.35,
+              "clean_stream_rate": 0.25,
+              "untouched_window_fpr": 0.01020610384462941,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 14,
+              "rate": 0.7,
+              "clean_stream_rate": 0.45,
+              "untouched_window_fpr": 0.010007927070947284,
+              "streams": 2
+            }
+          }
+        },
+        "seed_mean": {
+          "spike": {
+            "rate": 0.41,
+            "clean_stream_rate": 0.13,
+            "untouched_window_fpr": 0.009885789178056544
+          },
+          "drift": {
+            "rate": 0.5,
+            "clean_stream_rate": 0.29,
+            "untouched_window_fpr": 0.010027744748315498
+          },
+          "stuck": {
+            "rate": 0.38,
+            "clean_stream_rate": 0.27999999999999997,
+            "untouched_window_fpr": 0.010186286167261197
+          },
+          "replay": {
+            "rate": 0.6300000000000001,
+            "clean_stream_rate": 0.42000000000000004,
+            "untouched_window_fpr": 0.01001783590963139
+          },
+          "clean_window_fpr": 0.009913954358398803
+        }
+      },
+      "b3": {
+        "injections": {
+          "spike": [
+            {
+              "kind": "spike",
+              "start_s": 1675079520.0,
+              "end_s": 1675079530.0,
+              "feature": "unanswered"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675085170.0,
+              "end_s": 1675085180.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675097290.0,
+              "end_s": 1675097300.0,
+              "feature": "req_recv"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675101930.0,
+              "end_s": 1675101940.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675102670.0,
+              "end_s": 1675102680.0,
+              "feature": "slow_responses"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675106590.0,
+              "end_s": 1675106600.0,
+              "feature": "req_recv"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675109940.0,
+              "end_s": 1675109950.0,
+              "feature": "slow_responses"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675120370.0,
+              "end_s": 1675120380.0,
+              "feature": "req_read"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675122130.0,
+              "end_s": 1675122140.0,
+              "feature": "unanswered"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675127350.0,
+              "end_s": 1675127360.0,
+              "feature": "unanswered"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675128950.0,
+              "end_s": 1675128960.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675138200.0,
+              "end_s": 1675138210.0,
+              "feature": "stacked_frames"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675140660.0,
+              "end_s": 1675140670.0,
+              "feature": "tcp_rst"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675146120.0,
+              "end_s": 1675146130.0,
+              "feature": "oversized_qty"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675147120.0,
+              "end_s": 1675147130.0,
+              "feature": "unanswered"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675150140.0,
+              "end_s": 1675150150.0,
+              "feature": "stacked_frames"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675159520.0,
+              "end_s": 1675159530.0,
+              "feature": "unseen_addr"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675160970.0,
+              "end_s": 1675160980.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675172240.0,
+              "end_s": 1675172250.0,
+              "feature": "req_write"
+            },
+            {
+              "kind": "spike",
+              "start_s": 1675174260.0,
+              "end_s": 1675174270.0,
+              "feature": "req_read"
+            }
+          ],
+          "drift": [
+            {
+              "kind": "drift",
+              "start_s": 1675081010.0,
+              "end_s": 1675081610.0,
+              "feature": "req_sent"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675094310.0,
+              "end_s": 1675094910.0,
+              "feature": "slow_responses"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675096150.0,
+              "end_s": 1675096750.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675102400.0,
+              "end_s": 1675103000.0,
+              "feature": "unanswered"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675118730.0,
+              "end_s": 1675119330.0,
+              "feature": "unseen_addr_write"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675123910.0,
+              "end_s": 1675124510.0,
+              "feature": "tcp_rst"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675130330.0,
+              "end_s": 1675130930.0,
+              "feature": "tcp_rst"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675137980.0,
+              "end_s": 1675138580.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675139750.0,
+              "end_s": 1675140350.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675145960.0,
+              "end_s": 1675146560.0,
+              "feature": "slow_responses"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675146810.0,
+              "end_s": 1675147410.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675151860.0,
+              "end_s": 1675152460.0,
+              "feature": "req_read"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675156020.0,
+              "end_s": 1675156620.0,
+              "feature": "req_sent"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675162420.0,
+              "end_s": 1675163020.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675170860.0,
+              "end_s": 1675171460.0,
+              "feature": "unseen_addr_write"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675175830.0,
+              "end_s": 1675176430.0,
+              "feature": "tcp_rst"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675080990.0,
+              "end_s": 1675081590.0,
+              "feature": "req_recv"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675130390.0,
+              "end_s": 1675130990.0,
+              "feature": "latency_median_ms"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675176460.0,
+              "end_s": 1675177060.0,
+              "feature": "tcp_syn"
+            },
+            {
+              "kind": "drift",
+              "start_s": 1675176320.0,
+              "end_s": 1675176920.0,
+              "feature": "stacked_frames"
+            }
+          ],
+          "stuck": [
+            {
+              "kind": "stuck",
+              "start_s": 1675078820.0,
+              "end_s": 1675079420.0,
+              "feature": "req_read"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675083510.0,
+              "end_s": 1675084110.0,
+              "feature": "unseen_addr"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675090400.0,
+              "end_s": 1675091000.0,
+              "feature": "req_read"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675096450.0,
+              "end_s": 1675097050.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675097470.0,
+              "end_s": 1675098070.0,
+              "feature": "malformed_frames"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675108050.0,
+              "end_s": 1675108650.0,
+              "feature": "stacked_frames"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675115660.0,
+              "end_s": 1675116260.0,
+              "feature": "unseen_addr_write"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675117160.0,
+              "end_s": 1675117760.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675121060.0,
+              "end_s": 1675121660.0,
+              "feature": "tcp_syn"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675122300.0,
+              "end_s": 1675122900.0,
+              "feature": "unseen_addr_write"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675127090.0,
+              "end_s": 1675127690.0,
+              "feature": "req_read"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675135810.0,
+              "end_s": 1675136410.0,
+              "feature": "req_sent"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675152210.0,
+              "end_s": 1675152810.0,
+              "feature": "req_read"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675157650.0,
+              "end_s": 1675158250.0,
+              "feature": "unanswered"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675159610.0,
+              "end_s": 1675160210.0,
+              "feature": "req_recv"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675167490.0,
+              "end_s": 1675168090.0,
+              "feature": "tcp_syn"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675176300.0,
+              "end_s": 1675176900.0,
+              "feature": "tcp_syn"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675090510.0,
+              "end_s": 1675091110.0,
+              "feature": "unanswered"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675097380.0,
+              "end_s": 1675097980.0,
+              "feature": "req_other"
+            },
+            {
+              "kind": "stuck",
+              "start_s": 1675107710.0,
+              "end_s": 1675108310.0,
+              "feature": "malformed_frames"
+            }
+          ],
+          "replay": [
+            {
+              "kind": "replay",
+              "start_s": 1675083120.0,
+              "end_s": 1675083720.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675088990.0,
+              "end_s": 1675089590.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675100350.0,
+              "end_s": 1675100950.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675102970.0,
+              "end_s": 1675103570.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675110680.0,
+              "end_s": 1675111280.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675113630.0,
+              "end_s": 1675114230.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675117380.0,
+              "end_s": 1675117980.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675118150.0,
+              "end_s": 1675118750.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675120950.0,
+              "end_s": 1675121550.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675124650.0,
+              "end_s": 1675125250.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675125700.0,
+              "end_s": 1675126300.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675130460.0,
+              "end_s": 1675131060.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675131200.0,
+              "end_s": 1675131800.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675137440.0,
+              "end_s": 1675138040.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675140080.0,
+              "end_s": 1675140680.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675148530.0,
+              "end_s": 1675149130.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675155010.0,
+              "end_s": 1675155610.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675161870.0,
+              "end_s": 1675162470.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675163140.0,
+              "end_s": 1675163740.0,
+              "feature": null
+            },
+            {
+              "kind": "replay",
+              "start_s": 1675164960.0,
+              "end_s": 1675165560.0,
+              "feature": null
+            }
+          ]
+        },
+        "per_seed": {
+          "11": {
+            "clean_window_fpr": 0.009918931807343824,
+            "spike": {
+              "injections": 20,
+              "detected": 8,
+              "rate": 0.4,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.009842331581462017,
+              "streams": 1
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 14,
+              "rate": 0.7,
+              "clean_stream_rate": 0.5,
+              "untouched_window_fpr": 0.009849611634440588,
+              "streams": 3
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 10,
+              "rate": 0.5,
+              "clean_stream_rate": 0.4,
+              "untouched_window_fpr": 0.009914011127971674,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 7,
+              "rate": 0.35,
+              "clean_stream_rate": 0.35,
+              "untouched_window_fpr": 0.009800753904146474,
+              "streams": 1
+            }
+          },
+          "23": {
+            "clean_window_fpr": 0.009918931807343824,
+            "spike": {
+              "injections": 20,
+              "detected": 9,
+              "rate": 0.45,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.009842331581462017,
+              "streams": 1
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 15,
+              "rate": 0.75,
+              "clean_stream_rate": 0.5,
+              "untouched_window_fpr": 0.00991571641051066,
+              "streams": 3
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 10,
+              "rate": 0.5,
+              "clean_stream_rate": 0.45,
+              "untouched_window_fpr": 0.010015174506828529,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 4,
+              "rate": 0.2,
+              "clean_stream_rate": 0.45,
+              "untouched_window_fpr": 0.009800753904146474,
+              "streams": 1
+            }
+          },
+          "37": {
+            "clean_window_fpr": 0.009918931807343824,
+            "spike": {
+              "injections": 20,
+              "detected": 8,
+              "rate": 0.4,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.009842331581462017,
+              "streams": 1
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 13,
+              "rate": 0.65,
+              "clean_stream_rate": 0.45,
+              "untouched_window_fpr": 0.00991571641051066,
+              "streams": 3
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 13,
+              "rate": 0.65,
+              "clean_stream_rate": 0.55,
+              "untouched_window_fpr": 0.010015174506828529,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 5,
+              "rate": 0.25,
+              "clean_stream_rate": 0.2,
+              "untouched_window_fpr": 0.010662358642972537,
+              "streams": 1
+            }
+          },
+          "41": {
+            "clean_window_fpr": 0.009918931807343824,
+            "spike": {
+              "injections": 20,
+              "detected": 8,
+              "rate": 0.4,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.009842331581462017,
+              "streams": 1
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 16,
+              "rate": 0.8,
+              "clean_stream_rate": 0.5,
+              "untouched_window_fpr": 0.009783506858370518,
+              "streams": 3
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 12,
+              "rate": 0.6,
+              "clean_stream_rate": 0.55,
+              "untouched_window_fpr": 0.00966110268082954,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.010231556273559504,
+              "streams": 1
+            }
+          },
+          "53": {
+            "clean_window_fpr": 0.009918931807343824,
+            "spike": {
+              "injections": 20,
+              "detected": 9,
+              "rate": 0.45,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.009842331581462017,
+              "streams": 1
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 13,
+              "rate": 0.65,
+              "clean_stream_rate": 0.3,
+              "untouched_window_fpr": 0.010080978350685837,
+              "streams": 3
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 13,
+              "rate": 0.65,
+              "clean_stream_rate": 0.5,
+              "untouched_window_fpr": 0.00981284774911482,
+              "streams": 2
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.4,
+              "untouched_window_fpr": 0.009369951534733441,
+              "streams": 1
+            }
+          }
+        },
+        "seed_mean": {
+          "spike": {
+            "rate": 0.42000000000000004,
+            "clean_stream_rate": 0.1,
+            "untouched_window_fpr": 0.009842331581462017
+          },
+          "drift": {
+            "rate": 0.7100000000000001,
+            "clean_stream_rate": 0.45,
+            "untouched_window_fpr": 0.009909105932903653
+          },
+          "stuck": {
+            "rate": 0.58,
+            "clean_stream_rate": 0.49000000000000005,
+            "untouched_window_fpr": 0.009883662114314618
+          },
+          "replay": {
+            "rate": 0.22000000000000003,
+            "clean_stream_rate": 0.30999999999999994,
+            "untouched_window_fpr": 0.009973074851911685
+          },
+          "clean_window_fpr": 0.009918931807343824
+        }
+      }
+    }
+  }
+}
