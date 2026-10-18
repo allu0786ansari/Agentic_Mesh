@@ -138,3 +138,38 @@ def holm(p_values: npt.ArrayLike) -> npt.NDArray[np.float64]:
         running = max(running, min(1.0, (m - rank) * p[index]))
         adjusted[index] = running
     return adjusted
+
+
+def main(argv: list[str] | None = None) -> int:
+    """``python -m agmesh.evaluation.stats --experiment X1|X2`` (ADR 0016 §4)."""
+    import argparse
+    from pathlib import Path
+
+    from agmesh.common.artifacts import write_artifact
+    from agmesh.common.config import DEFAULT_PARAMS_PATH
+    from agmesh.experiments import x1x2_analysis as an
+
+    parser = argparse.ArgumentParser(description="X1/X2 statistics (ADR 0016 §4)")
+    parser.add_argument("--experiment", choices=("X1", "X2"), required=True)
+    parser.add_argument("--split", choices=("val", "test"), default="val")
+    parser.add_argument("--results", type=Path, default=Path("results"))
+    parser.add_argument("--resamples", type=int, default=10_000)
+    parser.add_argument("--params", type=Path, default=DEFAULT_PARAMS_PATH)
+    args = parser.parse_args(argv)
+    result = an.run(args.results, args.experiment, args.split, args.resamples)
+    path = write_artifact(
+        args.results / args.experiment / f"analysis_{args.split}.json",
+        kind=f"{args.experiment}.analysis",
+        data_source="runtime",
+        payload=result,
+        params_path=args.params,
+    )
+    md = an.markdown(result)
+    path.with_suffix(".md").write_text(md + "\n", encoding="utf-8")
+    print(md)
+    print(f"-> {path}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -18,7 +18,10 @@ Success-criteria checks (CC1-CC8, PT1-PT7) are added in Weeks 12-14 on top of th
 from __future__ import annotations
 
 import argparse
+import functools
+import hashlib
 import json
+import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -74,7 +77,7 @@ def check_file(path: Path, accesses: list[dict[str, Any]]) -> Finding:
             problems.append(f"provenance.{key} is missing")
     if not (prov.get("environment") or {}).get("lockfile_sha256"):
         problems.append("provenance.environment.lockfile_sha256 is missing")
-    if prov.get("git_dirty"):
+    if prov.get("git_dirty") and not _lock_only_and_committed(prov):
         changed = ", ".join(prov.get("git_dirty_paths") or []) or "unknown files"
         problems.append(f"produced from a working tree with uncommitted changes ({changed})")
     if artifact.experiment in DETECTION_EXPERIMENTS:
@@ -95,6 +98,34 @@ def check_file(path: Path, accesses: list[dict[str, Any]]) -> Finding:
             problems.append("test-split result has no matching entry in the test access log")
     finding.ok = not problems
     return finding
+
+
+@functools.lru_cache(maxsize=1)
+def committed_lock_hashes() -> frozenset[str]:
+    """SHA-256 of every ``uv.lock`` version in the repository's history."""
+    try:
+        commits = subprocess.run(
+            ["git", "log", "--format=%H", "--", "uv.lock"],
+            capture_output=True, text=True, check=True,
+        ).stdout.split()  # fmt: skip
+        hashes = set()
+        for c in commits:
+            blob = subprocess.run(
+                ["git", "show", f"{c}:uv.lock"], capture_output=True, check=True
+            ).stdout
+            hashes.add(hashlib.sha256(blob).hexdigest())
+        return frozenset(hashes)
+    except (OSError, subprocess.CalledProcessError):
+        return frozenset()
+
+
+def _lock_only_and_committed(prov: dict[str, Any]) -> bool:
+    """A run whose only uncommitted file was ``uv.lock`` is still fully pinned when that
+    exact lock (its recorded SHA-256) was committed: the code is ``git_sha`` and the
+    environment is that committed lock (ADR 0016 §7)."""
+    paths = prov.get("git_dirty_paths") or []
+    lock = (prov.get("environment") or {}).get("lockfile_sha256")
+    return paths == ["uv.lock"] and bool(lock) and lock in committed_lock_hashes()
 
 
 def check(

@@ -186,3 +186,144 @@ All figures are drawn from artifacts only:
 
 The per-client privacy table is written alongside, with each client's ε, δ, noise
 multiplier and steps.
+
+## 7. Provenance rule for a lock-only dirty tree (17–18 October)
+
+All 180 grid runs were made at commit `8b3d97a` with one uncommitted file:
+`uv.lock`, re-locked for the Week 12 dependencies. The checker rejected them on
+"uncommitted changes".
+
+Every run's recorded `lockfile_sha256` (`1d8f5b63…`) equals the `uv.lock` committed
+next (`e4cbb92`). So each run is fully pinned:
+
+- **Code:** `git_sha`.
+- **Environment:** a lock that is in the history.
+
+The checker now accepts a dirty tree **only** when both hold:
+
+- the sole dirty path is `uv.lock`;
+- the recorded lock hash matches a committed `uv.lock`.
+
+Any other dirty file is still rejected. With this rule, 250 of 250 X1/X2 artifacts
+are accepted, the matrix has 0 missing runs, and CC4 has 0 violations.
+
+## 8. Results on validation (18 October; development evidence)
+
+These numbers are from the laptop, five seeds per configuration, 180 runs with no
+failures. The runs took 22.7 h of compute against the 30 h estimate.
+
+The analysis is `results/X{1,2}/analysis_val.{json,md}` (`make stats`). The figures
+and the privacy table are in `results/figures/` (`make figures`).
+
+All CIs are 95% event-level, and p-values are one-sided as declared in §4. These
+are development evidence; **the claims are made only on the test split after G4.**
+
+### RQ1 (family of four, Holm)
+
+| Test | Site | Headline model | Reference | Difference [CI] | p | p (Holm) | Reading |
+|---|---|---|---|---|---|---|---|
+| PT1 | A | FedProx ε 3: AUROC 0.891 | central non-private: 0.948 | −0.057 [−0.100, −0.029] | 0.65 | 1.00 | non-inferiority within 0.05 **not shown** |
+| PT2 | A | 0.891 | local-only non-private: 0.922 | −0.030 [−0.063, +0.004] | 0.96 | 1.00 | **not shown** |
+| PT1 | B | 1.000 | 1.000 | 0.000 [0, 0] | 0.0001 | 0.0004 | holds at the ceiling |
+| PT2 | B | 1.000 | 1.000 | 0.000 [0, 0.001] | 0.0001 | 0.0004 | holds at the ceiling |
+
+**Site B.** Every model scores AUROC 1.000 on validation, so these "passes" carry
+no information about the methods (ADR 0003, ADR 0005). What separates Site B
+models is window FPR, for example 0.032 for FedProx ε 3 against 0.057 for central
+non-private. That is not a preregistered claim.
+
+### Where Site A's gap comes from (reported, not a family)
+
+| Comparison (AUROC) | Difference [CI] | Reading |
+|---|---|---|
+| central ε ∞ against central ε 3 (same pipeline) | +0.038 [+0.016, +0.073] | **the cost of DP**, clearly above zero |
+| central ε 3 against federated FedProx ε 3 | +0.002 [−0.008, +0.014] | **the cost of federation** under DP: about zero |
+| central ε ∞ against FedProx ε ∞ | +0.002 [−0.012, +0.015] | about zero without DP too |
+| FedProx ε 3 against local-only ε 3 (same pipeline) | +0.014 [−0.012, +0.046] | federation helps a little; CI includes 0 |
+
+- **The pipeline's own cost:** central ε ∞ through the DP pipeline (0.931) against
+  the Week 4 central non-private (0.948) is 0.017. It comes from 50 rounds of one
+  epoch, against early stopping over 200 epochs, plus noisy normalisation.
+- **Not converged:** Site A's federated runs reach their best validation loss at
+  rounds 45–49 of 50, so they are still improving when the privacy plan ends them.
+- **Secondary, ε 10:** −0.040 [−0.072, −0.017] against central non-private (p 0.25),
+  so PT1 is not shown at ε 10 either.
+
+**Privacy–utility (Site A, FedProx; AUROC / AUPRC):**
+
+| ε | AUROC | AUPRC |
+|---|---|---|
+| 1 | 0.869 | 0.593 |
+| 3 | 0.891 | 0.697 |
+| 10 | 0.909 | 0.723 |
+| ∞ | 0.930 | 0.746 |
+
+FedAvg is within 0.001 AUROC and 0.007 AUPRC of FedProx at every ε.
+
+### H1b (family of four, Holm)
+
+| Arm | Site | FedProx − FedAvg [CI] | p (Holm) |
+|---|---|---|---|
+| homogeneous | A | −0.0002 [−0.0005, −0.0000] | 1.00 |
+| heterogeneous | A | −0.0003 [−0.0008, +0.0000] | 1.00 |
+| homogeneous | B | 0.000 [0, 0] | 1.00 |
+| heterogeneous | B | +0.0014 [+0.0011, +0.0015] | 0.0004 |
+
+- **No practical effect:** μ = 0.01 does not change Site A in either arm. The Site B
+  "effect" is +0.001 AUROC at the ceiling.
+- **Why it is significant anyway:** the event-level bootstrap fixes each seed's
+  model, so a constant tiny difference is "significant" without mattering. This is
+  reported as negligible.
+- **Expected:** this matches G2. With about 12 steps per round, the proximal term
+  barely acts.
+
+**Systems heterogeneity** (epochs from {1, 2, 3}, dropout 0.2; 29–47 missed
+client-rounds per run):
+
+| Site | Strategy | Heterogeneous − homogeneous |
+|---|---|---|
+| A | FedAvg | +0.004 [+0.000, +0.008] |
+| A | FedProx | +0.004 [+0.000, +0.008] |
+| B | FedAvg | −0.001 |
+| B | FedProx | 0.000 |
+
+On Site A, the extra local epochs more than offset the dropouts.
+
+**IID against non-IID** (Site A; unpaired, §3 confound):
+
+| Strategy | IID − non-IID (AUROC) |
+|---|---|
+| FedAvg | −0.004 [−0.007, −0.002] |
+| FedProx | −0.004 [−0.007, −0.001] |
+
+- **Partly the smaller training set:** IID partitions use about 12% fewer training
+  windows.
+- **The non-IID cost is small anyway:** the time-based split costs no utility
+  against IID.
+
+**μ grid (Site A):**
+
+| μ against 0.01 | Homogeneous | Heterogeneous |
+|---|---|---|
+| 0.001 | within ±0.0005 | within ±0.0005 |
+| 0.1 | −0.002 | −0.003 |
+
+The grid confirms G2's choice. It was not used to choose.
+
+### H1c (Site A, FedProx ε 10; family of two, Holm)
+
+| Comparator | Window FPR, pooled DP threshold against comparator | p (Holm) | Event recall difference [CI] | Recall within 0.05? |
+|---|---|---|---|---|
+| per-node R0 | 0.009 against 0.049 | 0.0002 | −0.012 [−0.037, 0.000] | yes (p 0.005) |
+| per-node R3 | 0.009 against 0.014 | 0.019 | −0.062 [−0.188, 0.000] | **not shown** (p 0.69) |
+
+- **Against fixed per-node thresholds:** H1c's pooled DP threshold sharply lowers FPR
+  at nearly the same recall.
+- **Against R3:** it lowers FPR again, but recall within 0.05 is not shown.
+- **ε 3 (secondary)** is in the artifacts.
+
+### Privacy (CC4)
+
+In every private run, every client's final ε is at most its target. The maximum ε
+over clients and seeds is, for example, 2.9992 at target 3. The per-client table is
+`results/figures/privacy_table.md`.
