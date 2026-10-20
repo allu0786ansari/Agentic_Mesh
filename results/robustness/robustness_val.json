@@ -3,8 +3,8 @@
   "kind": "robustness",
   "data_source": "synthetic",
   "provenance": {
-    "created_at": "2026-10-18T23:16:13Z",
-    "git_sha": "39f14103bb003d46ed51352cbfa1da28a3adcf7d",
+    "created_at": "2026-10-20T12:35:18Z",
+    "git_sha": "3fc6e45174caf0c050001804e5eb98b089cf7ab3",
     "git_branch": "main",
     "git_dirty": false,
     "git_dirty_paths": [],
@@ -20,8 +20,17 @@
       "memory_total_mb": 8030,
       "swap_total_mb": 0,
       "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "packages": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "torch": "2.14.1",
+        "opacus": "1.6.0",
+        "scikit-learn": "1.9.1",
+        "pandas": "3.0.6",
+        "flwr": "1.39.0"
+      },
       "hostname_hash": "5bce98f73f3e",
-      "pid": 677
+      "pid": 3970
     }
   },
   "protocol": "docs/adr/0017-x3-x6-week13.md \u00a77",
@@ -38,25 +47,12 @@
     "site_a": {
       "used": [
         11,
+        23,
+        37,
+        41,
         53
       ],
-      "excluded": {
-        "23": [
-          "site_a__fedprox__eps3 seed 23: auprc 0.7029025037077782 != X1 0.702874709604068",
-          "site_a__fedprox__eps3 seed 23: auroc 0.8958792254545642 != X1 0.8958869626176336"
-        ],
-        "37": [
-          "site_a__fedprox__eps3 seed 37: auprc 0.6987864762913997 != X1 0.6988100789592224",
-          "site_a__fedprox__eps3 seed 37: auroc 0.8975761255878063 != X1 0.8975903457377221"
-        ],
-        "41": [
-          "site_a__fedprox__eps3 seed 41: auprc 0.6860534278135104 != X1 0.685927571450563",
-          "site_a__fedprox__eps3 seed 41: auroc 0.8849511883940879 != X1 0.8849262063226686",
-          "site_a__fedprox__eps3 seed 41: false_alarms_per_hour 0.7020166578791551 != X1 0.7564302008053946",
-          "site_a__fedprox__eps3 seed 41: window_fpr 0.010847802817306162 != X1 0.010998951547656828",
-          "site_a__fedprox__eps3 seed 41: window_fpr_excl_recovery 0.006836864186173306 != X1 0.007033096525262788"
-        ]
-      }
+      "excluded": {}
     },
     "site_b": {
       "used": [
@@ -600,6 +596,111 @@
               "streams": 4
             }
           },
+          "23": {
+            "clean_window_fpr": 0.009727016002510198,
+            "spike": {
+              "injections": 20,
+              "detected": 8,
+              "rate": 0.4,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.009592326139088728,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.010672732044440556,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.009623797025371828,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 4,
+              "rate": 0.2,
+              "clean_stream_rate": 0.2,
+              "untouched_window_fpr": 0.010937089859130283,
+              "streams": 4
+            }
+          },
+          "37": {
+            "clean_window_fpr": 0.009727016002510198,
+            "spike": {
+              "injections": 20,
+              "detected": 10,
+              "rate": 0.5,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.00903277378097522,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.010322806403639227,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 4,
+              "rate": 0.2,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.009623797025371828,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 7,
+              "rate": 0.35,
+              "clean_stream_rate": 0.2,
+              "untouched_window_fpr": 0.010849593140257241,
+              "streams": 4
+            }
+          },
+          "41": {
+            "clean_window_fpr": 0.009727016002510198,
+            "spike": {
+              "injections": 20,
+              "detected": 8,
+              "rate": 0.4,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.00903277378097522,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.009885399352637565,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 4,
+              "rate": 0.2,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.010498687664041995,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.01006212267039986,
+              "streams": 4
+            }
+          },
           "53": {
             "clean_window_fpr": 0.009727016002510198,
             "spike": {
@@ -638,24 +739,24 @@
         },
         "seed_mean": {
           "spike": {
-            "rate": 0.475,
+            "rate": 0.45,
             "clean_stream_rate": 0.0,
-            "untouched_window_fpr": 0.009232613908872901
+            "untouched_window_fpr": 0.009224620303756995
           },
           "drift": {
             "rate": 0.05,
             "clean_stream_rate": 0.0,
-            "untouched_window_fpr": 0.009972880762837897
+            "untouched_window_fpr": 0.010165339865278627
           },
           "stuck": {
-            "rate": 0.2,
-            "clean_stream_rate": 0.15,
-            "untouched_window_fpr": 0.009623797025371828
+            "rate": 0.19,
+            "clean_stream_rate": 0.14,
+            "untouched_window_fpr": 0.00979877515310586
           },
           "replay": {
-            "rate": 0.225,
-            "clean_stream_rate": 0.15000000000000002,
-            "untouched_window_fpr": 0.010543354624201593
+            "rate": 0.22999999999999998,
+            "clean_stream_rate": 0.16,
+            "untouched_window_fpr": 0.010587102983638113
           },
           "clean_window_fpr": 0.009727016002510198
         }
@@ -1187,6 +1288,111 @@
               "streams": 3
             }
           },
+          "23": {
+            "clean_window_fpr": 0.009853687667960586,
+            "spike": {
+              "injections": 20,
+              "detected": 7,
+              "rate": 0.35,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.0082091821222256,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.00869493209672077,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.010514115406904546,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.010882016036655211,
+              "streams": 3
+            }
+          },
+          "37": {
+            "clean_window_fpr": 0.009853687667960586,
+            "spike": {
+              "injections": 20,
+              "detected": 9,
+              "rate": 0.45,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.007753116448768623,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 2,
+              "rate": 0.1,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.009854256376283538,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.01067969202748572,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.012027491408934709,
+              "streams": 3
+            }
+          },
+          "41": {
+            "clean_window_fpr": 0.009853687667960586,
+            "spike": {
+              "injections": 20,
+              "detected": 6,
+              "rate": 0.3,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.007145028884159319,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.008612123219609143,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.010348538786323372,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.012371134020618556,
+              "streams": 3
+            }
+          },
           "53": {
             "clean_window_fpr": 0.009853687667960586,
             "spike": {
@@ -1225,24 +1431,24 @@
         },
         "seed_mean": {
           "spike": {
-            "rate": 0.35,
+            "rate": 0.36,
             "clean_stream_rate": 0.15,
-            "untouched_window_fpr": 0.007791121921556704
+            "untouched_window_fpr": 0.00773791425965339
           },
           "drift": {
-            "rate": 0.125,
-            "clean_stream_rate": 0.0,
-            "untouched_window_fpr": 0.009150380920834714
+            "rate": 0.13,
+            "clean_stream_rate": 0.01,
+            "untouched_window_fpr": 0.009092414706856577
           },
           "stuck": {
             "rate": 0.05,
             "clean_stream_rate": 0.05,
-            "untouched_window_fpr": 0.009934597234870435
+            "untouched_window_fpr": 0.0102823081380909
           },
           "replay": {
             "rate": 0.05,
             "clean_stream_rate": 0.05,
-            "untouched_window_fpr": 0.011912943871706758
+            "untouched_window_fpr": 0.011821305841924399
           },
           "clean_window_fpr": 0.009853687667960586
         }
@@ -1774,6 +1980,111 @@
               "streams": 4
             }
           },
+          "23": {
+            "clean_window_fpr": 0.009892594686263426,
+            "spike": {
+              "injections": 20,
+              "detected": 9,
+              "rate": 0.45,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.009342436219906576,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.009663341645885287,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.010328133405056481,
+              "streams": 3
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.011530970003895597,
+              "streams": 4
+            }
+          },
+          "37": {
+            "clean_window_fpr": 0.009892594686263426,
+            "spike": {
+              "injections": 20,
+              "detected": 11,
+              "rate": 0.55,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.00905497664390945,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.009585411471321695,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.010435718128025821,
+              "streams": 3
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.011219322165952474,
+              "streams": 4
+            }
+          },
+          "41": {
+            "clean_window_fpr": 0.009892594686263426,
+            "spike": {
+              "injections": 20,
+              "detected": 8,
+              "rate": 0.4,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.009773625583902264,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.009663341645885287,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.15,
+              "untouched_window_fpr": 0.010220548682087143,
+              "streams": 3
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 3,
+              "rate": 0.15,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.011375146084924036,
+              "streams": 4
+            }
+          },
           "53": {
             "clean_window_fpr": 0.009892594686263426,
             "spike": {
@@ -1812,24 +2123,24 @@
         },
         "seed_mean": {
           "spike": {
-            "rate": 0.525,
-            "clean_stream_rate": 0.0,
-            "untouched_window_fpr": 0.00955803090190442
+            "rate": 0.49000000000000005,
+            "clean_stream_rate": 0.02,
+            "untouched_window_fpr": 0.009457420050305426
           },
           "drift": {
             "rate": 0.15,
             "clean_stream_rate": 0.1,
-            "untouched_window_fpr": 0.009078865336658354
+            "untouched_window_fpr": 0.009413965087281794
           },
           "stuck": {
-            "rate": 0.15,
-            "clean_stream_rate": 0.15,
-            "untouched_window_fpr": 0.010059171597633136
+            "rate": 0.11000000000000001,
+            "clean_stream_rate": 0.11000000000000001,
+            "untouched_window_fpr": 0.010220548682087143
           },
           "replay": {
-            "rate": 0.125,
-            "clean_stream_rate": 0.05,
-            "untouched_window_fpr": 0.011180366186209583
+            "rate": 0.14,
+            "clean_stream_rate": 0.04,
+            "untouched_window_fpr": 0.011297234125438255
           },
           "clean_window_fpr": 0.009892594686263426
         }
@@ -2361,6 +2672,111 @@
               "streams": 4
             }
           },
+          "23": {
+            "clean_window_fpr": 0.009892594686263426,
+            "spike": {
+              "injections": 20,
+              "detected": 9,
+              "rate": 0.45,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.008984403076259613,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 0,
+              "rate": 0.0,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.010441829657913192,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 0,
+              "rate": 0.0,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.011219322165952474,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 0,
+              "rate": 0.0,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.01067643391521197,
+              "streams": 4
+            }
+          },
+          "37": {
+            "clean_window_fpr": 0.009892594686263426,
+            "spike": {
+              "injections": 20,
+              "detected": 11,
+              "rate": 0.55,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.00884065262703946,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 2,
+              "rate": 0.1,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.01067560196368737,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 0,
+              "rate": 0.0,
+              "clean_stream_rate": 0.0,
+              "untouched_window_fpr": 0.01090767432800935,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 2,
+              "rate": 0.1,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.01067643391521197,
+              "streams": 4
+            }
+          },
+          "41": {
+            "clean_window_fpr": 0.009892594686263426,
+            "spike": {
+              "injections": 20,
+              "detected": 10,
+              "rate": 0.5,
+              "clean_stream_rate": 0.1,
+              "untouched_window_fpr": 0.00905627830086969,
+              "streams": 4
+            },
+            "drift": {
+              "injections": 20,
+              "detected": 2,
+              "rate": 0.1,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.010831450167536819,
+              "streams": 4
+            },
+            "stuck": {
+              "injections": 20,
+              "detected": 1,
+              "rate": 0.05,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.010673938449552006,
+              "streams": 4
+            },
+            "replay": {
+              "injections": 20,
+              "detected": 2,
+              "rate": 0.1,
+              "clean_stream_rate": 0.05,
+              "untouched_window_fpr": 0.01137780548628429,
+              "streams": 4
+            }
+          },
           "53": {
             "clean_window_fpr": 0.009892594686263426,
             "spike": {
@@ -2399,24 +2815,24 @@
         },
         "seed_mean": {
           "spike": {
-            "rate": 0.35,
+            "rate": 0.44000000000000006,
             "clean_stream_rate": 0.1,
-            "untouched_window_fpr": 0.009092215913174728
+            "untouched_window_fpr": 0.009013153166103644
           },
           "drift": {
-            "rate": 0.025,
-            "clean_stream_rate": 0.025,
-            "untouched_window_fpr": 0.010285981454063741
+            "rate": 0.05,
+            "clean_stream_rate": 0.02,
+            "untouched_window_fpr": 0.010504168939452972
           },
           "stuck": {
-            "rate": 0.025,
-            "clean_stream_rate": 0.025,
-            "untouched_window_fpr": 0.011063498246980911
+            "rate": 0.02,
+            "clean_stream_rate": 0.02,
+            "untouched_window_fpr": 0.01098558628749513
           },
           "replay": {
-            "rate": 0.05,
-            "clean_stream_rate": 0.1,
-            "untouched_window_fpr": 0.010481608478802994
+            "rate": 0.06000000000000001,
+            "clean_stream_rate": 0.06999999999999999,
+            "untouched_window_fpr": 0.010738778054862844
           },
           "clean_window_fpr": 0.009892594686263426
         }
@@ -4500,5 +4916,16 @@
         }
       }
     }
-  }
+  },
+  "exact_reproduction_mismatches": [
+    "site_a__fedprox__eps3 seed 23: auprc 0.7029025037077782 != X1 0.702874709604068",
+    "site_a__fedprox__eps3 seed 23: auroc 0.8958792254545642 != X1 0.8958869626176336",
+    "site_a__fedprox__eps3 seed 37: auprc 0.6987864762913997 != X1 0.6988100789592224",
+    "site_a__fedprox__eps3 seed 37: auroc 0.8975761255878063 != X1 0.8975903457377221",
+    "site_a__fedprox__eps3 seed 41: auprc 0.6860534278135104 != X1 0.685927571450563",
+    "site_a__fedprox__eps3 seed 41: auroc 0.8849511883940879 != X1 0.8849262063226686",
+    "site_a__fedprox__eps3 seed 41: false_alarms_per_hour 0.7020166578791551 != X1 0.7564302008053946",
+    "site_a__fedprox__eps3 seed 41: window_fpr 0.010847802817306162 != X1 0.010998951547656828",
+    "site_a__fedprox__eps3 seed 41: window_fpr_excl_recovery 0.006836864186173306 != X1 0.007033096525262788"
+  ]
 }
