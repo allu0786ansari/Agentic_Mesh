@@ -1,0 +1,193 @@
+{
+  "schema_version": "1.0",
+  "kind": "mesh.summary",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-20T16:54:37Z",
+    "git_sha": "df517ab33fb876fbbe08e0cab391c17115fc7aca",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "packages": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "torch": "2.14.1+cpu",
+        "opacus": "1.6.0",
+        "scikit-learn": "1.9.1",
+        "pandas": "3.0.6",
+        "flwr": "1.39.0"
+      },
+      "hostname_hash": "89a720d64995",
+      "pid": 11036
+    }
+  },
+  "run_id": "mesh__site_b__full__test__20261020T220554",
+  "site": "site_b",
+  "mode": "full",
+  "split": "test",
+  "edge_run": "results/edge/site_b__test__20261020T204916",
+  "retrieval_version": "v2",
+  "llm_settings": {
+    "model": "llama3.2:3b",
+    "num_ctx": 2048,
+    "num_predict": 256,
+    "temperature": 0.0,
+    "timeout_s": 26.0,
+    "lock": "configs/mesh/llm_timeouts.lock.json"
+  },
+  "llm_server": {
+    "pid": 11071,
+    "cmdline": [
+      "/usr/local/lib/ollama/llama-server",
+      "--model",
+      "/home/allu786ansari/.ollama/models/blobs/sha256-dde5aa3fc5ffc17176b5e8bdc82f587b24b2678c6c66101bf7da77af9f7ccdff",
+      "--port",
+      "35283",
+      "--host",
+      "127.0.0.1",
+      "--no-webui",
+      "--offline",
+      "-c",
+      "2048",
+      "-np",
+      "1",
+      "--log-verbosity",
+      "4",
+      "--no-log-prefix",
+      "--no-log-timestamps",
+      "--no-jinja",
+      "--chat-template",
+      "chatml",
+      "--load-mode",
+      "none",
+      "--flash-attn",
+      "auto",
+      "-b",
+      "512",
+      "-ub",
+      "512",
+      "--context-shift",
+      "--keep",
+      "4"
+    ],
+    "cache_ram": "0",
+    "env_readable": true
+  },
+  "nodes": "https",
+  "traces": {
+    "dir": "results/traces/mesh__site_b__full__test__20261020T220554",
+    "sessions": 66,
+    "linked": 66,
+    "problems": [],
+    "problem_count": 0
+  },
+  "wall_seconds": 1035.0,
+  "sessions": 66,
+  "by_status": {
+    "COMPLETED_DEGRADED": 1,
+    "COMPLETED": 65
+  },
+  "by_attribution_mode": {
+    "retrieval_fallback": 1,
+    "full": 65
+  },
+  "techniques": {
+    "T0814": 42,
+    "T0801": 15,
+    "T0806": 6,
+    "T1691.002": 2,
+    "T0861": 1
+  },
+  "llm": {
+    "calls": 66,
+    "answered": 65,
+    "raw_grounding_rate": 1.0,
+    "valid_rate": 1.0,
+    "seconds": {
+      "n": 65,
+      "p50": 15.32276321900099,
+      "p95": 16.61290657780046
+    },
+    "failures": {
+      "Deadline": 1
+    },
+    "failed_seconds": {
+      "n": 1,
+      "p50": 26.055352773000777,
+      "p95": 26.055352773000777
+    },
+    "prompt_tokens": {
+      "n": 65,
+      "p50": 415.0,
+      "p95": 448.0
+    },
+    "output_tokens": {
+      "n": 65,
+      "p50": 68.0,
+      "p95": 75.0
+    },
+    "prompt_eval_s": {
+      "n": 65,
+      "p50": 6.6365,
+      "p95": 7.28126
+    },
+    "eval_s": {
+      "n": 65,
+      "p50": 8.6849,
+      "p95": 9.61272
+    },
+    "load_s_max": 0.0159,
+    "done_reason": {
+      "stop": 65
+    }
+  },
+  "llm_recoveries": {
+    "n": 1,
+    "probe_ok": 1,
+    "seconds": {
+      "n": 1,
+      "p50": 0.578,
+      "p95": 0.578
+    }
+  },
+  "hops": {
+    "max_hop_count": 3,
+    "total": 198
+  },
+  "actions": {
+    "total": 73,
+    "by_status": {
+      "dispatched": 70,
+      "pending_approval": 3
+    }
+  },
+  "latency_ms": {
+    "investigation": {
+      "n": 66,
+      "p50": 80.18958099910378,
+      "p95": 146.26244175042302
+    },
+    "incident_to_dispatch": {
+      "n": 66,
+      "p50": 15520.956130999366,
+      "p95": 16955.308455750583
+    }
+  },
+  "targets_ms": {
+    "investigation_p95": 2000.0,
+    "incident_to_dispatch_p95_retrieval_only": 3000.0,
+    "incident_to_dispatch_p95_full": 24000.0
+  }
+}
