@@ -27,6 +27,7 @@ import numpy as np
 from agmesh.common.config import Params
 from agmesh.data.access import Site, load_partition
 from agmesh.evaluation.detection import DETECTION_KEYS, node_arrays_npz
+from agmesh.evaluation.sealed import FinalAccess, SealedTestError
 from agmesh.experiments import x1_baselines as x1
 from agmesh.federated import fed_eval
 from agmesh.federated.protocol import (
@@ -103,12 +104,14 @@ class FederatedClient:
         epochs: int | None = None,
         privacy_root: Path = ROOT,
         train_nodes: list[str] | None = None,
+        final: FinalAccess | None = None,
     ) -> None:
         """``train_nodes`` makes this the centralised baseline's training client: it
         trains on those nodes' training windows pooled, under one budget whose unit is
         one pooled window (ADR 0016 §2). It is never asked to evaluate."""
         self.params, self.site, self.node = params, site, node
         self.seed, self.node_index = seed, node_index
+        self.partitions, self.final = partitions, final
         key = params.model_dump_json()
         self.pooled = train_nodes is not None
         # the pooled client never evaluates; its own-node data is a placeholder
@@ -290,9 +293,24 @@ class FederatedClient:
         if not ins.full:
             return EvalReply(self.node, val_loss)
         fitted = self._fitted(model, ins.norm)
-        fit = x1.NodeFit(self.node, self.data, scaler, fitted)
+        data = self.data
+        if ins.part == "test":
+            if self.final is None:
+                raise SealedTestError(f"{self.node}: test evaluation needs a --final run")
+            test = load_partition(
+                self.params, self.site, self.node, "test", root=self.partitions, final=self.final
+            )  # read once per run and client, then cached (ADR 0019 §4)
+            data = x1.NodeData({**self.data.parts, "test": test})
+        elif ins.part != "val_attack":
+            raise ValueError(f"unknown evaluation part {ins.part!r}")
+        fit = x1.NodeFit(self.node, data, scaler, fitted)
         metrics, arrays = x1._evaluate(
-            self.site, fit, self.params, shift=ins.shift, threshold_value=ins.threshold
+            self.site,
+            fit,
+            self.params,
+            shift=ins.shift,
+            threshold_value=ins.threshold,
+            part=ins.part,
         )
         normal = arrays.scores[arrays.scored & ~arrays.labels]
         # abstained attack windows count as missed: they rank lowest (bottom bin)

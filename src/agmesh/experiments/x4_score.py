@@ -47,6 +47,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import time
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -59,6 +60,7 @@ from agmesh.common.config import Params, load_params
 from agmesh.data.access import load_partition
 from agmesh.data.manifest import read_manifest
 from agmesh.evaluation import attack_ics
+from agmesh.evaluation.sealed import FinalAccess, add_final_argument
 from agmesh.evaluation.stats import bootstrap_ci, paired_bootstrap
 from agmesh.kb.retriever import excluded
 from agmesh.mesh.attribution import MODES
@@ -95,12 +97,18 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def site_a_events(params: Params, root: Path, mapping: dict[str, Any]) -> list[Event]:
-    """The validation events, with their labelled spans from the partitions."""
-    wanted = {k: v for k, v in mapping["events"].items() if v["partition"] == "val_attack"}
+def site_a_events(
+    params: Params,
+    root: Path,
+    mapping: dict[str, Any],
+    part: str = "val_attack",
+    final: FinalAccess | None = None,
+) -> list[Event]:
+    """The events of ``part``, with their labelled spans from the partitions."""
+    wanted = {k: v for k, v in mapping["events"].items() if v["partition"] == part}
     out: list[Event] = []
     for client in sorted(read_manifest(root / "site_a")["nodes"]):
-        labels = load_partition(params, "site_a", client, "val_attack", root=root).labels
+        labels = load_partition(params, "site_a", client, part, root=root, final=final).labels
         hit = labels.target > 0
         for key in np.unique(labels.group[hit]):
             entry = wanted.get(str(key))
@@ -119,17 +127,23 @@ def site_a_events(params: Params, root: Path, mapping: dict[str, Any]) -> list[E
                 )
             )
     if {e.key for e in out} != set(wanted):
-        raise ValueError("site_a: validation events in the mapping and the partitions differ")
+        raise ValueError(f"site_a: {part} events in the mapping and the partitions differ")
     return sorted(out, key=lambda e: e.start_s)
 
 
-def site_b_episodes(params: Params, root: Path, mapping: dict[str, Any]) -> list[Event]:
-    """The validation episodes: each one's labelled windows on any node."""
+def site_b_episodes(
+    params: Params,
+    root: Path,
+    mapping: dict[str, Any],
+    part: str = "val_attack",
+    final: FinalAccess | None = None,
+) -> list[Event]:
+    """The episodes of ``part``: each one's labelled windows on any node."""
     length = float(params.data.windows.site_b.length_s)
     spans: dict[str, list[float]] = {}
     nodes: dict[str, set[str]] = {}
     for client in sorted(read_manifest(root / "site_b")["nodes"]):
-        labels = load_partition(params, "site_b", client, "val_attack", root=root).labels
+        labels = load_partition(params, "site_b", client, part, root=root, final=final).labels
         hit = (labels.target > 0) & (labels.group != "-1")
         for key in np.unique(labels.group[hit]):
             t = labels.time_s[(labels.group == key) & hit]
@@ -371,26 +385,54 @@ def checks(runs: list[Run]) -> list[str]:
 # ------------------------------------------------------------------------ driver
 
 
+def seven_episode_validity(
+    by_split: dict[str, tuple[list[Run], list[Event]]], tolerance_s: float
+) -> dict[str, Any]:
+    """PT5's Site B clause: LLM validity over every incident that matches any of the
+    seven episodes (0-3 in the validation runs, 4-6 in the test runs), per LLM mode."""
+    out: dict[str, Any] = {}
+    for mode in ("full", "llm_no_retrieval"):
+        sessions = []
+        for runs, episodes in by_split.values():
+            for r in runs:
+                if r.site == "site_b" and r.mode == mode:
+                    sessions += [
+                        s for s in r.sessions
+                        if any(matches(s["incident"], e, tolerance_s) for e in episodes)
+                    ]  # fmt: skip
+        out[mode] = {"incidents": len(sessions), **llm_rates(sessions)}
+    return out
+
+
 def run(
-    params: Params, runs: list[Run], partitions: Path, gt: Path = GT
+    params: Params,
+    runs: list[Run],
+    partitions: Path,
+    gt: Path = GT,
+    *,
+    split: str = "val",
+    final: FinalAccess | None = None,
+    val_runs: list[Run] | None = None,
 ) -> tuple[dict[str, Any], list[str]]:
     tol = float(params.evaluation.event_tolerance_s)
+    part = "test" if split == "test" else "val_attack"
     map_a, map_b = gt / "mapping_site_a.json", gt / "mapping_site_b.json"
     mapping_a = json.loads(map_a.read_text())
     mapping_b = json.loads(map_b.read_text())
     out: dict[str, Any] = {
-        "protocol": "docs/adr/0017-x3-x6-week13.md §4",
-        "split": "val",
+        "protocol": "docs/adr/0017-x3-x6-week13.md §4"
+        + ("; docs/adr/0019-g4-final-test-protocol-week14.md §5" if split == "test" else ""),
+        "split": split,
         "tolerance_s": tol,
         "resamples": RESAMPLES,
         "seed": SEED,
         "mappings": {"site_a": _sha(map_a), "site_b": _sha(map_b)},
         "runs": {f"{r.site}/{r.mode}": r.path.name for r in runs},
-        "development_evidence": True,
+        "development_evidence": split != "test",
     }
     by = {(r.site, r.mode): r for r in runs}
     if any(r.site == "site_a" for r in runs):
-        events = site_a_events(params, partitions, mapping_a)
+        events = site_a_events(params, partitions, mapping_a, part, final)
         a: dict[str, Any] = {
             "events": [
                 {"event": e.key, "node": e.nodes[0], "start_s": e.start_s, "end_s": e.end_s}
@@ -416,7 +458,7 @@ def run(
             }
         out["site_a"] = a
     if any(r.site == "site_b" for r in runs):
-        episodes = site_b_episodes(params, partitions, mapping_b)
+        episodes = site_b_episodes(params, partitions, mapping_b, part, final)
         b: dict[str, Any] = {
             "episodes": [
                 {"episode": e.key, "nodes": list(e.nodes), "start_s": e.start_s, "end_s": e.end_s}
@@ -428,9 +470,50 @@ def run(
             if ("site_b", mode) in by:
                 b["modes"][mode] = site_b_mode(by["site_b", mode].sessions, episodes, tol)
         out["site_b"] = b
+        if split == "test" and val_runs is not None:
+            val_eps = site_b_episodes(params, partitions, mapping_b)
+            out["site_b"]["seven_episodes"] = seven_episode_validity(
+                {"val": (val_runs, val_eps), "test": (runs, episodes)}, tol
+            )
+    if split == "test":
+        out["pt5"] = pt5(out)
     problems = checks(runs)
     out["checks"] = {"passed": not problems, "problems": problems}
     return out, problems
+
+
+PT5_TOP3, PT5_BASELINE, PT5_VALIDITY = 0.70, 0.64, 0.95
+
+
+def pt5(rep: dict[str, Any]) -> dict[str, Any]:
+    """PT5 on `full`, the G3 default mode (preregistration §3; ADR 0019 §5)."""
+    a = rep.get("site_a", {})
+    full = a.get("modes", {}).get("full")
+    if full is None:
+        return {"evaluated": False, "reason": "no full run"}
+    top3 = full["top3"]
+    cmp = a.get("full_vs_retrieval_only_top3")
+    seven = (rep.get("site_b") or {}).get("seven_episodes", {}).get("full", {})
+    validity = seven.get("schema_valid_rate")
+    out = {
+        "evaluated": True,
+        "mode": "full",
+        "top3": top3,
+        "top3_target": PT5_TOP3,
+        "top3_met": top3["estimate"] >= PT5_TOP3,
+        "majority_baseline_preregistered": PT5_BASELINE,
+        "majority_baseline_these_events": a["baselines"]["majority_class"]["top1"]["estimate"],
+        "above_baseline": top3["estimate"] > PT5_BASELINE,
+        "full_vs_retrieval_only_top3": cmp,
+        "full_ge_retrieval_only": None if cmp is None else cmp["difference"] >= 0,
+        "site_b_json_validity_seven_episodes": validity,
+        "validity_met": None if validity is None else validity >= PT5_VALIDITY,
+        "constant_answerer": full["answers"]["constant"],
+    }
+    clauses = [out["top3_met"], out["above_baseline"], out["full_ge_retrieval_only"],
+               out["validity_met"]]  # fmt: skip
+    out["met"] = all(c is True for c in clauses)
+    return out
 
 
 def _answers(d: dict[str, Any]) -> str:
@@ -445,7 +528,12 @@ def _pct(x: float | None) -> str:
 
 
 def markdown(rep: dict[str, Any]) -> str:
-    lines = ["# X4 — attribution on validation incidents (development evidence)", ""]
+    title = (
+        "# X4 — attribution on TEST incidents"
+        if rep.get("split") == "test"
+        else "# X4 — attribution on validation incidents (development evidence)"
+    )
+    lines = [title, ""]
     lines += [
         f"Protocol: {rep['protocol']}. Tolerance {rep['tolerance_s']:.0f} s; "
         f"bootstrap B = {rep['resamples']}, seed {rep['seed']}.",
@@ -454,7 +542,7 @@ def markdown(rep: dict[str, Any]) -> str:
     if "site_a" in rep:
         a = rep["site_a"]
         lines += [
-            "## Site A (15 events)",
+            f"## Site A ({len(a['events'])} events)",
             "",
             "| Mode | Run | Matched | Abstained | Top-1 (95% CI) | Top-3 (95% CI) | "
             "Top-1 answered | Tactic answered | FP incidents | Raw grounding | "
@@ -523,6 +611,34 @@ def markdown(rep: dict[str, Any]) -> str:
                 f"{_answers(m['answers'])} |"
             )
     c = rep["checks"]
+    seven = (rep.get("site_b") or {}).get("seven_episodes")
+    if seven:
+        lines += ["", "Site B, every incident matching any of the seven episodes "
+                  "(0-3 validation, 4-6 test):", ""]  # fmt: skip
+        for mode, v in seven.items():
+            lines.append(f"- {mode}: {v['incidents']} incidents, schema valid "
+                         f"{_pct(v.get('schema_valid_rate'))}, raw grounding "
+                         f"{_pct(v.get('raw_grounding_rate'))}")  # fmt: skip
+    p5 = rep.get("pt5")
+    if p5 and p5.get("evaluated"):
+        t = p5["top3"]
+        cmp = p5["full_vs_retrieval_only_top3"] or {}
+        lines += [
+            "", "## PT5 (`full`)", "",
+            f"- top-3 {_pct(t['estimate'])} [{_pct(t['low'])}, {_pct(t['high'])}] against "
+            f"0.70: {'met' if p5['top3_met'] else 'not met'}",
+            f"- above the preregistered majority baseline 0.64: "
+            f"{'yes' if p5['above_baseline'] else 'no'} (on these events: "
+            f"{_pct(p5['majority_baseline_these_events'])})",
+            f"- `full` - `retrieval_only` top-3: {cmp.get('difference', float('nan')):+.3f} "
+            f"[{cmp.get('low', float('nan')):+.3f}, {cmp.get('high', float('nan')):+.3f}]: "
+            f"{'met' if p5['full_ge_retrieval_only'] else 'not met'}",
+            f"- Site B JSON validity over the seven episodes: "
+            f"{_pct(p5['site_b_json_validity_seven_episodes'])}: "
+            f"{'met' if p5['validity_met'] else 'not met'}",
+            f"- **PT5: {'met' if p5['met'] else 'not met'}**"
+            + (" (`full` gave one answer to every event)" if p5["constant_answerer"] else ""),
+        ]  # fmt: skip
     lines += ["", "## Checks", "", "passed" if c["passed"] else "FAILED"]
     lines += [f"- {p}" for p in c["problems"]]
     return "\n".join(lines) + "\n"
@@ -533,18 +649,36 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--runs", nargs="*", type=Path, default=None)
     parser.add_argument("--root", type=Path, default=Path("results/mesh"))
     parser.add_argument("--partitions", type=Path, default=None)
-    parser.add_argument("--out", type=Path, default=Path("results/X4"))
+    parser.add_argument("--out", type=Path, default=None)
+    parser.add_argument("--split", choices=("val", "test"), default="val")
+    add_final_argument(parser)
     args = parser.parse_args(argv)
+    if (args.split == "test") != bool(args.final):
+        raise SystemExit("the test split and --final go together (ADR 0019 §4)")
     params = load_params()
-    runs = [_run_of(p) for p in args.runs] if args.runs else select_runs(args.root)
-    rep, problems = run(params, runs, args.partitions or params.paths.partitions_dir)
+    partitions = args.partitions or params.paths.partitions_dir
+    runs = [_run_of(p) for p in args.runs] if args.runs else select_runs(args.root, args.split)
+    final = (
+        FinalAccess(
+            "X4/attribution", 0, extra={"run_id": f"x4__test__{time.strftime('%Y%m%dT%H%M%S')}"}
+        )
+        if args.final
+        else None
+    )
+    val_runs = select_runs(args.root, "val") if args.final else None
+    if args.final:
+        done = (args.out or Path("results/test/X4")) / "attribution_test.json"
+        if done.is_file():
+            raise SystemExit(f"{done} exists: a completed test run is never repeated")
+    rep, problems = run(params, runs, partitions, split=args.split, final=final, val_runs=val_runs)
+    out = args.out or (Path("results/test/X4") if args.final else Path("results/X4"))
     path = write_artifact(
-        args.out / "attribution_val.json",
+        out / f"attribution_{args.split}.json",
         kind="X4.attribution",
         data_source="runtime",
         payload=rep,
     )
-    (args.out / "attribution_val.md").write_text(markdown(rep), encoding="utf-8")
+    (out / f"attribution_{args.split}.md").write_text(markdown(rep), encoding="utf-8")
     print(markdown(rep))
     print(path)
     return 1 if problems else 0

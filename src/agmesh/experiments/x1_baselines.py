@@ -36,7 +36,13 @@ from agmesh.common.provenance import sha256_bytes, sha256_file, utc_now_iso
 from agmesh.data.access import Partition, Site, load_partition
 from agmesh.evaluation import events as ev
 from agmesh.evaluation.detection import NodeArrays, evaluate_node_full, macro, node_arrays_npz
-from agmesh.evaluation.results import DETECTION_METRICS, write_result
+from agmesh.evaluation.results import (
+    DETECTION_METRICS,
+    compare_validation,
+    result_path,
+    write_result,
+)
+from agmesh.evaluation.sealed import TEST_ACCESS_LOG, FinalAccess, add_final_argument
 from agmesh.models import inputs as mi
 from agmesh.models.scoring import ErrorReference, Scoring, causal_smooth, window_scores
 from agmesh.models.shift import Shifted, ShiftReference, apply_shift
@@ -268,13 +274,17 @@ def _evaluate(
     params: Params,
     shift: str | None = None,
     threshold_value: float | None = None,
+    part: str = "val_attack",
 ) -> tuple[dict[str, Any], NodeArrays]:
-    def inputs(part: str) -> mi.ModelInput:
+    """Metrics on ``part`` (``val_attack``, or ``test`` in a final run) at the threshold
+    from ``val_normal``; ``test`` must already be in ``fit.node.parts``."""
+
+    def inputs(name: str) -> mi.ModelInput:
         return _inputs(
-            site, fit.node.parts[part], fit.scaler, params, evaluation=True, flat=fit.flat
+            site, fit.node.parts[name], fit.scaler, params, evaluation=True, flat=fit.flat
         )
 
-    val_normal, val_attack = inputs("val_normal"), inputs("val_attack")
+    val_normal, val_attack = inputs("val_normal"), inputs(part)
     scoring = site_scoring(site, params)
     chosen = shift or site_shift(site, params)
     window = params.models.scoring.shift_window
@@ -338,12 +348,16 @@ def fit_central(
 
 
 def evaluate_fits(
-    site: Site, fits: list[NodeFit], params: Params, shift: str | None = None
+    site: Site,
+    fits: list[NodeFit],
+    params: Params,
+    shift: str | None = None,
+    part: str = "val_attack",
 ) -> tuple[dict[str, Any], dict[str, NodeArrays]]:
     per_client: dict[str, Any] = {}
     arrays: dict[str, NodeArrays] = {}
     for fit in fits:
-        per_client[fit.client], arrays[fit.client] = _evaluate(site, fit, params, shift)
+        per_client[fit.client], arrays[fit.client] = _evaluate(site, fit, params, shift, part=part)
     return per_client, arrays
 
 
@@ -370,13 +384,13 @@ def run_rule(
 
 
 def run_rule_full(
-    site: Site, data: dict[str, NodeData], params: Params
+    site: Site, data: dict[str, NodeData], params: Params, part: str = "val_attack"
 ) -> tuple[dict[str, Any], dict[str, NodeArrays], dict[str, Any]]:
     length = float(params.data.windows.site_b.length_s)
     per_client: dict[str, Any] = {}
     arrays: dict[str, NodeArrays] = {}
     for client, node in data.items():
-        normal, attack = node.parts["val_normal"], node.parts["val_attack"]
+        normal, attack = node.parts["val_normal"], node.parts[part]
         col = attack.features.columns.index("new_peers")
         starts = attack.labels.time_s
         per_client[client], arrays[client] = evaluate_node_full(
@@ -406,13 +420,22 @@ def run(
     data_source: str = "runtime",
     params_path: Path = DEFAULT_PARAMS_PATH,
     seeds: list[int] | None = None,
+    final: bool = False,
+    access_log: Path = TEST_ACCESS_LOG,
 ) -> list[dict[str, Any]]:
-    """Run every configuration for every seed (default: the first seed in params)."""
+    """Run every configuration for every seed (default: the first seed in params).
+
+    With ``final`` (ADR 0019 §4), each configuration is refitted exactly as on
+    validation, evaluated on validation again (compared with the committed artifact)
+    and then on test at the validation threshold. Only the test artifact is written,
+    under ``<results>/test/``.
+    """
     summary: list[dict[str, Any]] = []
     for seed in seeds or params.project.seeds[:1]:
         summary += _run_seed(
-            params, sites, models, partitions, results, seed, data_source, params_path
-        )
+            params, sites, models, partitions, results, seed, data_source, params_path,
+            final, access_log,
+        )  # fmt: skip
     return summary
 
 
@@ -425,6 +448,8 @@ def _run_seed(
     seed: int,
     data_source: str,
     params_path: Path,
+    final: bool = False,
+    access_log: Path = TEST_ACCESS_LOG,
 ) -> list[dict[str, Any]]:
     summary: list[dict[str, Any]] = []
     for site in sites:
@@ -436,7 +461,13 @@ def _run_seed(
             modes = ["local"] if kind in ("vae_flat", "rule_new_peer") else ["local", "central"]
             for mode in modes:
                 started_at = utc_now_iso()
+                done = result_path(results / "test", "X1", f"{site}__{mode}__{kind}", seed)
+                if final and done.is_file():
+                    print(f"{done} exists: a completed test run is never repeated; skipped")
+                    continue
                 clock = time.perf_counter()
+                config_id = f"{site}__{mode}__{kind}"
+                fits: list[NodeFit] = []
                 if kind == "rule_new_peer":
                     per_client, arrays, training = run_rule_full(site, data, params)
                     shift = "r0"
@@ -445,17 +476,41 @@ def _run_seed(
                     fits, training = fit(site, kind, data, params, seed)
                     per_client, arrays = evaluate_fits(site, fits, params)
                     shift = site_shift(site, params)
-                config_id = f"{site}__{mode}__{kind}"
                 metrics = macro(per_client, (*DETECTION_METRICS, *EXTRA_METRICS))
+                if final:
+                    validation = {
+                        "metrics": metrics,
+                        "comparison": compare_validation(
+                            Path("results"), "X1", config_id, seed, metrics, None
+                        ),
+                    }
+                    acc = FinalAccess(
+                        f"X1/{config_id}", seed, log_path=access_log, params_path=params_path,
+                        extra={"run_id": f"{config_id}__seed{seed}__{started_at}"},
+                    )  # fmt: skip
+                    with_test = {
+                        c: NodeData({**n.parts, "test": load_partition(
+                            params, site, c, "test", root=partitions, final=acc)})
+                        for c, n in data.items()
+                    }  # fmt: skip
+                    if kind == "rule_new_peer":
+                        per_client, arrays, _ = run_rule_full(site, with_test, params, "test")
+                    else:
+                        fits = [
+                            NodeFit(f.client, with_test[f.client], f.scaler, f.fitted, f.flat)
+                            for f in fits
+                        ]
+                        per_client, arrays = evaluate_fits(site, fits, params, part="test")
+                    metrics = macro(per_client, (*DETECTION_METRICS, *EXTRA_METRICS))
                 shas = {
                     c: t.get("state_sha256") for c, t in training.items() if isinstance(t, dict)
                 }
                 path = write_result(
-                    results,
+                    results / "test" if final else results,
                     experiment="X1",
                     config_id=config_id,
                     seed=seed,
-                    split="val",
+                    split="test" if final else "val",
                     data_source=data_source,  # type: ignore[arg-type]
                     metrics=metrics,
                     manifest_sha256=manifest_sha,
@@ -474,10 +529,15 @@ def _run_seed(
                         "scoring": {**site_scoring(site, params).__dict__, "shift": shift},
                         "evaluation": {
                             "threshold_from": "val_normal",
-                            "evaluated_on": "val_attack",
+                            "evaluated_on": "test" if final else "val_attack",
                             "target_window_fpr": params.evaluation.target_window_fpr,
                             "event_tolerance_s": params.evaluation.event_tolerance_s,
                         },
+                        **(
+                            {"validation": validation, "access_run_id": acc.extra["run_id"]}
+                            if final
+                            else {}
+                        ),
                     },
                     params_path=params_path,
                     scores=node_arrays_npz(arrays),
@@ -528,6 +588,7 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="seeds to run (default: all of project.seeds in params)",
     )
+    add_final_argument(parser)
     args = parser.parse_args(argv)
     params = load_params(args.params)
     print(
@@ -543,6 +604,7 @@ def main(argv: list[str] | None = None) -> int:
         data_source="fixture" if args.fixture else "runtime",
         params_path=args.params,
         seeds=args.seeds or params.project.seeds,
+        final=args.final,
     )
     return 0
 

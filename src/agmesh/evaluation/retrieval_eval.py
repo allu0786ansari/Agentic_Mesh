@@ -48,6 +48,7 @@ from agmesh.edge.evidence import iso
 from agmesh.edge.evidence_store import EvidenceStore
 from agmesh.evaluation import attack_ics
 from agmesh.evaluation.ground_truth import OUT_DIR
+from agmesh.evaluation.sealed import FinalAccess, add_final_argument, authorise
 from agmesh.kb.render import render
 from agmesh.mesh.fusion import parse_iso
 
@@ -92,15 +93,21 @@ def _records(run: Path, node: str, start_s: float, end_s: float) -> list[Evidenc
 def incidents(
     edge_root: Path, partitions: Path, split: str = "val"
 ) -> tuple[list[Query], dict[str, Any]]:
-    """Rendered queries for the validation incidents, and the count of missed ones."""
-    if split != "val":
-        raise SystemExit("retrieval queries are built from validation incidents only (ADR 0010 §4)")
+    """Rendered queries for the incidents of ``split``, and the count of missed ones.
+
+    ``test`` (PT6-v2, preregistration §3b; ADR 0019 §4) uses Site A's 35 test events and
+    Site B's episodes 4-6, from the test edge runs.
+    """
+    if split not in ("val", "test"):
+        raise SystemExit(f"unknown split {split!r}")
+    part = "val_attack" if split == "val" else "test"
+    site_b_episodes = ("0", "1", "2", "3") if split == "val" else ("4", "5", "6")
     queries: list[Query] = []
     missed: list[str] = []
     gt_a = json.loads((OUT_DIR / "mapping_site_a.json").read_text(encoding="utf-8"))["events"]
     run_a = _latest(edge_root, "site_a", split)
     for seg, e in sorted(gt_a.items()):
-        if e["partition"] != "val_attack":
+        if e["partition"] != part:
             continue
         start = parse_iso(e["start"].replace(" ", "T") + "Z")
         recs = _records(run_a, e["client"], start, start + e["labelled_s"] + TOLERANCE_S)
@@ -122,7 +129,7 @@ def incidents(
     gt_b = json.loads((OUT_DIR / "mapping_site_b.json").read_text(encoding="utf-8"))["events"]
     run_b = _latest(edge_root, "site_b", split)
     episodes = {str(ep["episode"]): ep for ep in read_manifest(partitions / "site_b")["episodes"]}
-    for epi in ("0", "1", "2", "3"):
+    for epi in site_b_episodes:
         ep = episodes[epi]
         start, end = parse_iso(ep["start"]), parse_iso(ep["end"]) + TOLERANCE_S
         recs = [r for node in ("b1", "b2", "b3") for r in _records(run_b, node, start, end)]
@@ -219,10 +226,70 @@ def evaluate(queries: list[Query], rank_fn: Any) -> dict[str, Any]:
     }
 
 
+def pt6_v2(args: Any) -> int:
+    """PT6-v2, measured once on the test rendered queries (preregistration §3b).
+
+    v2 is the measurement (Recall@10 ≥ 0.85); v1 runs on the same queries. Recall@5 and
+    MRR are reported. The test edge runs supply the evidence; nothing reads a partition,
+    and the run is logged once (ADR 0019 §4).
+    """
+    out = args.results / "test" / "retrieval" / "test__pt6_v2.json"
+    if out.exists():
+        raise SystemExit(f"{out} exists: PT6-v2 is measured once")
+    if args.encoder != "reference" or args.fixture:
+        raise SystemExit("PT6-v2 needs the reference encoder on runtime data")
+    rendered, meta = incidents(args.edge_root, args.partitions, "test")
+    stamp = time.strftime("%Y%m%dT%H%M%S")
+    authorise(
+        FinalAccess("retrieval/test", 0, extra={"run_id": f"pt6_v2__{stamp}", **meta}),
+        site="site_a+site_b", client="retrieval",
+    )  # fmt: skip
+    from agmesh.kb.embed import SentenceEncoder
+    from agmesh.kb.retriever import Retriever, version
+    from agmesh.kb.store import QdrantStore
+
+    encoder = SentenceEncoder()
+    store = QdrantStore(args.kb / "qdrant")
+    results: dict[str, Any] = {}
+    for name in ("v2", "v1"):
+        ver = version(name)
+        retriever = Retriever(store, encoder, exclude_only_tactics=ver["exclude_only_tactics"])
+        results[name] = {
+            "retrieval_version": ver,
+            "candidates_excluded": sorted(retriever.excluded),
+            **evaluate(rendered, retriever.rank),
+        }
+    store.close()
+    v2 = results["v2"]["all"]
+    path = write_artifact(
+        out,
+        kind="retrieval.pt6_v2",
+        data_source="runtime",
+        payload={
+            **meta,
+            "protocol": "docs/preregistration.md §3b; "
+            "docs/adr/0019-g4-final-test-protocol-week14.md",
+            "split": "test",
+            "queries": "rendered only",
+            "target": {"pt6_v2": {"recall@10": 0.85}},
+            "pt6_v2_met": bool(v2["recall@10"] >= 0.85),
+            "encoder": encoder.identity(),
+            "versions": results,
+        },
+    )
+    for name, r in results.items():
+        a = r["all"]
+        print(f"{name}: Recall@5 {a['recall@5']:.3f}  Recall@10 {a['recall@10']:.3f}  "
+              f"MRR {a['mrr']:.3f}  ({a['queries']} queries)")  # fmt: skip
+    print(f"PT6-v2 (v2 Recall@10 >= 0.85): {'met' if v2['recall@10'] >= 0.85 else 'not met'}; "
+          f"missed incidents {len(meta['missed_incidents'])} -> {path}")  # fmt: skip
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     load_env()
     parser = argparse.ArgumentParser(description="Retrieval evaluation (Recall@5, MRR)")
-    parser.add_argument("--split", choices=("val",), default="val")
+    parser.add_argument("--split", choices=("val", "test"), default="val")
     parser.add_argument("--edge-root", type=Path, default=Path("results/edge"))
     parser.add_argument("--partitions", type=Path, default=Path("data/partitions"))
     parser.add_argument("--kb", type=Path, default=Path("data/kb"))
@@ -235,7 +302,12 @@ def main(argv: list[str] | None = None) -> int:
         "--version", default="v1", help="retrieval version in configs/kb/retrieval.yaml (v1: PT6)"
     )
     parser.add_argument("--fixture", action="store_true")
+    add_final_argument(parser)
     args = parser.parse_args(argv)
+    if (args.split == "test") != bool(args.final):
+        raise SystemExit("the test split and --final go together (ADR 0019 §4)")
+    if args.final:
+        return pt6_v2(args)
     rendered, meta = incidents(args.edge_root, args.partitions, args.split)
     queries = rendered + paraphrases(rendered)
     out_dir = args.results / "retrieval"

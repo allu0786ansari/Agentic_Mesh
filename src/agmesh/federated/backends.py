@@ -19,6 +19,7 @@ from typing import Any
 
 from agmesh.common.config import Params
 from agmesh.data.access import Site
+from agmesh.evaluation.sealed import FinalAccess
 from agmesh.federated.client import FederatedClient
 from agmesh.federated.protocol import (
     EvalInstruction,
@@ -42,6 +43,7 @@ class ClientSettings:
     h1c_epsilon: float | None = None
     epochs: int | None = None
     privacy_root: Path = ROOT
+    final: FinalAccess | None = None  # a --final run: clients may evaluate on test
 
 
 @dataclass
@@ -68,6 +70,7 @@ class InProcessPool:
             h1c_epsilon=s.h1c_epsilon,
             epochs=s.epochs,
             privacy_root=s.privacy_root,
+            final=s.final,
         )
 
     def hello(self, node: str) -> HelloReply:
@@ -131,4 +134,5 @@ class CentralPool(InProcessPool):
             seed=s.seed,
             node_index=self.nodes.index(node),
             privacy_root=s.privacy_root,
+            final=s.final,
         )

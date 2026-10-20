@@ -35,6 +35,8 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import math
+import time
+import warnings
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -53,6 +55,7 @@ from agmesh.edge.evidence import LATENCY_FEATURES, top_features
 from agmesh.edge.stream import NodeScorer, WindowSource
 from agmesh.evaluation.calibration import IsotonicCalibrator
 from agmesh.evaluation.events import events_from_episodes
+from agmesh.evaluation.sealed import TEST_ACCESS_LOG, FinalAccess, add_final_argument
 from agmesh.experiments import x1_baselines as x1
 from agmesh.experiments import x3_models
 from agmesh.mesh import fusion
@@ -224,9 +227,13 @@ def in_span(alerts: dict[int, Any], span: tuple[float, float]) -> list[WindowAle
 
 def episodes(rigs_: dict[str, NodeRig]) -> dict[str, tuple[float, float]]:
     """Each validation episode's labelled windows on any node, as one span."""
+    return episode_spans([r.source["val_attack"] for r in rigs_.values()])
+
+
+def episode_spans(sources: Sequence[WindowSource]) -> dict[str, tuple[float, float]]:
+    """Each episode's labelled windows on any of the nodes' streams, as one span."""
     spans: dict[str, list[tuple[float, float]]] = {}
-    for r in rigs_.values():
-        src = r.source["val_attack"]
+    for src in sources:
         lab = src.partition.labels
         group = lab.group.astype(np.int64)
         for e in np.unique(group[(lab.target > 0) & (group >= 0)]):
@@ -333,7 +340,9 @@ def _blocks(found: list[Alarm], span: tuple[float, float], n: int) -> F64:
     return counts
 
 
-def pt4(per_seed: list[dict[str, Any]], hours: F64) -> dict[str, Any]:
+def pt4(
+    per_seed: list[dict[str, Any]], hours: F64, met_key: str = "pt4_met_on_validation"
+) -> dict[str, Any]:
     """Reduction of FA/h, 2-of-3 against the best single node; seeds averaged."""
     two = np.array([s["blocks"]["2of3"] for s in per_seed])
     best = np.array([s["blocks"][s["tau"]["best_node"]] for s in per_seed])
@@ -346,24 +355,28 @@ def pt4(per_seed: list[dict[str, Any]], hours: F64) -> dict[str, Any]:
 
     rng = np.random.default_rng(SEED)
     draws = rng.integers(0, hours.size, size=(RESAMPLES, hours.size))
-    r2 = np.array([reduction(two, best, d) for d in draws])
-    rn = np.array([reduction(nor, best, d) for d in draws])
+    with np.errstate(all="ignore"), warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)  # a draw with no best-node alarm
+        r2 = np.array([reduction(two, best, d) for d in draws])
+        rn = np.array([reduction(nor, best, d) for d in draws])
+        q2 = (float(np.nanquantile(r2, 0.025)), float(np.nanquantile(r2, 0.975)))
+        qn = (float(np.nanquantile(rn, 0.025)), float(np.nanquantile(rn, 0.975)))
     full = slice(None)
     return {
         "blocks": int(hours.size),
         "hours": float(hours.sum()),
         "reduction_2of3": {
             "estimate": reduction(two, best, full),
-            "low": float(np.nanquantile(r2, 0.025)),
-            "high": float(np.nanquantile(r2, 0.975)),
+            "low": q2[0],
+            "high": q2[1],
             "p_one_sided_H0_le_0.30": float(np.mean(~(r2 > PT4_REDUCTION))),
         },
         "reduction_noisy_or_descriptive": {
             "estimate": reduction(nor, best, full),
-            "low": float(np.nanquantile(rn, 0.025)),
-            "high": float(np.nanquantile(rn, 0.975)),
+            "low": qn[0],
+            "high": qn[1],
         },
-        "pt4_met_on_validation": bool(np.mean(~(r2 > PT4_REDUCTION)) < 0.05),
+        met_key: bool(np.mean(~(r2 > PT4_REDUCTION)) < 0.05),
     }
 
 
@@ -539,6 +552,150 @@ def run(
     return fusion_rep, synth_rep
 
 
+# ----------------------------------------------------------------------- test
+
+
+def benign_test_time(
+    sources: Sequence[WindowSource], eps: dict[str, tuple[float, float]], tolerance_s: float
+) -> tuple[tuple[float, float], list[tuple[float, float]]]:
+    """The span all nodes' test streams cover, and the widened episode spans to exclude
+    from benign time (ADR 0019 §5)."""
+    starts = [src.partition.labels.time_s for src in sources]
+    length = sources[0].window_length_s
+    span = (max(float(t.min()) for t in starts), min(float(t.max()) for t in starts) + length)
+    widened = sorted((a, b + tolerance_s) for a, b in eps.values())
+    merged: list[tuple[float, float]] = []
+    for a, b in widened:
+        if merged and a <= merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], b))
+        else:
+            merged.append((a, b))
+    return span, merged
+
+
+def block_hours(span: tuple[float, float], excluded: list[tuple[float, float]]) -> F64:
+    """Benign hours in each 60 min block of ``span``, after the exclusions."""
+    n = math.ceil((span[1] - span[0]) / BLOCK_S)
+    out = np.zeros(n)
+    for i in range(n):
+        a, b = span[0] + BLOCK_S * i, min(span[0] + BLOCK_S * (i + 1), span[1])
+        cut = sum(max(0.0, min(b, y) - max(a, x)) for x, y in excluded)
+        out[i] = max(0.0, (b - a) - cut) / 3600.0
+    return out
+
+
+def is_false_alarm(x: Alarm, excluded: list[tuple[float, float]]) -> bool:
+    return not any(x.start_s < b and x.end_s >= a for a, b in excluded)
+
+
+def run_test(
+    params: Params, models: Path, seeds: Sequence[int], partitions: Path, access_log: Path
+) -> dict[str, Any]:
+    """X3 on test (ADR 0019 §5): validation thresholds, τ and best node; PT4 and H2b."""
+    tol = float(params.evaluation.event_tolerance_s)
+    stamp = time.strftime("%Y%m%dT%H%M%S")
+    per_seed: list[dict[str, Any]] = []
+    attack: dict[str, list[dict[str, float | None]]] = {}
+    hours = np.zeros(0)
+    eps: dict[str, tuple[float, float]] = {}
+    span = (0.0, 0.0)
+    excluded: list[tuple[float, float]] = []
+    for seed in seeds:
+        mdir = x3_models.model_dir(SITE, seed, models)
+        r = rigs(params, mdir, partitions)
+        vspan = benign_span(r)
+        v_hours = math.ceil((vspan[1] - vspan[0]) / BLOCK_S)
+        clean = {n: score(rig, rig.source["val_normal"]) for n, rig in r.items()}
+        benign_val = [a for n in clean for a in in_span(clean[n], vspan)]
+        v_total = sum(
+            (min(vspan[0] + BLOCK_S * (i + 1), vspan[1]) - (vspan[0] + BLOCK_S * i)) / 3600.0
+            for i in range(v_hours)
+        )
+        tau = matched_tau(benign_val, params, v_total)  # fixed on validation
+        acc = FinalAccess(
+            "X3/site_b__fusion", seed, log_path=access_log,
+            extra={"run_id": f"x3__site_b__seed{seed}__{stamp}"},
+        )  # fmt: skip
+        tests = {
+            n: WindowSource(
+                SITE, n, "test",
+                load_partition(params, SITE, n, "test", root=partitions, final=acc),
+                rig.source["val_normal"].scaler, params,
+            )
+            for n, rig in r.items()
+        }  # fmt: skip
+        eps = episode_spans(list(tests.values()))
+        span, excluded = benign_test_time(list(tests.values()), eps, tol)
+        hours = block_hours(span, excluded)
+        scored = {n: score(rig, tests[n]) for n, rig in r.items()}
+        alerts = [a for n in scored for a in in_span(scored[n], span)]
+        found = alarms(alerts, params, tau["tau"])
+        false = {d: [x for x in v if is_false_alarm(x, excluded)] for d, v in found.items()}
+        n_blocks = hours.size
+        per_seed.append({
+            "seed": seed, "model": mdir.as_posix(),
+            "model_version": GlobalModel.load(mdir).version,
+            "thresholds": {n: rig.calibration.threshold for n, rig in r.items()},
+            "tau": tau,
+            "test_alerts": {n: sum(1 for a in v.values() if a) for n, v in scored.items()},
+            "fa_per_h": {d: len(v) / float(hours.sum()) for d, v in false.items()},
+            "blocks": {d: _blocks(v, span, n_blocks).tolist() for d, v in false.items()},
+        })  # fmt: skip
+        for d, v in found.items():
+            attack.setdefault(d, []).append(detect(eps, v, tol))
+    detectors = [*x1._clients(params, SITE), "2of3", "noisy_or"]
+    keys = sorted(eps)
+    return {
+        "protocol": "docs/adr/0019-g4-final-test-protocol-week14.md §5",
+        "split": "test",
+        "seeds": list(seeds),
+        "tolerance_s": tol,
+        "resamples": RESAMPLES,
+        "bootstrap_seed": SEED,
+        "fusion": params.fusion.site_b.model_dump(),
+        "test_span_s": list(span),
+        "excluded_episode_spans_s": [list(x) for x in excluded],
+        "per_seed": [{k: v for k, v in s.items() if k != "blocks"} for s in per_seed],
+        "h2a_fa_per_h_seed_mean": {
+            d: float(np.mean([s["fa_per_h"][d] for s in per_seed])) for d in detectors
+        },
+        "pt4": pt4(per_seed, hours, met_key="pt4_met"),
+        "h2b": {
+            "episodes": {k: list(v) for k, v in eps.items()},
+            "reference_node": REFERENCE_NODE,
+            "detectors": {d: recall_block(attack[d], keys, d) for d in detectors},
+            "recall_loss_2of3_vs_reference": paired_loss(
+                attack[REFERENCE_NODE], attack["2of3"], keys
+            ),
+        },
+    }
+
+
+def test_markdown(rep: dict[str, Any]) -> str:
+    p = rep["pt4"]["reduction_2of3"]
+    lines = ["# X3 — fusion on Site B, TEST", "",
+             f"Seeds {rep['seeds']}; benign test time {rep['pt4']['hours']:.2f} h in "
+             f"{rep['pt4']['blocks']} blocks of 60 min (episodes excluded, widened by "
+             f"{rep['tolerance_s']:.0f} s). Thresholds, τ and the best single node from "
+             "validation.", "",
+             "| Detector | FA/h (seed mean) |", "|---|---|"]  # fmt: skip
+    for d, v in rep["h2a_fa_per_h_seed_mean"].items():
+        lines.append(f"| {d} | {_f(v)} |")
+    lines += ["", f"**PT4:** 2-of-3 reduction {_f(p['estimate'])} [{_f(p['low'])}, "
+              f"{_f(p['high'])}], one-sided p (H0: ≤ 0.30) = {_f(p['p_one_sided_H0_le_0.30'], 4)}"
+              f" -> {'met' if rep['pt4']['pt4_met'] else 'not met'}.", "",
+              "## H2b — test episodes", "",
+              "| Detector | Recall [95% CI] | Median TTD (s) | Detected seeds per episode |",
+              "|---|---|---|---|"]  # fmt: skip
+    for d, v in rep["h2b"]["detectors"].items():
+        lines.append(f"| {d} | {_f(v['recall'])} [{_f(v['low'])}, {_f(v['high'])}] | "
+                     f"{_f(v['ttd_median_s'], 0)} | {v['per_event_detected_seeds']} |")  # fmt: skip
+    lo = rep["h2b"]["recall_loss_2of3_vs_reference"]
+    lines += ["", f"Recall loss of 2-of-3 against {rep['h2b']['reference_node']}: "
+              f"{_f(lo['loss'])} [{_f(lo['low'])}, {_f(lo['high'])}]."]  # fmt: skip
+    return "\n".join(lines) + "\n"
+
+
 def _f(x: float | None, nd: int = 3) -> str:
     return "—" if x is None or (isinstance(x, float) and math.isnan(x)) else f"{x:.{nd}f}"
 
@@ -622,10 +779,30 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--models", type=Path, default=x3_models.MODELS)
     parser.add_argument("--seeds", type=int, nargs="*", default=list(x3_models.SEEDS))
     parser.add_argument("--partitions", type=Path, default=None)
-    parser.add_argument("--out", type=Path, default=Path("results/X3"))
+    parser.add_argument("--out", type=Path, default=None)
+    add_final_argument(parser)
     args = parser.parse_args(argv)
     params = load_params()
     dev = args.models != x3_models.MODELS or sorted(args.seeds) != sorted(x3_models.SEEDS)
+    if args.final:
+        if dev:
+            raise SystemExit("--final uses the five accepted headline models (ADR 0019 §4)")
+        problems = [p for p in x3_models.accept() if SITE in p]
+        if problems:
+            raise SystemExit(f"x3_models accept reports problems: {problems}")
+        done = (args.out or Path("results/test/X3")) / "fusion_test.json"
+        if done.is_file():
+            raise SystemExit(f"{done} exists: a completed test run is never repeated")
+        rep = run_test(params, args.models, args.seeds,
+                       args.partitions or params.paths.partitions_dir, TEST_ACCESS_LOG)  # fmt: skip
+        out = args.out or Path("results/test/X3")
+        write_artifact(out / "fusion_test.json", kind="X3.fusion", data_source="runtime",
+                       payload=rep)  # fmt: skip
+        text = test_markdown(rep)
+        (out / "fusion_test.md").write_text(text, encoding="utf-8")
+        print(text)
+        return 0
+    args.out = args.out or Path("results/X3")
     if not dev:
         problems = [p for p in x3_models.accept() if SITE in p]
         if problems:

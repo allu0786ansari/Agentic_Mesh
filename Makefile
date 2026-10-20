@@ -9,7 +9,9 @@ PY := $(UV) run python
         prepare partition check-data data fixture fixture-smoke check-results baselines scoring-selection ground-truth-draft \
         training-budget summarise shift-selection dp-sanity train x8 g2-pilot g2-tuning \
         edge-model edge latency setup-kb kb kb-sources retrieval-queries retrieval-eval mesh llm-calibrate \
-	certs stack-up stack-down approvals-api security-tests g3 grid partitions-iid stats figures x3-models x4-export chaos x3 x4 robustness x5
+	certs stack-up stack-down approvals-api security-tests g3 grid partitions-iid stats figures x3-models x4-export chaos x3 x4 robustness x5 \
+	x7-training x7-watch x7-report reproduce baselines-final x3-final edge-final mesh-final \
+	x4-final pt6-final x5-final grid-final completion
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -61,6 +63,19 @@ help:
 	@echo "x3                Week 13: fusion on Site B, five seeds -> results/X3/ (needs x3-models)"
 	@echo "x4                Week 13: attribution scoring -> results/X4/ (needs x4-export)"
 	@echo "robustness        Week 13: synthetic perturbation suite -> results/robustness/"
+	@echo "x7-training       Week 14: memory of a Site A FedProx e3 run -> results/X7/samples"
+	@echo "x7-watch          Week 14: sample the operations processes until Ctrl-C"
+	@echo "x7-report         Week 14: X7 peaks per stage -> results/X7/resources.json"
+	@echo "reproduce         Week 14: fresh-clone reproduction (REF=<original data/partitions>)"
+	@echo "baselines-final   G4: X1 baselines on test, once"
+	@echo "x3-final          G4: X3 fusion on test, five seeds, once"
+	@echo "edge-final        G4: edge replay of the test split (SITE=...), once"
+	@echo "mesh-final        G4: mesh on the test edge run (SITE, MODE, NODES), once per mode"
+	@echo "x4-final          G4: export the test mesh runs and score X4 on test, once"
+	@echo "pt6-final         G4: PT6-v2 on the test rendered queries, once"
+	@echo "x5-final          G4: latency on the test runs -> results/test/X5"
+	@echo "grid-final        G4: the X1/X2 matrix on test, once per run (HOURS=...)"
+	@echo "completion        G4: checker completion tier CC1-CC8"
 	@echo "g3                Gate G3: ADR 0014 §9 rule over mesh runs, e.g. make g3 RUNS='results/mesh/<a> results/mesh/<b>'"
 	@echo "g2-pilot          Week 7: FedAvg and FedProx at eps 10, both sites, 50 rounds -> results/federated/g2_pilot/"
 	@echo "g2-tuning         Week 7: ADR 0008 DP lr x clip grid and FedProx mu grid -> results/federated/g2_*"
@@ -269,6 +284,51 @@ x4:
 
 robustness:
 	$(PY) -m agmesh.experiments.robustness
+
+X7_SCRATCH := results/x7_scratch
+
+x7-training:
+	$(UV) run python -m agmesh.evaluation.resources run --stage training -- \
+		python -m agmesh.federated.run --site site_a --strategy fedprox --epsilon 3 \
+		--seeds 11 --results $(X7_SCRATCH)/train
+
+x7-watch:
+	$(PY) -m agmesh.evaluation.resources watch --stage operations
+
+x7-report:
+	$(PY) -m agmesh.evaluation.resources report
+
+reproduce:
+	$(PY) -m agmesh.experiments.reproduce $(if $(REF),--reference-partitions $(REF),)
+
+baselines-final:
+	$(PY) -m agmesh.experiments.x1_baselines --final
+
+x3-final:
+	$(PY) -m agmesh.experiments.x3_fusion --final
+
+edge-final:
+	$(PY) -m agmesh.edge.runtime --site $(SITE) --model $(EDGE_MODEL) --final
+
+mesh-final:
+	$(UV) run --group kb python -m agmesh.mesh.runner --site $(SITE) --mode $(MODE) \
+		--split test --final --nodes $(or $(NODES),local)
+
+x4-final:
+	$(PY) -m agmesh.experiments.x4_export
+	$(PY) -m agmesh.experiments.x4_score --split test --final
+
+pt6-final:
+	$(UV) run --group kb python -m agmesh.evaluation.retrieval_eval --split test --final
+
+x5-final:
+	$(PY) -m agmesh.evaluation.latency --report --split test
+
+grid-final:
+	$(PY) -m agmesh.experiments.grid --final $(if $(HOURS),--hours $(HOURS),)
+
+completion:
+	$(PY) -m agmesh.evaluation.checker --tier completion
 
 g3:
 	$(PY) -m agmesh.evaluation.g3 --runs $(RUNS)

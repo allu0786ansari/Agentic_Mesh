@@ -82,6 +82,7 @@ class ServerConfig:
     target_fpr: float = 0.01
     threshold_sd: float = 3.0
     metric_keys: tuple[str, ...] = ()
+    final: bool = False  # also evaluate on test after validation (ADR 0019 §4)
 
 
 @dataclass
@@ -225,11 +226,13 @@ class Server:
         final_replies = self._eval_all(EvalInstruction(weights, norm, full=True))
         final = fed_eval.summary(final_replies, cfg.metric_keys)
         h1c = self._h1c(weights, norm) if cfg.h1c else None
-        extras = (
+        extras: dict[str, Any] = (
             {"h1c_replies": self.h1c_arrays}
             if cfg.h1c and h1c and h1c.get("threshold") is not None
             else {}
         )
+        if cfg.final:
+            extras["test"] = self._test(weights, norm, h1c)
         return FederationResult(
             spec,
             norm,
@@ -243,6 +246,42 @@ class Server:
             time.perf_counter() - started,
             extras,
         )
+
+    def _test(
+        self, weights: Weights, norm: Normalisation, h1c: dict[str, Any] | None
+    ) -> dict[str, Any]:
+        """The final model on test, at the thresholds fixed on validation (ADR 0019 §4).
+
+        Each client reads its test partition once in the run; the H1c variants reuse
+        it. The H1c pooled threshold is the one released from the validation
+        histograms above, so no new release (and no privacy cost) happens here.
+        """
+        cfg = self.cfg
+        replies = self._eval_all(EvalInstruction(weights, norm, full=True, part="test"))
+        out: dict[str, Any] = {
+            "final": fed_eval.summary(replies, cfg.metric_keys),
+            "replies": replies,
+        }
+        tau = (h1c or {}).get("threshold")
+        if cfg.h1c and tau is not None:
+            at_tau = self._eval_all(
+                EvalInstruction(weights, norm, full=True, threshold=tau, shift="r0", part="test")
+            )
+            per_node = self._eval_all(
+                EvalInstruction(weights, norm, full=True, shift="r0", part="test")
+            )
+            out["h1c"] = {
+                "threshold": tau,
+                "threshold_from": "validation histograms (this run)",
+                "macro": fed_eval.macro(at_tau, cfg.metric_keys),
+                "per_client": {r.node: r.metrics for r in at_tau},
+                "r0_per_node_thresholds": {
+                    "macro": fed_eval.macro(per_node, cfg.metric_keys),
+                    "per_client": {r.node: r.metrics for r in per_node},
+                },
+            }
+            out["h1c_replies"] = {"pooled": at_tau, "r0_per_node": per_node}
+        return out
 
     def _h1c(self, weights: Weights, norm: Normalisation) -> dict[str, Any]:
         cfg = self.cfg

@@ -342,6 +342,11 @@ def main(argv: list[str] | None = None) -> int:
     params = load_params(args.params)
     final = None
     if args.final:
+        finished = sorted(args.out.glob(f"{args.site}__test__*/summary.json"))
+        if finished:
+            raise SystemExit(
+                f"{finished[-1].parent} exists: a completed test run is never repeated"
+            )
         final = FinalAccess(f"edge__{args.site}", 0, params_path=args.params)
     path = run(
         params,

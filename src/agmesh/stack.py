@@ -136,10 +136,11 @@ def main(argv: list[str] | None = None) -> int:
     p_up.add_argument("--edge-run", type=Path, default=None)
     p_up.add_argument("--edge-root", type=Path, default=Path("results/edge"))
     p_up.add_argument("--stack", type=Path, default=STACK)
+    p_up.add_argument("--split", choices=("val", "test"), default="val")
     sub.add_parser("down")
     args = parser.parse_args(argv)
     if args.cmd == "up":
-        edge = args.edge_run or latest_edge_run(args.edge_root, args.site, "val")
+        edge = args.edge_run or latest_edge_run(args.edge_root, args.site, args.split)
         up(args.site, edge, args.stack)
         print(f"stack up for {args.site} over {edge}; stop it with: make stack-down")
     else:

@@ -88,16 +88,41 @@ def check_file(path: Path, accesses: list[dict[str, Any]]) -> Finding:
     if path.parent.name != artifact.config_id or path.name != f"seed_{artifact.seed}.json":
         problems.append("file path does not match config_id and seed")
     if artifact.split == "test":
-        logged = any(
-            a.get("config_id") == artifact.config_id
-            and a.get("seed") == artifact.seed
-            and a.get("git_sha") == prov.get("git_sha")
-            for a in accesses
-        )
-        if not logged:
-            problems.append("test-split result has no matching entry in the test access log")
+        problems.extend(_access_problems(artifact.experiment, artifact.config_id,
+                                         artifact.seed, raw, accesses))  # fmt: skip
     finding.ok = not problems
     return finding
+
+
+def _access_problems(
+    experiment: str, cid: str, seed: int, raw: dict[str, Any], accesses: list[dict[str, Any]]
+) -> list[str]:
+    """CC2 for one test artifact (ADR 0019 §6).
+
+    Every client of the run must have an access entry, at the artifact's commit, for
+    the run that wrote it. Entries of the same configuration, seed and client with
+    another run ID are earlier attempts that crashed: the entry points refuse to
+    repeat a run whose artifact exists, so only a crashed attempt can leave them.
+    """
+    names = {cid, f"{experiment}/{cid}"}
+    mine = [a for a in accesses if a.get("config_id") in names and a.get("seed") == seed]
+    if not mine:
+        return ["test-split result has no matching entry in the test access log"]
+    git_sha = (raw.get("provenance") or {}).get("git_sha")
+    run_id = raw.get("access_run_id")
+    ours = [
+        a for a in mine if a.get("git_sha") == git_sha and (not run_id or a.get("run_id") == run_id)
+    ]
+    if not ours:
+        return [f"no access entry for this run (run_id {run_id}, commit {git_sha})"]
+    clients = sorted((raw.get("per_client") or {}).keys())
+    logged = {a.get("client") for a in ours}
+    missing = [c for c in clients if c not in logged]
+    problems = [f"clients without an access entry for this run: {missing}"] if missing else []
+    validation = raw.get("validation")
+    if run_id and (not validation or "comparison" not in validation):
+        problems.append("final run without its validation comparison")
+    return problems
 
 
 @functools.lru_cache(maxsize=1)
@@ -177,7 +202,17 @@ def main(argv: list[str] | None = None) -> int:
         default=Path("configs/experiments/x1_x2.yaml"),
         help="X1/X2 run matrix: report missing runs and the CC4 privacy rule (ADR 0016)",
     )
+    parser.add_argument(
+        "--tier",
+        choices=("completion",),
+        default=None,
+        help="completion: CC1-CC8 after the final test runs (ADR 0019 §6)",
+    )
     args = parser.parse_args(argv)
+    if args.tier == "completion":
+        from agmesh.evaluation.completion import main_completion
+
+        return main_completion(args.results, args.access_log, args.matrix)
     grid_exps = sorted(set(args.experiments or []) & {"X1", "X2"})
     if grid_exps and args.matrix.is_file():
         from agmesh.common.config import load_params

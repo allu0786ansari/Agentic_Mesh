@@ -22,6 +22,15 @@ current run.
 seconds and exit code. A failed run is not retried automatically. It runs again,
 with the same seed, the next time the grid is started (ADR 0016 §5: seeds are never
 replaced).
+
+**The final test runs (ADR 0019 §4).** With ``--final``, every run gets ``--final``.
+
+* **Where it writes:** each run's artifact goes under ``<results>/test/``, and the
+  log is ``results/grid/final_log.jsonl``.
+* **Order:** the configurations that the preregistered X1 tests use run first, then
+  those of the X2 tests, then the rest, keeping the file's order within each.
+* **No repeats:** a run whose test artifact exists is never started again. A run
+  that crashed before writing one runs again next time.
 """
 
 from __future__ import annotations
@@ -45,6 +54,7 @@ from agmesh.federated.run import config_id, eps_label, partition_suffix
 
 MATRIX = Path("configs/experiments/x1_x2.yaml")
 LOG = Path("results/grid/log.jsonl")
+FINAL_LOG = Path("results/grid/final_log.jsonl")
 
 
 @dataclass(frozen=True)
@@ -84,7 +94,7 @@ class Run:
     def artifact(self, results: Path, default_partitions: Path) -> Path:
         return result_path(results, self.experiment, self.config_id(default_partitions), self.seed)
 
-    def argv(self, results: Path, params: Path) -> list[str]:
+    def argv(self, results: Path, params: Path, *, final: bool = False) -> list[str]:
         args = [
             "--params", str(params), "--site", self.site, "--strategy", self.strategy,
             "--epsilon", "inf" if math.isinf(self.epsilon) else f"{self.epsilon:g}",
@@ -101,6 +111,8 @@ class Run:
             args += ["--mu", f"{self.mu:g}"]
         if self.partitions is not None:
             args += ["--partitions", str(self.partitions)]
+        if final:
+            args.append("--final")
         return args
 
 
@@ -135,6 +147,22 @@ def expand(path: Path = MATRIX) -> list[Run]:
                 )
             )
     return runs
+
+
+def priority(runs: list[Run], default_partitions: Path) -> list[Run]:
+    """Final-run order (ADR 0019 §4): X1-test configurations, X2-test ones, the rest."""
+    from agmesh.experiments import x1x2_analysis as xa
+
+    def used(tests: list[Any]) -> set[str]:
+        return {side[1].split("#")[0] for t in tests for side in (t.a, t.b) if side}
+
+    first, second = used(xa.x1_tests()), used(xa.x2_tests())
+
+    def rank(r: Run) -> int:
+        cid = r.config_id(default_partitions)
+        return 0 if cid in first else 1 if cid in second else 2
+
+    return sorted(runs, key=rank)  # stable: the file's order within each rank
 
 
 def remaining(runs: list[Run], results: Path, default_partitions: Path) -> list[Run]:
@@ -203,6 +231,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--sites", nargs="*", default=None)
     parser.add_argument("--hours", type=float, default=None, help="time budget for this batch")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--final", action="store_true", help="the single test run per configuration and seed"
+    )
     args = parser.parse_args(argv)
     params = load_params(args.params)
     default_parts = params.paths.partitions_dir
@@ -211,7 +242,11 @@ def main(argv: list[str] | None = None) -> int:
         for r in expand(args.matrix)
         if (not args.only or r.group in args.only) and (not args.sites or r.site in args.sites)
     ]
-    todo = remaining(runs, args.results, default_parts)
+    out_root = args.results / "test" if args.final else args.results
+    log = FINAL_LOG if args.final else LOG
+    if args.final:
+        runs = priority(runs, default_parts)
+    todo = remaining(runs, out_root, default_parts)
     est_h = sum(r.minutes for r in todo) / 60
     print(f"{len(runs)} runs in scope, {len(runs) - len(todo)} done, {len(todo)} to go "
           f"(about {est_h:.1f} h)")  # fmt: skip
@@ -237,18 +272,21 @@ def main(argv: list[str] | None = None) -> int:
         if budget_s is not None and elapsed + r.minutes * 60 > budget_s:
             print(f"time budget reached after {elapsed / 3600:.1f} h; {len(todo) - i + 1} left")
             break
-        cmd = [sys.executable, "-m", "agmesh.federated.run", *r.argv(args.results, args.params)]
+        cmd = [
+            sys.executable, "-m", "agmesh.federated.run",
+            *r.argv(args.results, args.params, final=args.final),
+        ]  # fmt: skip
         print(f"[{i}/{len(todo)}] {describe(r)} (about {r.minutes:.0f} min)", flush=True)
-        _log(LOG, {"event": "start", "run": describe(r), "cmd": cmd[2:], "at": time.time()})
+        _log(log, {"event": "start", "run": describe(r), "cmd": cmd[2:], "at": time.time()})
         t0 = time.monotonic()
         code = subprocess.call(cmd)
         secs = time.monotonic() - t0
-        ok = code == 0 and r.artifact(args.results, default_parts).is_file()
-        _log(LOG, {"event": "end", "run": describe(r), "seconds": round(secs, 1),
+        ok = code == 0 and r.artifact(out_root, default_parts).is_file()
+        _log(log, {"event": "end", "run": describe(r), "seconds": round(secs, 1),
                    "returncode": code, "ok": ok, "at": time.time()})  # fmt: skip
         if not ok:
             print(f"  FAILED (exit {code}); it will run again next time", flush=True)
-    left = remaining(runs, args.results, default_parts)
+    left = remaining(runs, out_root, default_parts)
     print(f"{len(runs) - len(left)}/{len(runs)} runs done")
     return 0
 

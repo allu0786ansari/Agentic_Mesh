@@ -36,6 +36,7 @@ from __future__ import annotations
 import argparse
 import collections
 import concurrent.futures
+import json
 import shutil
 import time
 from pathlib import Path
@@ -48,6 +49,7 @@ from agmesh.common.artifacts import write_artifact, write_event
 from agmesh.common.config import DEFAULT_PARAMS_PATH, Params, load_params
 from agmesh.common.env import load_env
 from agmesh.common.sysmem import llm_server_info, snapshot
+from agmesh.evaluation.sealed import FinalAccess, add_final_argument, authorise
 from agmesh.mesh.attribution import MODES, AttributionAgent
 from agmesh.mesh.breaker import CircuitBreaker
 from agmesh.mesh.graph import Mesh
@@ -405,7 +407,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--params", type=Path, default=DEFAULT_PARAMS_PATH)
     parser.add_argument("--site", choices=("site_a", "site_b"), required=True)
     parser.add_argument("--mode", choices=MODES, default=None)
-    parser.add_argument("--split", choices=("val",), default="val")
+    parser.add_argument("--split", choices=("val", "test"), default="val")
     parser.add_argument("--edge-root", type=Path, default=Path("results/edge"))
     parser.add_argument("--edge-run", type=Path, default=None)
     parser.add_argument("--kb", type=Path, default=Path("data/kb"))
@@ -421,10 +423,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--stack", type=Path, default=Path("configs/stack.yaml"))
     parser.add_argument("--traces", type=Path, default=Path("results/traces"))
     parser.add_argument("--no-traces", action="store_true")
+    add_final_argument(parser)
     args = parser.parse_args(argv)
     install_redaction()
     params = load_params(args.params)
     mode = args.mode or params.mesh.attribution.mode
+    if (args.split == "test") != bool(args.final):
+        raise SystemExit("the test split and --final go together (ADR 0019 §4)")
     if mode in LLM_MODES:
         try:
             require_allowlisted(params.llm.base_url, params.security.egress_allowlist)
@@ -433,6 +438,25 @@ def main(argv: list[str] | None = None) -> int:
     llm_cfg = llm_settings(params, mode, args.llm_lock) if mode in LLM_MODES else None
     edge = args.edge_run or latest_edge_run(args.edge_root, args.site, args.split)
     stamp = time.strftime("%Y%m%dT%H%M%S")
+    if args.final:
+        # the mesh reads the test edge run's alerts and evidence, never a partition; it
+        # still needs the frozen code, and each run is logged once (ADR 0019 §4)
+        finished = sorted(args.out.glob(f"{args.site}__{mode}__test__*/summary.json"))
+        if finished:
+            raise SystemExit(
+                f"{finished[-1].parent} exists: a completed test run is never repeated"
+            )
+        edge_split = json.loads((edge / "summary.json").read_text(encoding="utf-8"))["split"]
+        if edge_split != "test":
+            raise SystemExit(f"{edge} is a {edge_split} edge run, not a test one")
+        authorise(
+            FinalAccess(
+                f"mesh/{args.site}__{mode}", 0, params_path=args.params,
+                extra={"run_id": f"mesh__{args.site}__{mode}__test__{stamp}",
+                       "edge_run": edge.as_posix()},
+            ),
+            site=args.site, client="mesh",
+        )  # fmt: skip
     out = args.out / f"{args.site}__{mode}__{args.split}__{stamp}"
     out.mkdir(parents=True, exist_ok=True)
     shutil.copy2(edge / "storage.db", out / "storage.db")

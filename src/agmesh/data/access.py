@@ -51,6 +51,12 @@ def _manifest_file_sha(root: Path, site: Site, client: str, part: str) -> str:
     return sha
 
 
+#: Test partitions already read in this process, by (configuration, seed, run, site,
+#: client, root). A final run reads each client's test partition once and is logged
+#: once, however often it evaluates (ADR 0019 §4).
+_FINAL_READS: dict[tuple[str, int, str, str, str, str], Partition] = {}
+
+
 def load_partition(
     params: Params,
     site: Site,
@@ -62,9 +68,15 @@ def load_partition(
 ) -> Partition:
     if part not in PARTITIONS:
         raise ValueError(f"unknown partition {part!r}; expected one of {PARTITIONS}")
-    if part == "test":
-        authorise(final, site=site, client=client)
     base = root or params.paths.partitions_dir
+    key: tuple[str, int, str, str, str, str] | None = None
+    if part == "test":
+        if final is not None:
+            run = str(final.extra.get("run_id", ""))
+            key = (final.config_id, final.seed, run, site, client, str(Path(base).resolve()))
+            if key in _FINAL_READS:
+                return _FINAL_READS[key]
+        authorise(final, site=site, client=client)
     manifest = read_manifest(base / site)
     if client not in manifest["nodes"]:
         raise KeyError(f"{site} has no client {client!r}")
@@ -88,7 +100,7 @@ def load_partition(
             time_s=frame["window_start"].to_numpy(dtype=np.float64),
             group=frame["episode"].astype(str).to_numpy(dtype=str),
         )
-    return Partition(
+    out = Partition(
         site=site,
         client=client,
         part=part,
@@ -96,3 +108,6 @@ def load_partition(
         labels=labels,
         manifest_sha256=sha,
     )
+    if key is not None:
+        _FINAL_READS[key] = out
+    return out

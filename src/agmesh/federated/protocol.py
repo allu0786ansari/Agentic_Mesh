@@ -71,6 +71,7 @@ class EvalInstruction:
     full: bool  # False: validation loss only (per-round curve); True: all metrics
     threshold: float | None = None  # H1c: evaluate at this pooled threshold
     shift: str | None = None  # scoring override (H1c is defined on R0 scores)
+    part: str = "val_attack"  # "test" only in a final run (ADR 0019 §4)
 
 
 @dataclass(frozen=True)

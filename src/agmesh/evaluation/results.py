@@ -72,6 +72,56 @@ def write_scores(path: Path, arrays: dict[str, np.ndarray]) -> dict[str, str]:
     return {"path": path.name, "sha256": sha256_file(path)}
 
 
+#: The Plan's reproduction tolerance (Week 14 task 2; ADR 0018 §1).
+AUROC_TOLERANCE = 0.005
+EXACT = 1e-9
+
+
+def compare_validation(
+    reference: Path,
+    experiment: str,
+    config_id: str,
+    seed: int,
+    metrics: dict[str, Any],
+    privacy: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """A final run's own validation metrics against the committed validation artifact.
+
+    ``accepted`` is the Plan's tolerance: identical privacy accounting and AUROC within
+    ±0.005 (ADR 0018 §1). ``exact`` says whether every metric agrees to 1e-9.
+    """
+    import json
+
+    ref = result_path(reference, experiment, config_id, seed)
+    if not ref.is_file():
+        return {"reference": None, "accepted": False, "reason": "no committed validation artifact"}
+    doc = json.loads(ref.read_text(encoding="utf-8"))
+    old = doc.get("metrics") or {}
+    diffs = {}
+    for key in sorted(set(old) | set(metrics)):
+        a, b = metrics.get(key), old.get(key)
+        if a is None and b is None:
+            continue
+        if a is None or b is None or abs(float(a) - float(b)) > EXACT:
+            diffs[key] = [a, b]
+    d_auroc = (
+        abs(float(metrics["auroc"]) - float(old["auroc"]))
+        if metrics.get("auroc") is not None and old.get("auroc") is not None
+        else None
+    )
+    same_privacy = (doc.get("privacy") or None) == (privacy or None) or (
+        not doc.get("private", False) and privacy is None
+    )
+    return {
+        "reference": ref.as_posix(),
+        "exact": not diffs,
+        "differences": diffs,
+        "auroc_abs_difference": d_auroc,
+        "privacy_identical": same_privacy,
+        "accepted": bool(same_privacy and d_auroc is not None and d_auroc <= AUROC_TOLERANCE),
+    }
+
+
 def write_result(
     root: Path,
     *,

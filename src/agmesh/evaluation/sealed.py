@@ -6,6 +6,16 @@ create only when run with ``--final``. Every access is appended to
 configuration and the seed. By default a final access also requires the
 ``g4-frozen`` Git tag, so final runs cannot happen before Gate G4 freezes the
 configurations. The checker rejects test-split results without a matching log entry.
+
+**Preconditions (ADR 0019 §3).** With ``require_frozen``, :func:`frozen_problem`
+must find nothing wrong:
+
+* the tag exists;
+* ``HEAD`` is the tagged commit, or a descendant that differs from it only under
+  ``results/``;
+* the tree is clean outside ``results/`` (appending to the access log is allowed).
+
+The tagged commit is recorded in every log entry as ``frozen_sha``.
 """
 
 from __future__ import annotations
@@ -17,7 +27,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from agmesh.common.provenance import git_state, sha256_file, utc_now_iso
+from agmesh.common.provenance import OUTPUT_PATHS, git_state, sha256_file, utc_now_iso
 
 TEST_ACCESS_LOG = Path("results/test_access.log")
 FROZEN_TAG = "g4-frozen"
@@ -35,6 +45,42 @@ def tag_exists(tag: str = FROZEN_TAG) -> bool:
     except (OSError, subprocess.TimeoutExpired):
         return False
     return out.returncode == 0 and out.stdout.strip() == tag
+
+
+def _git(*args: str, cwd: Path | None = None) -> str | None:
+    try:
+        out = subprocess.run(
+            ["git", *args], cwd=cwd, capture_output=True, text=True, check=True, timeout=10
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return out.stdout.strip()
+
+
+def frozen_sha(tag: str = FROZEN_TAG, cwd: Path | None = None) -> str | None:
+    return _git("rev-parse", "--verify", "-q", f"{tag}^{{commit}}", cwd=cwd) or None
+
+
+def frozen_problem(tag: str = FROZEN_TAG, cwd: Path | None = None) -> str | None:
+    """Why a final access is not allowed here, or None (ADR 0019 §3)."""
+    tagged = frozen_sha(tag, cwd)
+    if tagged is None:
+        return (
+            f"--final needs the Git tag {tag!r}, created at Gate G4 when the "
+            "configurations are frozen"
+        )
+    head = _git("rev-parse", "HEAD", cwd=cwd)
+    if head != tagged:
+        if _git("merge-base", "--is-ancestor", tagged, "HEAD", cwd=cwd) is None:
+            return f"HEAD {head} does not descend from {tag} ({tagged})"
+        changed = (_git("diff", "--name-only", tagged, "HEAD", cwd=cwd) or "").splitlines()
+        code = [c for c in changed if not any(c.startswith(f"{o}/") for o in OUTPUT_PATHS)]
+        if code:
+            return f"files changed since {tag} outside results/: {code[:10]}"
+    state = git_state(cwd)
+    if state["git_dirty"]:
+        return f"uncommitted changes outside results/: {state['git_dirty_paths']}"
+    return None
 
 
 @dataclass(frozen=True)
@@ -56,11 +102,12 @@ def authorise(access: FinalAccess | None, *, site: str, client: str) -> None:
             f"{site}/{client}: the test split is sealed; it can only be read by a --final "
             "run after Gate G4 (WR-2)"
         )
-    if access.require_frozen and not tag_exists():
-        raise SealedTestError(
-            f"--final needs the Git tag {FROZEN_TAG!r}, created at Gate G4 when the "
-            "configurations are frozen"
-        )
+    frozen: str | None = None
+    if access.require_frozen:
+        problem = frozen_problem()
+        if problem is not None:
+            raise SealedTestError(problem)
+        frozen = frozen_sha()
     record = {
         "ts": utc_now_iso(),
         **git_state(),
@@ -69,6 +116,7 @@ def authorise(access: FinalAccess | None, *, site: str, client: str) -> None:
         "site": site,
         "client": client,
         "params_sha256": sha256_file(access.params_path) if access.params_path.is_file() else None,
+        "frozen_sha": frozen,
         **access.extra,
     }
     access.log_path.parent.mkdir(parents=True, exist_ok=True)

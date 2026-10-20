@@ -219,3 +219,41 @@ def test_x4_diversity_flags_a_constant_answerer() -> None:
     assert not mixed["constant"] and mixed["distinct"] == 3
     assert mixed["modal"] == "T0836" and mixed["modal_share"] == 0.5
     assert x4.diversity([None, None])["answered"] == 0
+
+
+def _run(site: str, mode: str, sessions: list[dict[str, Any]]) -> x4.Run:
+    return x4.Run(site, mode, Path(f"{site}__{mode}"), {"sessions": len(sessions)}, sessions)
+
+
+def test_seven_episode_validity_pools_validation_and_test_incidents() -> None:
+    val_e, test_e = [_event("0", 0, 10, ("T0888",))], [_event("4", 1000, 1100, ("T0861",))]
+    ok = _session("a", 0, 5, "T0888", ["T0888"], valid=True, grounded=True, raw="T0888")
+    bad = _session("b", 1000, 1010, "T0861", ["T0861"], valid=False, grounded=True, raw="T0861")
+    far = _session("c", 5000, 5010, "T0861", ["T0861"], valid=False, grounded=False, raw="x")
+    out = x4.seven_episode_validity(
+        {"val": ([_run("site_b", "full", [ok])], val_e),
+         "test": ([_run("site_b", "full", [bad, far])], test_e)},
+        60.0,
+    )  # fmt: skip
+    assert out["full"]["incidents"] == 2  # the far incident matches no episode
+    assert out["full"]["schema_valid_rate"] == 0.5
+    assert out["llm_no_retrieval"]["incidents"] == 0
+
+
+def test_pt5_needs_every_clause() -> None:
+    def rep(top3: float, diff: float, validity: float) -> dict[str, Any]:
+        return {
+            "site_a": {
+                "modes": {"full": {"top3": {"estimate": top3, "low": 0, "high": 1},
+                                   "answers": {"constant": False}}},
+                "baselines": {"majority_class": {"top1": {"estimate": 0.6}}},
+                "full_vs_retrieval_only_top3": {"difference": diff, "low": -1, "high": 1},
+            },
+            "site_b": {"seven_episodes": {"full": {"schema_valid_rate": validity}}},
+        }  # fmt: skip
+
+    assert x4.pt5(rep(0.75, 0.1, 0.99))["met"]
+    assert not x4.pt5(rep(0.65, 0.1, 0.99))["met"]  # below 0.70
+    assert not x4.pt5(rep(0.75, -0.05, 0.99))["met"]  # full below retrieval_only
+    assert not x4.pt5(rep(0.75, 0.1, 0.90))["met"]  # validity below 95%
+    assert not x4.pt5({"site_a": {"modes": {}}})["evaluated"]

@@ -54,7 +54,8 @@ from agmesh.common.config import DEFAULT_PARAMS_PATH, Params, load_params
 from agmesh.common.provenance import sha256_bytes, sha256_file, utc_now_iso
 from agmesh.data.access import Site
 from agmesh.evaluation.detection import DETECTION_KEYS
-from agmesh.evaluation.results import result_path, write_result, write_scores
+from agmesh.evaluation.results import compare_validation, result_path, write_result, write_scores
+from agmesh.evaluation.sealed import TEST_ACCESS_LOG, FinalAccess, add_final_argument
 from agmesh.experiments import x1_baselines as x1
 from agmesh.federated import fed_eval
 from agmesh.federated.backends import CentralPool, ClientSettings, InProcessPool
@@ -152,8 +153,17 @@ def merge_local(per_node: dict[str, FederationResult], keys: tuple[str, ...]) ->
         {k: v for n in nodes for k, v in per_node[n].registry.items()},
         {k: v for n in nodes for k, v in per_node[n].privacy.items()},
         float(sum(per_node[n].seconds for n in nodes)),
-        {"local_norms": {n: per_node[n].norm for n in nodes}},
+        {"local_norms": {n: per_node[n].norm for n in nodes}, **_merge_test(per_node, keys)},
     )
+
+
+def _merge_test(per_node: dict[str, FederationResult], keys: tuple[str, ...]) -> dict[str, Any]:
+    """The local-only baseline's test evaluation: each node's own model, merged."""
+    tests = [per_node[n].extras.get("test") for n in sorted(per_node)]
+    if not all(tests):
+        return {}
+    replies = [r for t in tests for r in t["replies"]]  # type: ignore[index]
+    return {"test": {"final": fed_eval.summary(replies, keys), "replies": replies}}
 
 
 def _privacy_block(result: FederationResult) -> dict[str, Any]:
@@ -182,9 +192,14 @@ def federate(
     params_path: Path = DEFAULT_PARAMS_PATH,
     suffix: str = "",
     mode: str = "federated",
+    final: bool = False,
+    experiment: str = "X1",
+    access_log: Path = TEST_ACCESS_LOG,
 ) -> tuple[str, str, FederationResult]:
     if mode not in MODES:
         raise ValueError(f"unknown mode {mode!r}")
+    if final and backend != "inprocess":
+        raise ValueError("--final runs use the in-process backend (ADR 0019 §4)")
     if mode != "federated" and (h1c or heterogeneous or backend != "inprocess"):
         raise ValueError("local and central baselines are homogeneous, in-process, without H1c")
     fed = params.federated
@@ -195,6 +210,17 @@ def federate(
     )
     cid += partition_suffix(partitions, site) + suffix
     rid = run_id or f"{cid}__seed{seed}__{time.strftime('%Y%m%dT%H%M%S')}"
+    access = (
+        FinalAccess(
+            f"{experiment}/{cid}",
+            seed,
+            log_path=access_log,
+            params_path=params_path,
+            extra={"run_id": rid},
+        )
+        if final
+        else None
+    )
     epochs_per_round = max(HETEROGENEOUS_EPOCHS) if heterogeneous else fed.local_epochs
     if h1c:
         check_h1c(params, site)
@@ -210,6 +236,7 @@ def federate(
         h1c_epsilon=h1c_eps,
         epochs=n_rounds * epochs_per_round,
         privacy_root=privacy_root,
+        final=access,
     )
     cfg = ServerConfig(
         site=site,
@@ -225,6 +252,7 @@ def federate(
         target_fpr=params.evaluation.target_window_fpr,
         threshold_sd=params.privacy.normalisation_threshold_sd,
         metric_keys=DETECTION_KEYS,
+        final=final,
     )
     if mode == "central":
         central_cfg = dataclasses.replace(cfg, min_fit_clients=1)
@@ -415,6 +443,98 @@ def record(
     )
 
 
+def record_test(
+    params: Params,
+    site: Site,
+    cid: str,
+    rid: str,
+    result: FederationResult,
+    *,
+    seed: int,
+    strategy: str,
+    epsilon: float,
+    partitions: Path,
+    results: Path,
+    started_at: str,
+    data_source: str,
+    params_path: Path,
+    experiment: str = "X1",
+    mode: str = "federated",
+    reference: Path = Path("results"),
+) -> Path:
+    """The test artifact of a --final run (ADR 0019 §4), under ``<results>/test/``.
+
+    It holds the test metrics at the validation thresholds, the run's own validation
+    metrics, and their comparison with the committed validation artifact.
+    """
+    test = result.extras.get("test")
+    if not test:
+        raise RuntimeError("this run did not evaluate on test")
+    privacy = _privacy_block(result)
+    validation = {
+        "metrics": result.final["macro"],
+        "pooled_auroc_hist": result.final["pooled_auroc_hist"],
+        "comparison": compare_validation(
+            reference, experiment, cid, seed, result.final["macro"], privacy
+        ),
+    }
+    root = results / "test"
+    extra: dict[str, Any] = {
+        "site": site,
+        "mode": mode,
+        "model": "vae" if site == "site_a" else "ae",
+        "private": math.isfinite(epsilon),
+        "target_epsilon": eps_label(epsilon),
+        "per_client": test["final"]["per_client"],
+        "pooled_auroc_hist": test["final"]["pooled_auroc_hist"],
+        "validation": validation,
+        "scoring": {**x1.site_scoring(site, params).__dict__, "shift": x1.site_shift(site, params)},
+        "evaluation": {
+            "threshold_from": "val_normal (per node)",
+            "evaluated_on": "test",
+            "target_window_fpr": params.evaluation.target_window_fpr,
+            "event_tolerance_s": params.evaluation.event_tolerance_s,
+            "protocol": "docs/adr/0019-g4-final-test-protocol-week14.md §4",
+        },
+        "access_run_id": rid,
+        "federation": {
+            "run_id": rid,
+            "strategy": strategy,
+            "rounds": len(result.rounds),
+            "seconds": round(result.seconds, 1),
+        },
+    }
+    if test.get("h1c"):
+        target = result_path(root, experiment, cid, seed)
+        extra["h1c"] = {
+            **test["h1c"],
+            "scores_files": {
+                name: write_scores(
+                    target.with_name(f"{target.stem}.h1c_{name}.npz"),
+                    _score_file(result, replies),
+                )
+                for name, replies in sorted(test["h1c_replies"].items())
+            },
+        }
+    weights_sha = sha256_bytes(b"".join(np.ascontiguousarray(w).tobytes() for w in result.weights))
+    return write_result(
+        root,
+        experiment=experiment,
+        config_id=cid,
+        seed=seed,
+        split="test",
+        data_source=data_source,  # type: ignore[arg-type]
+        metrics=test["final"]["macro"],
+        manifest_sha256=sha256_file(partitions / site / "manifest.json"),
+        started_at=started_at,
+        checkpoint_sha256=weights_sha,
+        privacy=privacy,
+        extra=extra,
+        params_path=params_path,
+        scores=_score_file(result, test["replies"]),
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Federated training and evaluation")
     parser.add_argument("--params", type=Path, default=DEFAULT_PARAMS_PATH)
@@ -450,7 +570,10 @@ def main(argv: list[str] | None = None) -> int:
         help="federated, or the pipeline-matched local-only / centralised baselines (ADR 0016)",
     )
     parser.add_argument("--experiment", choices=EXPERIMENTS, default="X1")
+    add_final_argument(parser)
     args = parser.parse_args(argv)
+    if args.final and (args.smoke or args.tag or args.lr or args.clip or args.save_model):
+        parser.error("--final runs the frozen configuration only (ADR 0019 §4)")
     params = load_params(args.params)
     if args.backend == "flower" and (args.lr is not None or args.clip is not None):
         parser.error(
@@ -470,6 +593,17 @@ def main(argv: list[str] | None = None) -> int:
     seeds = args.seeds or params.project.seeds[:1]
     for seed in seeds:
         started_at = utc_now_iso()
+        if args.final:
+            cid0 = config_id(
+                args.site, strategy, epsilon, h1c=args.h1c, heterogeneous=args.heterogeneous,
+                dropout=params.federated.dropout_prob if args.dropout is None else args.dropout,
+                mode=args.mode,
+            ) + partition_suffix(partitions, args.site)  # fmt: skip
+            if args.mu is not None:
+                cid0 += f"__mu{args.mu:g}"
+            done = result_path(args.results / "test", args.experiment, cid0, seed)
+            if done.is_file():
+                raise SystemExit(f"{done} exists: a completed test run is never repeated")
         cid, rid, result = federate(
             params,
             args.site,
@@ -488,7 +622,37 @@ def main(argv: list[str] | None = None) -> int:
             + (f"__clip{args.clip:g}" if args.clip is not None else "")
             + (f"__mu{args.mu:g}" if args.mu is not None else ""),
             mode=args.mode,
+            final=args.final,
+            experiment=args.experiment,
         )
+        if args.final:
+            path = record_test(
+                params,
+                args.site,
+                cid,
+                rid,
+                result,
+                seed=seed,
+                strategy=strategy,
+                epsilon=epsilon,
+                partitions=partitions,
+                results=args.results,
+                started_at=started_at,
+                data_source="fixture" if args.fixture else "runtime",
+                params_path=args.params,
+                experiment=args.experiment,
+                mode=args.mode,
+            )
+            t = result.extras["test"]["final"]["macro"]
+            cmp = json.loads(path.read_text())["validation"]["comparison"]
+            print(
+                f"{cid} seed {seed} TEST: AUROC {t['auroc']:.3f} recall {t['event_recall']:.3f} "
+                f"FPR {t['window_fpr']:.3f} | validation vs committed: "
+                f"{'accepted' if cmp.get('accepted') else 'NOT accepted'}"
+                f"{' (exact)' if cmp.get('exact') else ''} -> {path}",
+                flush=True,
+            )
+            continue
         path = record(
             params,
             args.site,

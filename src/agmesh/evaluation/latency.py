@@ -135,8 +135,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.report:
         rep = x5_report(args.root, args.mesh_root, args.split)
+        root = Path("results/test/X5") if args.split == "test" else Path("results/X5")
         path = write_artifact(
-            Path("results/X5") / f"latency_{args.split}.json",
+            root / f"latency_{args.split}.json",
             kind="X5.latency",
             data_source="runtime",
             payload=rep,
