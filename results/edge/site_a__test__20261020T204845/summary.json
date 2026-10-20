@@ -1,0 +1,182 @@
+{
+  "schema_version": "1.0",
+  "kind": "edge.summary",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-20T15:19:00Z",
+    "git_sha": "96a67825353910249142eecaf7d82c1d0581d014",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "packages": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "torch": "2.14.1+cpu",
+        "opacus": "1.6.0",
+        "scikit-learn": "1.9.1",
+        "pandas": "3.0.6",
+        "flwr": "1.39.0"
+      },
+      "hostname_hash": "89a720d64995",
+      "pid": 9703
+    }
+  },
+  "run_id": "edge__site_a__test__c97af5b53513__20261020T204845",
+  "site": "site_a",
+  "split": "test",
+  "model": {
+    "path": "results/models/site_a__fedprox__eps3/seed_11",
+    "model_version": "sha256:c97af5b535139115647007d7f891f0b3c8ee9985e9b498f66567c2fade5a468f",
+    "source": {
+      "run_id": "site_a__fedprox__eps3__seed11__20261015T221130",
+      "config_id": "site_a__fedprox__eps3",
+      "seed": 11,
+      "epsilon": "3",
+      "strategy": "fedprox",
+      "rounds": 50
+    }
+  },
+  "replay": {
+    "speed": 0.0,
+    "max_gap_s": 60.0,
+    "wall_seconds": 8.39,
+    "slept_s": 0.0
+  },
+  "nodes": {
+    "a1": {
+      "threshold": 6.350691124140247,
+      "threshold_val_fpr": 0.009727016002510198,
+      "shift": "r3"
+    },
+    "a2": {
+      "threshold": 8.273280977941477,
+      "threshold_val_fpr": 0.009853687667960586,
+      "shift": "r3"
+    },
+    "a3": {
+      "threshold": 7.387547731140865,
+      "threshold_val_fpr": 0.009892594686263426,
+      "shift": "r3"
+    },
+    "a4": {
+      "threshold": 6.976856708933636,
+      "threshold_val_fpr": 0.009892594686263426,
+      "shift": "r3"
+    }
+  },
+  "streams": {
+    "a1/test": {
+      "windows": 6061,
+      "scored": 5683,
+      "attack_windows": 197,
+      "alerts": 188,
+      "alerts_on_attack": 122,
+      "alerts_empty_features": 0,
+      "alerts_latency_only": 0,
+      "alerts_constants_changed": 51,
+      "false_alarms": 66,
+      "window_fpr_normal": 0.011255115961800819
+    },
+    "a2/test": {
+      "windows": 6115,
+      "scored": 5737,
+      "attack_windows": 238,
+      "alerts": 113,
+      "alerts_on_attack": 89,
+      "alerts_empty_features": 0,
+      "alerts_latency_only": 0,
+      "alerts_constants_changed": 13,
+      "false_alarms": 24,
+      "window_fpr_normal": 0.00408371618172537
+    },
+    "a3/test": {
+      "windows": 8720,
+      "scored": 8342,
+      "attack_windows": 206,
+      "alerts": 178,
+      "alerts_on_attack": 100,
+      "alerts_empty_features": 0,
+      "alerts_latency_only": 0,
+      "alerts_constants_changed": 15,
+      "false_alarms": 78,
+      "window_fpr_normal": 0.009161381254404511
+    },
+    "a4/test": {
+      "windows": 9356,
+      "scored": 9020,
+      "attack_windows": 201,
+      "alerts": 122,
+      "alerts_on_attack": 74,
+      "alerts_empty_features": 0,
+      "alerts_latency_only": 0,
+      "alerts_constants_changed": 12,
+      "false_alarms": 48,
+      "window_fpr_normal": 0.005243036592026215
+    }
+  },
+  "stream_vs_batch": {},
+  "detection_latency_ms": {
+    "n": 601,
+    "p50": 1.5496420000999933,
+    "p95": 2.256253999803448,
+    "max": 171.6031119995023
+  },
+  "window_processing_ms": {
+    "n": 30252,
+    "p50": 0.22053350039641373,
+    "p95": 0.34060709995173943,
+    "max": 171.85601699929975
+  },
+  "latency_target_ms": 1000.0,
+  "evidence": {
+    "records": {
+      "a1": 188,
+      "a2": 113,
+      "a3": 178,
+      "a4": 122
+    },
+    "magnitudes": {
+      "high": 2510,
+      "medium": 356,
+      "low": 136
+    },
+    "top_feature_frequency": {
+      "test": {
+        "P1_FT01": 336,
+        "P1_LCV01Z": 284,
+        "P1_LCV01D": 273,
+        "P1_LIT01": 189,
+        "P1_PIT01": 173,
+        "P1_FCV03Z": 120,
+        "P1_FCV03D": 91,
+        "P2_SIT01": 86,
+        "P2_VYT02": 82,
+        "P4_ST_PT01": 80
+      }
+    }
+  },
+  "bus": {
+    "messages": 601,
+    "acked": 0,
+    "dead": 0,
+    "attempts": 0
+  },
+  "fusion": {},
+  "outputs": {
+    "dir": "results/edge/site_a__test__20261020T204845",
+    "storage": "storage.db",
+    "events": "events.jsonl"
+  }
+}

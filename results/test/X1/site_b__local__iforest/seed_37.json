@@ -1,0 +1,190 @@
+{
+  "schema_version": "1.0",
+  "kind": "result",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-20T15:04:57Z",
+    "git_sha": "96a67825353910249142eecaf7d82c1d0581d014",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "packages": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "torch": "2.14.1+cpu",
+        "opacus": "1.6.0",
+        "scikit-learn": "1.9.1",
+        "pandas": "3.0.6",
+        "flwr": "1.39.0"
+      },
+      "hostname_hash": "89a720d64995",
+      "pid": 4750
+    },
+    "manifest_sha256": "193bf797926efed5c5c9d7e407e1f1bdf8f1ec8b4eac7a963ab26b4dd0c27905",
+    "checkpoint_sha256": null,
+    "started_at": "2026-10-20T15:04:55Z",
+    "finished_at": "2026-10-20T15:04:57Z"
+  },
+  "experiment": "X1",
+  "config_id": "site_b__local__iforest",
+  "seed": 37,
+  "split": "test",
+  "metrics": {
+    "auroc": 0.9337796472065009,
+    "auprc": 0.16018566021986938,
+    "event_recall": 1.0,
+    "range_f1": 0.1873878812039067,
+    "window_fpr": 0.010036428902913685,
+    "ttd_median_s": 170.0,
+    "false_alarms_per_hour": 2.1810851119766896,
+    "range_precision": 0.15,
+    "range_recall": 0.24960175228992432,
+    "window_precision": 0.10077519379844961,
+    "ttd_mean_s": 243.33333333333334
+  },
+  "site": "site_b",
+  "mode": "local",
+  "model": "iforest",
+  "private": false,
+  "per_client": {
+    "b1": {
+      "auroc": 0.9337796472065009,
+      "auprc": 0.16018566021986938,
+      "event_recall": 1.0,
+      "events": 3,
+      "events_detected": 3,
+      "range_precision": 0.15,
+      "range_recall": 0.24960175228992432,
+      "range_f1": 0.1873878812039067,
+      "window_fpr": 0.00858860578299456,
+      "window_precision": 0.3023255813953488,
+      "window_recall": 0.3333333333333333,
+      "ttd_median_s": 170.0,
+      "ttd_mean_s": 243.33333333333334,
+      "false_alarms_per_hour": 1.7520755797308905,
+      "threshold": 0.6821857690811157,
+      "threshold_val_fpr": 0.009883670077844835,
+      "windows": 3532,
+      "attack_windows": 39,
+      "window_fpr_excl_recovery": 0.009627727856225931,
+      "abstained_share": 0.0,
+      "abstained_attack_windows": 0
+    },
+    "b2": {
+      "auroc": "nan",
+      "auprc": "nan",
+      "event_recall": "nan",
+      "events": 0,
+      "events_detected": 0,
+      "range_precision": "nan",
+      "range_recall": "nan",
+      "range_f1": "nan",
+      "window_fpr": 0.011045029736618521,
+      "window_precision": 0.0,
+      "window_recall": "nan",
+      "ttd_median_s": "nan",
+      "ttd_mean_s": "nan",
+      "false_alarms_per_hour": 2.4468988954970263,
+      "threshold": 0.7174637913703918,
+      "threshold_val_fpr": 0.009820426487093154,
+      "windows": 3531,
+      "attack_windows": 0,
+      "window_fpr_excl_recovery": 0.011045029736618521,
+      "abstained_share": 0.0,
+      "abstained_attack_windows": 0
+    },
+    "b3": {
+      "auroc": "nan",
+      "auprc": "nan",
+      "event_recall": "nan",
+      "events": 0,
+      "events_detected": 0,
+      "range_precision": "nan",
+      "range_recall": "nan",
+      "range_f1": "nan",
+      "window_fpr": 0.010475651189127973,
+      "window_precision": 0.0,
+      "window_recall": "nan",
+      "ttd_median_s": "nan",
+      "ttd_mean_s": "nan",
+      "false_alarms_per_hour": 2.3442808607021517,
+      "threshold": 0.6430497765541077,
+      "threshold_val_fpr": 0.009918931807343824,
+      "windows": 3532,
+      "attack_windows": 0,
+      "window_fpr_excl_recovery": 0.010475651189127973,
+      "abstained_share": 0.0,
+      "abstained_attack_windows": 0
+    }
+  },
+  "training": {
+    "b1": {
+      "train_seconds": 0.26,
+      "train_windows": 64792,
+      "inputs": 16
+    },
+    "b2": {
+      "train_seconds": 0.26,
+      "train_windows": 60596,
+      "inputs": 16
+    },
+    "b3": {
+      "train_seconds": 0.27,
+      "train_windows": 59419,
+      "inputs": 16
+    }
+  },
+  "wall_seconds": 2.24,
+  "scoring": {
+    "aggregation": "norm_top3",
+    "smooth": 1,
+    "top_k": 3,
+    "shift": "r0"
+  },
+  "evaluation": {
+    "threshold_from": "val_normal",
+    "evaluated_on": "test",
+    "target_window_fpr": 0.01,
+    "event_tolerance_s": 60
+  },
+  "validation": {
+    "metrics": {
+      "auroc": 0.85,
+      "auprc": 0.2234080561555454,
+      "event_recall": 0.25,
+      "range_f1": 0.02531645569620253,
+      "window_fpr": 0.023885109599395313,
+      "ttd_median_s": 140.0,
+      "false_alarms_per_hour": 5.115646258503401,
+      "range_precision": 0.3333333333333333,
+      "range_recall": 0.013157894736842105,
+      "window_precision": 0.0,
+      "ttd_mean_s": 140.0
+    },
+    "comparison": {
+      "reference": "results/X1/site_b__local__iforest/seed_37.json",
+      "exact": true,
+      "differences": {},
+      "auroc_abs_difference": 0.0,
+      "privacy_identical": true,
+      "accepted": true
+    }
+  },
+  "access_run_id": "site_b__local__iforest__seed37__2026-10-20T15:04:55Z",
+  "scores_file": {
+    "path": "seed_37.scores.npz",
+    "sha256": "2fb75f2799abd6d5229c0dfa082c74207477352f85d58fd3525045687b4890bd"
+  }
+}
