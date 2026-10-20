@@ -60,3 +60,19 @@ def test_rewritten_outputs_do_not_count_as_uncommitted(tmp_path: Path) -> None:
     (tmp_path / "code.py").write_text("x = 2\n", encoding="utf-8")
     state = git_state(tmp_path)
     assert state["git_dirty"] is True and state["git_dirty_paths"] == ["code.py"]
+
+
+def test_environment_records_installed_versions_of_numeric_packages() -> None:
+    env = environment(lockfile="does-not-exist.lock")
+    assert set(env["packages"]) == {
+        "numpy",
+        "scipy",
+        "torch",
+        "opacus",
+        "scikit-learn",
+        "pandas",
+        "flwr",
+    }
+    import numpy
+
+    assert env["packages"]["numpy"] == numpy.__version__

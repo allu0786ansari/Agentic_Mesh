@@ -76,3 +76,33 @@ def test_export_skips_unfinished_runs_and_runs_without_sessions(
     assert "skipped b_aborted: no summary.json" in out
     assert "skipped c_copy: storage.db has no sessions table" in out
     assert "exported 1 run(s), skipped 2" in out
+
+
+def test_accept_uses_the_plan_tolerance_and_identical_privacy(tmp_path: Path) -> None:
+    rerun, ref, models = tmp_path / "rerun", tmp_path / "ref", tmp_path / "models"
+    for root in (rerun, ref):
+        for site in x3_models.SITES:
+            for seed in x3_models.SEEDS:
+                p = root / "X1" / x3_models.CONFIG.format(site=site) / f"seed_{seed}.json"
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text(json.dumps({"metrics": {"auroc": 0.9}, "privacy": {"eps": 3.0}}))
+    for site in x3_models.SITES:
+        for seed in x3_models.SEEDS:
+            d = x3_models.model_dir(site, seed, models)
+            d.mkdir(parents=True)
+            (d / "model.json").write_text("{}")
+    cid = "site_a__fedprox__eps3"
+    small = rerun / "X1" / cid / "seed_23.json"
+    small.write_text(json.dumps({"metrics": {"auroc": 0.90003}, "privacy": {"eps": 3.0}}))
+    assert x3_models.verify(rerun, ref, models)  # not exact
+    assert x3_models.accept(rerun, ref, models) == []  # within ±0.005
+    (rerun / "X1" / cid / "seed_37.json").write_text(
+        json.dumps({"metrics": {"auroc": 0.906}, "privacy": {"eps": 3.0}})
+    )
+    (rerun / "X1" / cid / "seed_41.json").write_text(
+        json.dumps({"metrics": {"auroc": 0.9}, "privacy": {"eps": 2.9}})
+    )
+    problems = x3_models.accept(rerun, ref, models)
+    assert any("seed 37: AUROC differs" in p for p in problems)
+    assert any("seed 41: privacy accounting differs" in p for p in problems)
+    assert len(problems) == 2

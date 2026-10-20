@@ -26,8 +26,8 @@ window's start to the incident's end.
 **Outputs.** ``results/X3/fusion_val.json`` (H2a, PT4, H2b) and
 ``results/X3/synthetic_val.json`` (H2c, synthetic), each with a ``.md``.
 
-Five-seed models are used only when ``x3_models.verify`` reports no problem for
-them. A run on other models is marked as a development run.
+Five-seed models are used only when ``x3_models.accept`` reports no problem for
+them (ADR 0018 §1). A run on other models is marked as a development run.
 """
 
 from __future__ import annotations
@@ -627,11 +627,11 @@ def main(argv: list[str] | None = None) -> int:
     params = load_params()
     dev = args.models != x3_models.MODELS or sorted(args.seeds) != sorted(x3_models.SEEDS)
     if not dev:
-        problems = [p for p in x3_models.verify() if SITE in p]
+        problems = [p for p in x3_models.accept() if SITE in p]
         if problems:
             for p in problems:
                 print(p)
-            raise SystemExit("x3_models verify reports problems: X3 stops (ADR 0017 §1)")
+            raise SystemExit("x3_models accept reports problems: X3 stops (ADR 0018 §1)")
     fr, sr = run(
         params, args.models, args.seeds, args.partitions or params.paths.partitions_dir, dev=dev
     )

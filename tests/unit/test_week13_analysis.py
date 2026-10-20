@@ -209,3 +209,13 @@ def test_robustness_uses_only_the_seeds_that_reproduce_per_site() -> None:
     assert by["site_a"]["used"] == [11, 53]
     assert sorted(by["site_a"]["excluded"]) == ["23", "41"]
     assert by["site_b"] == {"used": [11, 23, 41, 53], "excluded": {}}
+
+
+def test_x4_diversity_flags_a_constant_answerer() -> None:
+    const = x4.diversity(["T0836", "T0836", None, "T0836"])
+    assert const["constant"] and const["distinct"] == 1 and const["modal_share"] == 1.0
+    assert const["answered"] == 3
+    mixed = x4.diversity(["T0836", "T1692.001", "T0836", "T0801"])
+    assert not mixed["constant"] and mixed["distinct"] == 3
+    assert mixed["modal"] == "T0836" and mixed["modal_share"] == 0.5
+    assert x4.diversity([None, None])["answered"] == 0

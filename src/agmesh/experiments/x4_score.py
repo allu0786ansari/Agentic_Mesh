@@ -254,6 +254,25 @@ def llm_rates(sessions: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def diversity(techniques: list[str | None]) -> dict[str, Any]:
+    """How varied a mode's answers are (ADR 0018 §3); abstentions are left out.
+
+    A mode whose every answer is the same technique is ``constant``: its accuracy is
+    then the share of events whose acceptable set contains that technique, which is
+    a constant-answer baseline, not attribution.
+    """
+    answers = [t for t in techniques if t]
+    counts = Counter(answers)
+    modal, n = counts.most_common(1)[0] if counts else (None, 0)
+    return {
+        "answered": len(answers),
+        "distinct": len(counts),
+        "modal": modal,
+        "modal_share": n / len(answers) if answers else None,
+        "constant": len(answers) > 1 and len(counts) == 1,
+    }
+
+
 def site_a_mode(
     sessions: list[dict[str, Any]], events: list[Event], tolerance_s: float
 ) -> dict[str, Any]:
@@ -278,6 +297,7 @@ def site_a_mode(
         "incidents": len(sessions),
         "false_positive_incidents": len(unmatched),
         "llm": llm_rates(sessions),
+        "answers": diversity([r["technique"] for r in rows]),
         "per_event": rows,
     }
 
@@ -314,6 +334,7 @@ def site_b_mode(
         "by_status": dict(Counter(s["status"] for s in sessions)),
         "by_attribution_mode": dict(Counter(s["attribution_mode"] for s in sessions)),
         "techniques": dict(Counter(_canon(s["technique_id"]) for s in sessions)),
+        "answers": diversity([_canon(s["technique_id"]) for s in sessions]),
         "llm": llm_rates(sessions),
         "per_episode": rows,
     }
@@ -412,6 +433,13 @@ def run(
     return out, problems
 
 
+def _answers(d: dict[str, Any]) -> str:
+    if not d["answered"]:
+        return "—"
+    tag = " **constant**" if d["constant"] else ""
+    return f"{d['distinct']} ({d['modal']} {_pct(d['modal_share'])}){tag}"
+
+
 def _pct(x: float | None) -> str:
     return "—" if x is None else f"{100 * x:.1f}%"
 
@@ -429,8 +457,9 @@ def markdown(rep: dict[str, Any]) -> str:
             "## Site A (15 events)",
             "",
             "| Mode | Run | Matched | Abstained | Top-1 (95% CI) | Top-3 (95% CI) | "
-            "Top-1 answered | Tactic answered | FP incidents | Raw grounding |",
-            "|---|---|---|---|---|---|---|---|---|---|",
+            "Top-1 answered | Tactic answered | FP incidents | Raw grounding | "
+            "Distinct answers (modal share) |",
+            "|---|---|---|---|---|---|---|---|---|---|---|",
         ]
         for mode, m in a["modes"].items():
             t1, t3 = m["top1"], m["top3"]
@@ -440,7 +469,7 @@ def markdown(rep: dict[str, Any]) -> str:
                 f" | {_pct(t3['estimate'])} [{_pct(t3['low'])}, {_pct(t3['high'])}] | "
                 f"{_pct(m['top1_answered'])} | {_pct(m['tactic_accuracy_answered'])} | "
                 f"{m['false_positive_incidents']}/{m['incidents']} | "
-                f"{_pct(m['llm'].get('raw_grounding_rate'))} |"
+                f"{_pct(m['llm'].get('raw_grounding_rate'))} | {_answers(m['answers'])} |"
             )
         bl = a["baselines"]
         mc = bl["majority_class"]
@@ -482,14 +511,16 @@ def markdown(rep: dict[str, Any]) -> str:
             lines.append(f"| {ep['episode']} | {acc} | " + " | ".join(cells) + " |")
         lines += [
             "",
-            "| Mode | Incidents | LLM calls | Schema valid | Raw grounding |",
-            "|---|---|---|---|---|",
+            "| Mode | Incidents | LLM calls | Schema valid | Raw grounding | "
+            "Distinct answers over incidents (modal share) |",
+            "|---|---|---|---|---|---|",
         ]
         for mode, m in b["modes"].items():
             llm = m["llm"]
             lines.append(
                 f"| {mode} | {m['incidents']} | {llm.get('calls', 0)} | "
-                f"{_pct(llm.get('schema_valid_rate'))} | {_pct(llm.get('raw_grounding_rate'))} |"
+                f"{_pct(llm.get('schema_valid_rate'))} | {_pct(llm.get('raw_grounding_rate'))} | "
+                f"{_answers(m['answers'])} |"
             )
     c = rep["checks"]
     lines += ["", "## Checks", "", "passed" if c["passed"] else "FAILED"]

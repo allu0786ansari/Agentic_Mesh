@@ -88,6 +88,24 @@ def _is_wsl() -> bool:
         return False
 
 
+#: Packages whose installed version can change numerical results (ADR 0018 §1). The
+#: lock file's hash says what should be installed; these say what was.
+NUMERIC_PACKAGES = ("numpy", "scipy", "torch", "opacus", "scikit-learn", "pandas", "flwr")
+
+
+def installed_versions(names: tuple[str, ...] = NUMERIC_PACKAGES) -> dict[str, str | None]:
+    """The installed version of each package, or None if it is not installed."""
+    from importlib import metadata
+
+    out: dict[str, str | None] = {}
+    for name in names:
+        try:
+            out[name] = metadata.version(name)
+        except metadata.PackageNotFoundError:
+            out[name] = None
+    return out
+
+
 def environment(lockfile: Path | str = "uv.lock") -> dict[str, Any]:
     """Describe the Python runtime and the machine the code is running on."""
     lock = Path(lockfile)
@@ -104,6 +122,7 @@ def environment(lockfile: Path | str = "uv.lock") -> dict[str, Any]:
         "memory_total_mb": round(memory.total / 2**20),
         "swap_total_mb": round(swap.total / 2**20),
         "lockfile_sha256": sha256_file(lock) if lock.is_file() else None,
+        "packages": installed_versions(),
         "hostname_hash": sha256_bytes(platform.node().encode())[:12],
         "pid": os.getpid(),
     }

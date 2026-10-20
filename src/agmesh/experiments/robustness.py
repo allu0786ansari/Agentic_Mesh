@@ -225,7 +225,7 @@ def evaluate(
 
 
 def verified_seeds(seeds: Sequence[int], problems: Sequence[str]) -> dict[str, Any]:
-    """Per site, the seeds whose retrained model reproduces X1 (ADR 0017 §1)."""
+    """Per site, the seeds whose retrained model is accepted (ADR 0018 §1)."""
     out: dict[str, Any] = {}
     for site in x3_models.SITES:
         cid = x3_models.CONFIG.format(site=site)
@@ -321,7 +321,7 @@ def markdown(rep: dict[str, Any]) -> str:
     lines = [
         f"# Robustness suite — synthetic perturbations of normal validation{dev}",
         "",
-        "Seeds per site (only models that reproduce X1, ADR 0017 §1): "
+        "Seeds per site (models accepted under ADR 0018 §1): "
         + "; ".join(
             f"{site} {v['used']}"
             + (f", excluded {sorted(v['excluded'], key=int)}" if v["excluded"] else "")
@@ -364,12 +364,14 @@ def main(argv: list[str] | None = None) -> int:
     params = load_params()
     dev = args.models != x3_models.MODELS or sorted(args.seeds) != sorted(x3_models.SEEDS)
     by_site = None
+    exact: list[str] = []
     if not dev:
-        by_site = verified_seeds(args.seeds, x3_models.verify())
+        by_site = verified_seeds(args.seeds, x3_models.accept())
+        exact = x3_models.verify()
         for site, v in by_site.items():
             print(f"{site}: seeds used {v['used']}; excluded {sorted(v['excluded'], key=int)}")
             if not v["used"]:
-                raise SystemExit(f"{site}: no seed reproduces X1 (ADR 0017 §1)")
+                raise SystemExit(f"{site}: no seed is accepted (ADR 0018 §1)")
     rep = run(
         params,
         args.models,
@@ -378,6 +380,7 @@ def main(argv: list[str] | None = None) -> int:
         dev=dev,
         by_site=by_site,
     )
+    rep["exact_reproduction_mismatches"] = exact  # reported, not excluding (ADR 0018 §1)
     write_artifact(
         args.out / "robustness_val.json", kind="robustness", data_source="synthetic", payload=rep
     )
