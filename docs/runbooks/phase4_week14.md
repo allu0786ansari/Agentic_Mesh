@@ -18,10 +18,13 @@ artifacts.
 ```bash
 cd ~/Agentic_Mesh
 git pull origin main
-uv sync --locked
+uv sync --locked --group dev --group ml --group fl --group kb --group figures
 make check
 git status --short        # must print nothing outside results/
 ```
+
+Plain `uv sync --locked` installs only the default `dev` group, and it removes
+torch, Flower and the knowledge-base packages. Always name the groups, as above.
 
 ### Step 2 — X7, training stage (about 15 min; Ollama stopped)
 
@@ -84,7 +87,7 @@ either way.
 pkill -f "ollama serve"; pkill llama-server
 cd ~ && git clone https://github.com/allu0786ansari/Agentic_Mesh.git agmesh_repro
 cd ~/agmesh_repro
-uv sync --locked
+uv sync --locked --group dev --group ml --group fl --group kb --group figures
 mkdir -p data && cp -r ~/Agentic_Mesh/data/raw data/
 make reproduce REF=~/Agentic_Mesh/data/partitions
 ```

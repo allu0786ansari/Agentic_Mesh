@@ -76,7 +76,7 @@ copied from the working checkout and checked against `data/raw_checksums.json`
 ### Procedure
 
 1. Fresh `git clone` into a new directory.
-2. `uv sync --locked`.
+2. `uv sync --locked` with every dependency group (dev, ml, fl, kb, figures).
 3. Copy `data/raw/`.
 4. `make reproduce`.
 

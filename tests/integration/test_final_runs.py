@@ -55,6 +55,7 @@ def test_federated_h1c_final_reads_each_client_once_and_writes_a_test_artifact(
     assert all(e["run_id"] == "f1" and e["frozen_sha"] == "f" * 40 for e in entries)
     test = result.extras["test"]
     assert sorted(test["final"]["per_client"]) == clients
+    assert result.h1c is not None
     assert test["h1c"]["threshold"] == result.h1c["threshold"]  # fixed on validation
     out = record_test(
         p, "site_a", cid, rid, result, seed=11, strategy="fedprox", epsilon=10.0,

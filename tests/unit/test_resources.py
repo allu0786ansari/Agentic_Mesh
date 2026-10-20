@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 
 from agmesh.evaluation import resources as rs
 
@@ -17,13 +18,13 @@ def test_roles_from_command_lines() -> None:
     assert rs.role_of(["bash"]) is None
 
 
-def _line(used: float, swap: float, procs: list[tuple[str, float]]) -> dict[str, object]:
+def _line(used: float, swap: float, procs: list[tuple[str, float]]) -> dict[str, Any]:
     return {"t": 0.0, "system": {"total_mb": 5927.0, "used_mb": used, "swap_used_mb": swap},
             "processes": [{"role": r, "pss_mb": v} for r, v in procs]}  # fmt: skip
 
 
 def test_summarise_takes_peaks_per_role_and_flags_the_budget() -> None:
-    lines = [
+    lines: list[dict[str, Any]] = [
         {"meta": {"mode": "watch"}},
         _line(3000, 0, [("node_api", 100), ("node_api", 110), ("llm", 2200)]),
         _line(5100, 300, [("node_api", 105), ("llm", 2400), ("mesh", 600)]),
