@@ -96,6 +96,29 @@ copied from the working checkout and checked against `data/raw_checksums.json`
 
 **Pass:** all four hold. **Failure:** reported as is, and G4 waits.
 
+### 2a. Decision, 20 October 2026: the clean-checkout reproduction is not run
+
+On 20 October 2026 the author decided not to run §2, to save laptop time. CC7 is
+therefore **waived**, not met.
+
+* **How it is recorded:** `results/reproduce/waiver.json`. The completion tier
+  reports CC7 as waived and says so in every summary.
+* **What is not covered**, and is not claimed:
+  * a fresh clone building with `uv sync --locked`;
+  * the partitions rebuilt from raw and matched file by file.
+* **What other evidence covers, partly.** These do not replace §2 and are listed
+  so that the gap is clear:
+  * **Training is deterministic across machines.** Site A FedProx ε 3 seed 23,
+    retrained in the cloud, equals the laptop rerun exactly (ADR 0017 §9.7).
+  * **The baselines reproduce.** All 14 baseline configurations at seed 11
+    reproduce their committed artifacts exactly in the cloud (§4).
+  * **One manifest matches.** The cloud's Site B partition manifest hashes to the
+    value the laptop's artifacts record.
+  * **Every final run re-checks itself.** Each `--final` training run
+    re-evaluates on validation and records its comparison with the committed
+    artifact, under the Plan's tolerance (§4). On test, that gives a per-run
+    reproduction check on the laptop for every configuration and seed.
+
 ## 3. Gate G4
 
 ### What is frozen

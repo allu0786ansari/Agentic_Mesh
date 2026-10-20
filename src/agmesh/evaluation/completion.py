@@ -144,20 +144,26 @@ def completion(
             if not (test / "X1" / cid / f"seed_{seed}.json").is_file():
                 cc["CC6"].append(f"missing X1/{cid}/seed_{seed}")
 
-    # CC7 and CC8
+    # CC7 and CC8; a criterion the author waived (ADR 0019 §2a) is reported as waived
+    waived: dict[str, Any] = {}
+    waiver = _doc(results / "reproduce" / "waiver.json")
     for key, path in (("CC7", results / "reproduce" / "reproduction.json"),
                       ("CC8", results / "X7" / "resources.json")):  # fmt: skip
         art = _doc(path)
-        if art is None:
+        if art is None and key == "CC7" and waiver and waiver.get("criterion") == "CC7":
+            waived[key] = waiver
+        elif art is None:
             cc[key].append(f"missing {path}")
         elif not art.get("passed"):
             cc[key].append(f"{path}: not passed")
 
-    status = {k: not v for k, v in cc.items()}
+    status = {k: not v for k, v in cc.items() if k not in waived}
     return {
         "protocol": "docs/adr/0019-g4-final-test-protocol-week14.md §6",
         "frozen_sha": tagged,
         "passed": all(status.values()),
+        "passed_note": "with waived criteria listed under 'waived'" if waived else None,
+        "waived": waived,
         "status": status,
         "problems": cc,
         "notes": notes,
@@ -169,6 +175,8 @@ def main_completion(results: Path, access_log: Path, matrix: Path) -> int:
     rep = completion(results, access_log, matrix)
     path = write_artifact(results / "test" / "completion_check.json", kind="completion",
                           data_source="runtime", payload=rep)  # fmt: skip
+    for k, w in rep["waived"].items():
+        print(f"{k}: WAIVED ({w.get('decided_by')}, {w.get('date')}: {w.get('reason')})")
     for k, ok in rep["status"].items():
         probs = rep["problems"][k]
         print(f"{k}: {'pass' if ok else f'FAIL ({len(probs)})'}")
@@ -178,5 +186,6 @@ def main_completion(results: Path, access_log: Path, matrix: Path) -> int:
             print(f"  ... and {len(probs) - 15} more")
     for p in rep["notes"]["CC2"][:30]:
         print(f"  note: {p}")
-    print(f"completion tier {'PASSED' if rep['passed'] else 'FAILED'} -> {path}")
+    tail = f" (waived: {sorted(rep['waived'])})" if rep["waived"] else ""
+    print(f"completion tier {'PASSED' if rep['passed'] else 'FAILED'}{tail} -> {path}")
     return 0 if rep["passed"] else 1

@@ -55,3 +55,17 @@ def test_completion_reports_what_is_missing(
     assert any("out-of-band" in n for n in rep["notes"]["CC2"])
     assert not rep["passed"]
     assert sealed.FROZEN_TAG == "g4-frozen"
+
+
+def test_a_waived_cc7_is_reported_as_waived_not_as_passed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(completion, "frozen_sha", lambda *a, **k: None)
+    res = tmp_path / "results"
+    (res / "reproduce").mkdir(parents=True)
+    (res / "reproduce" / "waiver.json").write_text(
+        json.dumps({"criterion": "CC7", "decided_by": "author", "reason": "time"})
+    )
+    rep = completion.completion(res, tmp_path / "log", run_contract_tests=False)
+    assert "CC7" in rep["waived"] and "CC7" not in rep["status"]
+    assert not rep["status"]["CC8"]  # still required

@@ -2,7 +2,7 @@
 
 Read `docs/adr/0019-g4-final-test-protocol-week14.md` first. There are two parts.
 
-- **Part 1:** X7 and the reproduction. Push, then wait for my check.
+- **Part 1:** X7 (the reproduction is waived, ADR 0019 §2a). Push.
 - **Part 2:** tag `g4-frozen`, then run every test evaluation once.
 
 **Everything that reads test data runs on this laptop**, so that
@@ -81,48 +81,29 @@ make x7-report
 It prints the peak PSS per role (node API, mesh, LLM, edge). Send me the output
 either way.
 
-### Step 4 — Clean-checkout reproduction (about 40 min; Ollama stopped)
+### Step 4 — Clean-checkout reproduction: not run (author's decision)
 
-```bash
-pkill -f "ollama serve"; pkill llama-server
-cd ~ && git clone https://github.com/allu0786ansari/Agentic_Mesh.git agmesh_repro
-cd ~/agmesh_repro
-uv sync --locked --group dev --group ml --group fl --group kb --group figures
-mkdir -p data && cp -r ~/Agentic_Mesh/data/raw data/
-make reproduce REF=~/Agentic_Mesh/data/partitions
-```
+On 20 October 2026 you decided not to run it. ADR 0019 §2a records the decision,
+and `results/reproduce/waiver.json` marks CC7 as **waived**, not met. Nothing to do
+here.
 
-There is no DVC remote, so the raw data is copied and verified against
-`data/raw_checksums.json`. The partitions are rebuilt from it (ADR 0019 §2).
-
-**Expected:** `reproduction PASSED`, which means:
-
-- the rebuilt manifests and every partition file match;
-- both headline models and both central baselines are within the Plan's tolerance
-  (`accepted True`).
-
-Copy the report back and remove the clone:
-
-```bash
-mkdir -p ~/Agentic_Mesh/results/reproduce
-cp ~/agmesh_repro/results/reproduce/reproduction.json ~/Agentic_Mesh/results/reproduce/
-rm -rf ~/agmesh_repro
-```
-
-### Step 5 — Commit and push, then stop
+### Step 5 — Commit and push X7
 
 ```bash
 cd ~/Agentic_Mesh
-git add -f results/X7/resources.json results/X7/samples results/reproduce/reproduction.json
-git commit -m "Week 14: X7 resources and clean-checkout reproduction"
+git add -f results/X7/resources.json results/X7/samples
+git commit -m "Week 14: X7 resources"
 git push origin main
 ```
 
-**Do not tag yet.** I check both reports and the tree, then give the go for Part 2.
+`results/` is git-ignored, so its files need `git add -f`. Listing a file that
+does not exist makes `git add` stage nothing at all.
+
+Then go on to Part 2.
 
 ---
 
-## Part 2 — Gate G4 and the single test run (after my go)
+## Part 2 — Gate G4 and the single test run
 
 **Rules for all of Part 2:**
 
