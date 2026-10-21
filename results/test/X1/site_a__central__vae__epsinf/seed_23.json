@@ -1,0 +1,191 @@
+{
+  "schema_version": "1.0",
+  "kind": "result",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-21T03:22:19Z",
+    "git_sha": "af9218322c72cd4d5f5bb3aa3584b69da0ec732c",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "packages": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "torch": "2.14.1+cpu",
+        "opacus": "1.6.0",
+        "scikit-learn": "1.9.1",
+        "pandas": "3.0.6",
+        "flwr": "1.39.0"
+      },
+      "hostname_hash": "89a720d64995",
+      "pid": 17866
+    },
+    "manifest_sha256": "61d66c7bf074bbc08d80bd527bf9b1dbf1c747b1df3bd4101cb6a2a4f51ccfb5",
+    "checkpoint_sha256": "5cc2f7e1ebc4a671220cbb4ef137e5d3855e062a714ec92cfe9f69f71dd7eb72",
+    "started_at": "2026-10-21T03:20:04Z",
+    "finished_at": "2026-10-21T03:22:19Z"
+  },
+  "experiment": "X1",
+  "config_id": "site_a__central__vae__epsinf",
+  "seed": 23,
+  "split": "test",
+  "metrics": {
+    "auroc": 0.9002858995606612,
+    "auprc": 0.6609816584227353,
+    "event_recall": 0.8263888888888888,
+    "range_f1": 0.48414676178215926,
+    "window_fpr": 0.008887512494205189,
+    "window_fpr_excl_recovery": 0.00614645367787834,
+    "ttd_median_s": 30.5,
+    "false_alarms_per_hour": 0.6192317532625073,
+    "abstained_share": 0.050860640452771944
+  },
+  "privacy": {
+    "clients": {
+      "central": {
+        "epsilon": "inf",
+        "private": false
+      }
+    },
+    "max_client_epsilon": "inf"
+  },
+  "site": "site_a",
+  "mode": "central",
+  "model": "vae",
+  "private": false,
+  "target_epsilon": "inf",
+  "per_client": {
+    "a1": {
+      "auroc": 0.938515390352184,
+      "auprc": 0.7759380544850721,
+      "event_recall": 0.8888888888888888,
+      "range_f1": 0.41772788536688427,
+      "window_fpr": 0.016952242070725484,
+      "window_fpr_excl_recovery": 0.012524292809328439,
+      "ttd_median_s": 27.5,
+      "false_alarms_per_hour": 0.984323733138899,
+      "abstained_share": 0.062365946213496115,
+      "threshold": 5.236278117033967,
+      "threshold_val_fpr": 0.009727016002510198
+    },
+    "a2": {
+      "auroc": 0.8833844503431487,
+      "auprc": 0.6524149928782311,
+      "event_recall": 0.7777777777777778,
+      "range_f1": 0.5032767215265826,
+      "window_fpr": 0.008001454809965449,
+      "window_fpr_excl_recovery": 0.003616251861306105,
+      "ttd_median_s": 34.0,
+      "false_alarms_per_hour": 0.7201309328968903,
+      "abstained_share": 0.0618152085036795,
+      "threshold": 7.953056679520646,
+      "threshold_val_fpr": 0.009853687667960586
+    },
+    "a3": {
+      "auroc": 0.9345495508396101,
+      "auprc": 0.667905182757393,
+      "event_recall": 0.8888888888888888,
+      "range_f1": 0.5003927859035645,
+      "window_fpr": 0.006514257620452311,
+      "window_fpr_excl_recovery": 0.005219063315478643,
+      "ttd_median_s": 24.0,
+      "false_alarms_per_hour": 0.48672566371681414,
+      "abstained_share": 0.04334862385321103,
+      "threshold": 8.268973382478917,
+      "threshold_val_fpr": 0.009892594686263426
+    },
+    "a4": {
+      "auroc": 0.844694206707702,
+      "auprc": 0.5476684035702447,
+      "event_recall": 0.75,
+      "range_f1": 0.5151896543316055,
+      "window_fpr": 0.004082095475677515,
+      "window_fpr_excl_recovery": 0.0032262067254001736,
+      "ttd_median_s": 36.5,
+      "false_alarms_per_hour": 0.285746683297426,
+      "abstained_share": 0.03591278324070113,
+      "threshold": 6.88983951817008,
+      "threshold_val_fpr": 0.009892594686263426
+    }
+  },
+  "pooled_auroc_hist": 0.8999053791888625,
+  "validation": {
+    "metrics": {
+      "auroc": 0.9361675167903002,
+      "auprc": 0.7751150219521435,
+      "event_recall": 1.0,
+      "range_f1": 0.5407530634141844,
+      "window_fpr": 0.01392990570099896,
+      "window_fpr_excl_recovery": 0.007021202162504579,
+      "ttd_median_s": 45.0,
+      "false_alarms_per_hour": 0.7780582407756769,
+      "abstained_share": 0.07216014605088872
+    },
+    "pooled_auroc_hist": 0.9329057993270452,
+    "comparison": {
+      "reference": "results/X1/site_a__central__vae__epsinf/seed_23.json",
+      "exact": false,
+      "differences": {
+        "auprc": [
+          0.7751150219521435,
+          0.7647279770105773
+        ],
+        "auroc": [
+          0.9361675167903002,
+          0.9339138091845784
+        ],
+        "range_f1": [
+          0.5407530634141844,
+          0.5412146222398247
+        ],
+        "window_fpr": [
+          0.01392990570099896,
+          0.014376039682087088
+        ],
+        "window_fpr_excl_recovery": [
+          0.007021202162504579,
+          0.007217434501594062
+        ]
+      },
+      "auroc_abs_difference": 0.0022537076057217442,
+      "privacy_identical": false,
+      "accepted": false
+    }
+  },
+  "scoring": {
+    "aggregation": "mean",
+    "smooth": 1,
+    "top_k": 3,
+    "shift": "r3"
+  },
+  "evaluation": {
+    "threshold_from": "val_normal (per node)",
+    "evaluated_on": "test",
+    "target_window_fpr": 0.01,
+    "event_tolerance_s": 60,
+    "protocol": "docs/adr/0019-g4-final-test-protocol-week14.md \u00a74"
+  },
+  "access_run_id": "site_a__central__vae__epsinf__seed23__20261021T085004",
+  "federation": {
+    "run_id": "site_a__central__vae__epsinf__seed23__20261021T085004",
+    "strategy": "fedavg",
+    "rounds": 50,
+    "seconds": 135.5
+  },
+  "scores_file": {
+    "path": "seed_23.scores.npz",
+    "sha256": "092bb4f76e87ea8761510a90e6cbfa34bfc507a921b53f64f6d2bd2edc158279"
+  }
+}

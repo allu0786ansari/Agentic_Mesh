@@ -1,0 +1,335 @@
+{
+  "schema_version": "1.0",
+  "kind": "result",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-21T16:50:49Z",
+    "git_sha": "af9218322c72cd4d5f5bb3aa3584b69da0ec732c",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "packages": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "torch": "2.14.1+cpu",
+        "opacus": "1.6.0",
+        "scikit-learn": "1.9.1",
+        "pandas": "3.0.6",
+        "flwr": "1.39.0"
+      },
+      "hostname_hash": "89a720d64995",
+      "pid": 26717
+    },
+    "manifest_sha256": "61d66c7bf074bbc08d80bd527bf9b1dbf1c747b1df3bd4101cb6a2a4f51ccfb5",
+    "checkpoint_sha256": "e4e57ed07469ef6ec1e31d31e98530b19693ddc2ee455b9c91cf06ada39a2541",
+    "started_at": "2026-10-21T16:40:06Z",
+    "finished_at": "2026-10-21T16:50:49Z"
+  },
+  "experiment": "X1",
+  "config_id": "site_a__fedprox__eps1",
+  "seed": 41,
+  "split": "test",
+  "metrics": {
+    "auroc": 0.834334631121056,
+    "auprc": 0.4391730735936917,
+    "event_recall": 0.6006944444444444,
+    "range_f1": 0.42813238473823234,
+    "window_fpr": 0.006172270236088721,
+    "window_fpr_excl_recovery": 0.006095269843112902,
+    "ttd_median_s": 55.375,
+    "false_alarms_per_hour": 0.4133965692529408,
+    "abstained_share": 0.050860640452771944
+  },
+  "privacy": {
+    "clients": {
+      "a1": {
+        "node": "a1",
+        "delta": 1e-05,
+        "target_epsilon": 1.0,
+        "epsilon": 0.9997517851899652,
+        "history": [
+          {
+            "name": "normalisation",
+            "noise_multiplier": 12.339813437242187,
+            "sample_rate": 1.0,
+            "steps": 1
+          },
+          {
+            "name": "dpsgd",
+            "noise_multiplier": 8.875261385762085,
+            "sample_rate": 0.08366013071895424,
+            "steps": 600
+          }
+        ],
+        "plan": {
+          "accountant": "rdp",
+          "delta": 1e-05,
+          "fixed": [
+            {
+              "name": "normalisation",
+              "noise_multiplier": 12.339813437242187,
+              "sample_rate": 1.0,
+              "steps": 1
+            }
+          ],
+          "max_grad_norm": 1.0,
+          "n_windows": 3060,
+          "noise_multiplier": 8.875261385762085,
+          "planned_epsilon": 0.9997517851899652,
+          "sample_rate": 0.08366013071895424,
+          "steps": 600,
+          "target_epsilon": 1.0
+        },
+        "stats_noise_multiplier": 12.339813437242187
+      },
+      "a2": {
+        "node": "a2",
+        "delta": 1e-05,
+        "target_epsilon": 1.0,
+        "epsilon": 0.9996859340998475,
+        "history": [
+          {
+            "name": "normalisation",
+            "noise_multiplier": 12.339813437242187,
+            "sample_rate": 1.0,
+            "steps": 1
+          },
+          {
+            "name": "dpsgd",
+            "noise_multiplier": 8.797027254868205,
+            "sample_rate": 0.07967631497043262,
+            "steps": 650
+          }
+        ],
+        "plan": {
+          "accountant": "rdp",
+          "delta": 1e-05,
+          "fixed": [
+            {
+              "name": "normalisation",
+              "noise_multiplier": 12.339813437242187,
+              "sample_rate": 1.0,
+              "steps": 1
+            }
+          ],
+          "max_grad_norm": 1.0,
+          "n_windows": 3213,
+          "noise_multiplier": 8.797027254868205,
+          "planned_epsilon": 0.9996859340998475,
+          "sample_rate": 0.07967631497043262,
+          "steps": 650,
+          "target_epsilon": 1.0
+        },
+        "stats_noise_multiplier": 12.339813437242187
+      },
+      "a3": {
+        "node": "a3",
+        "delta": 1e-05,
+        "target_epsilon": 1.0,
+        "epsilon": 0.9997215264758582,
+        "history": [
+          {
+            "name": "normalisation",
+            "noise_multiplier": 12.339813437242187,
+            "sample_rate": 1.0,
+            "steps": 1
+          },
+          {
+            "name": "dpsgd",
+            "noise_multiplier": 8.341893643680258,
+            "sample_rate": 0.07549395458566795,
+            "steps": 650
+          }
+        ],
+        "plan": {
+          "accountant": "rdp",
+          "delta": 1e-05,
+          "fixed": [
+            {
+              "name": "normalisation",
+              "noise_multiplier": 12.339813437242187,
+              "sample_rate": 1.0,
+              "steps": 1
+            }
+          ],
+          "max_grad_norm": 1.0,
+          "n_windows": 3391,
+          "noise_multiplier": 8.341893643680258,
+          "planned_epsilon": 0.9997215264758582,
+          "sample_rate": 0.07549395458566795,
+          "steps": 650,
+          "target_epsilon": 1.0
+        },
+        "stats_noise_multiplier": 12.339813437242187
+      },
+      "a4": {
+        "node": "a4",
+        "delta": 1e-05,
+        "target_epsilon": 1.0,
+        "epsilon": 0.9997215264758582,
+        "history": [
+          {
+            "name": "normalisation",
+            "noise_multiplier": 12.339813437242187,
+            "sample_rate": 1.0,
+            "steps": 1
+          },
+          {
+            "name": "dpsgd",
+            "noise_multiplier": 8.341893643680258,
+            "sample_rate": 0.07549395458566795,
+            "steps": 650
+          }
+        ],
+        "plan": {
+          "accountant": "rdp",
+          "delta": 1e-05,
+          "fixed": [
+            {
+              "name": "normalisation",
+              "noise_multiplier": 12.339813437242187,
+              "sample_rate": 1.0,
+              "steps": 1
+            }
+          ],
+          "max_grad_norm": 1.0,
+          "n_windows": 3391,
+          "noise_multiplier": 8.341893643680258,
+          "planned_epsilon": 0.9997215264758582,
+          "sample_rate": 0.07549395458566795,
+          "steps": 650,
+          "target_epsilon": 1.0
+        },
+        "stats_noise_multiplier": 12.339813437242187
+      }
+    },
+    "max_client_epsilon": 0.9997517851899652
+  },
+  "site": "site_a",
+  "mode": "federated",
+  "model": "vae",
+  "private": true,
+  "target_epsilon": "1",
+  "per_client": {
+    "a1": {
+      "auroc": 0.8599712049684384,
+      "auprc": 0.5875562770069187,
+      "event_recall": 0.6666666666666666,
+      "range_f1": 0.3857161065133743,
+      "window_fpr": 0.013671162960262486,
+      "window_fpr_excl_recovery": 0.014251781472684086,
+      "ttd_median_s": 45.0,
+      "false_alarms_per_hour": 0.918702150929639,
+      "abstained_share": 0.062365946213496115,
+      "threshold": 7.156388918436078,
+      "threshold_val_fpr": 0.009727016002510198
+    },
+    "a2": {
+      "auroc": 0.8025691454978063,
+      "auprc": 0.4839549061004565,
+      "event_recall": 0.6666666666666666,
+      "range_f1": 0.5429129588981026,
+      "window_fpr": 0.002000363702491362,
+      "window_fpr_excl_recovery": 0.0010636034886194426,
+      "ttd_median_s": 46.5,
+      "false_alarms_per_hour": 0.2618657937806874,
+      "abstained_share": 0.0618152085036795,
+      "threshold": 8.269088519545184,
+      "threshold_val_fpr": 0.009853687667960586
+    },
+    "a3": {
+      "auroc": 0.8375212408473427,
+      "auprc": 0.3536996774727871,
+      "event_recall": 0.4444444444444444,
+      "range_f1": 0.3148922912413437,
+      "window_fpr": 0.005162241887905605,
+      "window_fpr_excl_recovery": 0.005219063315478643,
+      "ttd_median_s": 59.0,
+      "false_alarms_per_hour": 0.30973451327433627,
+      "abstained_share": 0.04334862385321103,
+      "threshold": 10.077822011652964,
+      "threshold_val_fpr": 0.009892594686263426
+    },
+    "a4": {
+      "auroc": 0.8372769331706362,
+      "auprc": 0.33148143379460454,
+      "event_recall": 0.625,
+      "range_f1": 0.46900818230010877,
+      "window_fpr": 0.0038553123936954305,
+      "window_fpr_excl_recovery": 0.0038466310956694377,
+      "ttd_median_s": 71.0,
+      "false_alarms_per_hour": 0.16328381902710057,
+      "abstained_share": 0.03591278324070113,
+      "threshold": 9.308363155261453,
+      "threshold_val_fpr": 0.009892594686263426
+    }
+  },
+  "pooled_auroc_hist": 0.8318606676675673,
+  "validation": {
+    "metrics": {
+      "auroc": 0.8637679986658695,
+      "auprc": 0.6135766675116129,
+      "event_recall": 0.7916666666666666,
+      "range_f1": 0.5936135720661928,
+      "window_fpr": 0.013617583444956106,
+      "window_fpr_excl_recovery": 0.013509440043932168,
+      "ttd_median_s": 53.75,
+      "false_alarms_per_hour": 0.4560273818552092,
+      "abstained_share": 0.07216014605088872
+    },
+    "pooled_auroc_hist": 0.8568580782277444,
+    "comparison": {
+      "reference": "results/X1/site_a__fedprox__eps1/seed_41.json",
+      "exact": false,
+      "differences": {
+        "auprc": [
+          0.6135766675116129,
+          0.6135028178935231
+        ],
+        "auroc": [
+          0.8637679986658695,
+          0.8637535939576009
+        ]
+      },
+      "auroc_abs_difference": 1.4404708268633826e-05,
+      "privacy_identical": true,
+      "accepted": true
+    }
+  },
+  "scoring": {
+    "aggregation": "mean",
+    "smooth": 1,
+    "top_k": 3,
+    "shift": "r3"
+  },
+  "evaluation": {
+    "threshold_from": "val_normal (per node)",
+    "evaluated_on": "test",
+    "target_window_fpr": 0.01,
+    "event_tolerance_s": 60,
+    "protocol": "docs/adr/0019-g4-final-test-protocol-week14.md \u00a74"
+  },
+  "access_run_id": "site_a__fedprox__eps1__seed41__20261021T221006",
+  "federation": {
+    "run_id": "site_a__fedprox__eps1__seed41__20261021T221006",
+    "strategy": "fedprox",
+    "rounds": 50,
+    "seconds": 642.5
+  },
+  "scores_file": {
+    "path": "seed_41.scores.npz",
+    "sha256": "e1cbadcc8ac92f0e42569d7eb1e113698fb26948908f59f1487eb995015fd4d5"
+  }
+}

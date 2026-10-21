@@ -1,0 +1,207 @@
+{
+  "schema_version": "1.0",
+  "kind": "result",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-20T21:09:37Z",
+    "git_sha": "af9218322c72cd4d5f5bb3aa3584b69da0ec732c",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "packages": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "torch": "2.14.1+cpu",
+        "opacus": "1.6.0",
+        "scikit-learn": "1.9.1",
+        "pandas": "3.0.6",
+        "flwr": "1.39.0"
+      },
+      "hostname_hash": "89a720d64995",
+      "pid": 13228
+    },
+    "manifest_sha256": "61d66c7bf074bbc08d80bd527bf9b1dbf1c747b1df3bd4101cb6a2a4f51ccfb5",
+    "checkpoint_sha256": "255357f79191d38561ba77946bef0351d3df428ce452bd036ffd81c4d8859bf6",
+    "started_at": "2026-10-20T21:07:56Z",
+    "finished_at": "2026-10-20T21:09:37Z"
+  },
+  "experiment": "X1",
+  "config_id": "site_a__fedprox__epsinf",
+  "seed": 37,
+  "split": "test",
+  "metrics": {
+    "auroc": 0.8795483780273797,
+    "auprc": 0.6272640363134655,
+    "event_recall": 0.7708333333333334,
+    "range_f1": 0.5146011774905199,
+    "window_fpr": 0.007353598966394869,
+    "window_fpr_excl_recovery": 0.004519929147100721,
+    "ttd_median_s": 34.625,
+    "false_alarms_per_hour": 0.5506169312047241,
+    "abstained_share": 0.050860640452771944
+  },
+  "privacy": {
+    "clients": {
+      "a1": {
+        "epsilon": "inf",
+        "private": false
+      },
+      "a2": {
+        "epsilon": "inf",
+        "private": false
+      },
+      "a3": {
+        "epsilon": "inf",
+        "private": false
+      },
+      "a4": {
+        "epsilon": "inf",
+        "private": false
+      }
+    },
+    "max_client_epsilon": "inf"
+  },
+  "site": "site_a",
+  "mode": "federated",
+  "model": "vae",
+  "private": false,
+  "target_epsilon": "inf",
+  "per_client": {
+    "a1": {
+      "auroc": 0.9102977398861153,
+      "auprc": 0.6963620832979442,
+      "event_recall": 0.7777777777777778,
+      "range_f1": 0.42280893178621387,
+      "window_fpr": 0.013671162960262486,
+      "window_fpr_excl_recovery": 0.00777369898510041,
+      "ttd_median_s": 29.0,
+      "false_alarms_per_hour": 1.049945315348159,
+      "abstained_share": 0.062365946213496115,
+      "threshold": 4.516645849526983,
+      "threshold_val_fpr": 0.009727016002510198
+    },
+    "a2": {
+      "auroc": 0.8446126950507427,
+      "auprc": 0.5916611946158296,
+      "event_recall": 0.7777777777777778,
+      "range_f1": 0.6008481496246812,
+      "window_fpr": 0.006364793598836152,
+      "window_fpr_excl_recovery": 0.002765369070410551,
+      "ttd_median_s": 38.0,
+      "false_alarms_per_hour": 0.4582651391162029,
+      "abstained_share": 0.0618152085036795,
+      "threshold": 7.385100346481447,
+      "threshold_val_fpr": 0.009853687667960586
+    },
+    "a3": {
+      "auroc": 0.9212662647611956,
+      "auprc": 0.6522080062019767,
+      "event_recall": 0.7777777777777778,
+      "range_f1": 0.39588497090747204,
+      "window_fpr": 0.008357915437561455,
+      "window_fpr_excl_recovery": 0.007416563658838072,
+      "ttd_median_s": 30.0,
+      "false_alarms_per_hour": 0.5309734513274336,
+      "abstained_share": 0.04334862385321103,
+      "threshold": 7.926588802458389,
+      "threshold_val_fpr": 0.009892594686263426
+    },
+    "a4": {
+      "auroc": 0.8420168124114658,
+      "auprc": 0.5688248611381117,
+      "event_recall": 0.75,
+      "range_f1": 0.6388626576437124,
+      "window_fpr": 0.0010205238689193787,
+      "window_fpr_excl_recovery": 0.00012408487405385284,
+      "ttd_median_s": 41.5,
+      "false_alarms_per_hour": 0.16328381902710057,
+      "abstained_share": 0.03591278324070113,
+      "threshold": 6.845790346381999,
+      "threshold_val_fpr": 0.009892594686263426
+    }
+  },
+  "pooled_auroc_hist": 0.8784311095884122,
+  "validation": {
+    "metrics": {
+      "auroc": 0.9324962311907076,
+      "auprc": 0.7473542859418291,
+      "event_recall": 0.9375,
+      "range_f1": 0.4744807825500749,
+      "window_fpr": 0.013807143605024847,
+      "window_fpr_excl_recovery": 0.0074427906907308635,
+      "ttd_median_s": 37.625,
+      "false_alarms_per_hour": 0.9659043307470742,
+      "abstained_share": 0.07216014605088872
+    },
+    "pooled_auroc_hist": 0.9302476347739363,
+    "comparison": {
+      "reference": "results/X1/site_a__fedprox__epsinf/seed_37.json",
+      "exact": false,
+      "differences": {
+        "auprc": [
+          0.7473542859418291,
+          0.7468175827742024
+        ],
+        "auroc": [
+          0.9324962311907076,
+          0.9321199773731448
+        ],
+        "false_alarms_per_hour": [
+          0.9659043307470742,
+          1.0436693077055996
+        ],
+        "range_f1": [
+          0.4744807825500749,
+          0.4889566191010269
+        ],
+        "window_fpr": [
+          0.013807143605024847,
+          0.013263930369377442
+        ],
+        "window_fpr_excl_recovery": [
+          0.0074427906907308635,
+          0.0068658980767840995
+        ]
+      },
+      "auroc_abs_difference": 0.0003762538175627883,
+      "privacy_identical": false,
+      "accepted": false
+    }
+  },
+  "scoring": {
+    "aggregation": "mean",
+    "smooth": 1,
+    "top_k": 3,
+    "shift": "r3"
+  },
+  "evaluation": {
+    "threshold_from": "val_normal (per node)",
+    "evaluated_on": "test",
+    "target_window_fpr": 0.01,
+    "event_tolerance_s": 60,
+    "protocol": "docs/adr/0019-g4-final-test-protocol-week14.md \u00a74"
+  },
+  "access_run_id": "site_a__fedprox__epsinf__seed37__20261021T023756",
+  "federation": {
+    "run_id": "site_a__fedprox__epsinf__seed37__20261021T023756",
+    "strategy": "fedprox",
+    "rounds": 50,
+    "seconds": 100.7
+  },
+  "scores_file": {
+    "path": "seed_37.scores.npz",
+    "sha256": "a7ec06ca33760013affae007cea659342942ecf264e277bf03897b77d69d9c4f"
+  }
+}

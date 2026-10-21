@@ -1,0 +1,165 @@
+{
+  "schema_version": "1.0",
+  "kind": "result",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-20T22:27:35Z",
+    "git_sha": "af9218322c72cd4d5f5bb3aa3584b69da0ec732c",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "packages": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "torch": "2.14.1+cpu",
+        "opacus": "1.6.0",
+        "scikit-learn": "1.9.1",
+        "pandas": "3.0.6",
+        "flwr": "1.39.0"
+      },
+      "hostname_hash": "89a720d64995",
+      "pid": 15176
+    },
+    "manifest_sha256": "193bf797926efed5c5c9d7e407e1f1bdf8f1ec8b4eac7a963ab26b4dd0c27905",
+    "checkpoint_sha256": "4a6fd5478f0d545ff9178fc31d4b612faa6117779bfb2219779e14e468c1b9e3",
+    "started_at": "2026-10-20T22:26:46Z",
+    "finished_at": "2026-10-20T22:27:35Z"
+  },
+  "experiment": "X1",
+  "config_id": "site_b__fedprox__epsinf",
+  "seed": 53,
+  "split": "test",
+  "metrics": {
+    "auroc": 0.9999706372451863,
+    "auprc": 0.9976147883124626,
+    "event_recall": 1.0,
+    "range_f1": 0.21301226911348467,
+    "window_fpr": 0.013090529590252503,
+    "window_fpr_excl_recovery": 0.01284359645507819,
+    "ttd_median_s": 10.0,
+    "false_alarms_per_hour": 4.1688449643246415,
+    "abstained_share": 0.0
+  },
+  "privacy": {
+    "clients": {
+      "b1": {
+        "epsilon": "inf",
+        "private": false
+      },
+      "b2": {
+        "epsilon": "inf",
+        "private": false
+      },
+      "b3": {
+        "epsilon": "inf",
+        "private": false
+      }
+    },
+    "max_client_epsilon": "inf"
+  },
+  "site": "site_b",
+  "mode": "federated",
+  "model": "ae",
+  "private": false,
+  "target_epsilon": "inf",
+  "per_client": {
+    "b1": {
+      "auroc": 0.9999706372451863,
+      "auprc": 0.9976147883124626,
+      "event_recall": 1.0,
+      "range_f1": 0.21301226911348467,
+      "window_fpr": 0.017749785284855425,
+      "window_fpr_excl_recovery": 0.01700898587933248,
+      "ttd_median_s": 10.0,
+      "false_alarms_per_hour": 6.3899227025479535,
+      "abstained_share": 0.0,
+      "threshold": 1974.9351568165175,
+      "threshold_val_fpr": 0.009971136184728419
+    },
+    "b2": {
+      "auroc": "nan",
+      "auprc": "nan",
+      "event_recall": "nan",
+      "range_f1": "nan",
+      "window_fpr": 0.015009912206173889,
+      "window_fpr_excl_recovery": 0.015009912206173889,
+      "ttd_median_s": "nan",
+      "false_alarms_per_hour": 3.8742565845369583,
+      "abstained_share": 0.0,
+      "threshold": 1454.7330340402375,
+      "threshold_val_fpr": 0.009820426487093154
+    },
+    "b3": {
+      "auroc": "nan",
+      "auprc": "nan",
+      "event_recall": "nan",
+      "range_f1": "nan",
+      "window_fpr": 0.0065118912797281995,
+      "window_fpr_excl_recovery": 0.0065118912797281995,
+      "ttd_median_s": "nan",
+      "false_alarms_per_hour": 2.2423556058890144,
+      "abstained_share": 0.0,
+      "threshold": 224.97174510016703,
+      "threshold_val_fpr": 0.009918931807343824
+    }
+  },
+  "pooled_auroc_hist": 0.9999902838099125,
+  "validation": {
+    "metrics": {
+      "auroc": 1.0,
+      "auprc": 1.0,
+      "event_recall": 1.0,
+      "range_f1": 0.18813611882086306,
+      "window_fpr": 0.023885109599395313,
+      "window_fpr_excl_recovery": 0.0482859810590903,
+      "ttd_median_s": 10.0,
+      "false_alarms_per_hour": 8.598639455782314,
+      "abstained_share": 0.0
+    },
+    "pooled_auroc_hist": 1.0,
+    "comparison": {
+      "reference": "results/X1/site_b__fedprox__epsinf/seed_53.json",
+      "exact": true,
+      "differences": {},
+      "auroc_abs_difference": 0.0,
+      "privacy_identical": false,
+      "accepted": false
+    }
+  },
+  "scoring": {
+    "aggregation": "norm_top3",
+    "smooth": 1,
+    "top_k": 3,
+    "shift": "r0"
+  },
+  "evaluation": {
+    "threshold_from": "val_normal (per node)",
+    "evaluated_on": "test",
+    "target_window_fpr": 0.01,
+    "event_tolerance_s": 60,
+    "protocol": "docs/adr/0019-g4-final-test-protocol-week14.md \u00a74"
+  },
+  "access_run_id": "site_b__fedprox__epsinf__seed53__20261021T035646",
+  "federation": {
+    "run_id": "site_b__fedprox__epsinf__seed53__20261021T035646",
+    "strategy": "fedprox",
+    "rounds": 50,
+    "seconds": 48.5
+  },
+  "scores_file": {
+    "path": "seed_53.scores.npz",
+    "sha256": "fa818ee7111cce020f2a969474a801af9984e9a640386756b5cd3bcee24513d7"
+  }
+}

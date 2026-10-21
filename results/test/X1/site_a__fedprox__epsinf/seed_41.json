@@ -1,0 +1,207 @@
+{
+  "schema_version": "1.0",
+  "kind": "result",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-20T21:11:20Z",
+    "git_sha": "af9218322c72cd4d5f5bb3aa3584b69da0ec732c",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "packages": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "torch": "2.14.1+cpu",
+        "opacus": "1.6.0",
+        "scikit-learn": "1.9.1",
+        "pandas": "3.0.6",
+        "flwr": "1.39.0"
+      },
+      "hostname_hash": "89a720d64995",
+      "pid": 13333
+    },
+    "manifest_sha256": "61d66c7bf074bbc08d80bd527bf9b1dbf1c747b1df3bd4101cb6a2a4f51ccfb5",
+    "checkpoint_sha256": "cb7a8a5c3aa492804dd17d45199fde5b6096206cb25d177c3051a5876e6c76ab",
+    "started_at": "2026-10-20T21:09:39Z",
+    "finished_at": "2026-10-20T21:11:20Z"
+  },
+  "experiment": "X1",
+  "config_id": "site_a__fedprox__epsinf",
+  "seed": 41,
+  "split": "test",
+  "metrics": {
+    "auroc": 0.8815815059081268,
+    "auprc": 0.6299644304280827,
+    "event_recall": 0.7430555555555556,
+    "range_f1": 0.482372296433234,
+    "window_fpr": 0.00846991926650388,
+    "window_fpr_excl_recovery": 0.005587408827425444,
+    "ttd_median_s": 34.875,
+    "false_alarms_per_hour": 0.6157568548038574,
+    "abstained_share": 0.050860640452771944
+  },
+  "privacy": {
+    "clients": {
+      "a1": {
+        "epsilon": "inf",
+        "private": false
+      },
+      "a2": {
+        "epsilon": "inf",
+        "private": false
+      },
+      "a3": {
+        "epsilon": "inf",
+        "private": false
+      },
+      "a4": {
+        "epsilon": "inf",
+        "private": false
+      }
+    },
+    "max_client_epsilon": "inf"
+  },
+  "site": "site_a",
+  "mode": "federated",
+  "model": "vae",
+  "private": false,
+  "target_epsilon": "inf",
+  "per_client": {
+    "a1": {
+      "auroc": 0.903386747253276,
+      "auprc": 0.6930230579398087,
+      "event_recall": 0.7777777777777778,
+      "range_f1": 0.36689335052451166,
+      "window_fpr": 0.018775063798760483,
+      "window_fpr_excl_recovery": 0.01295616497516735,
+      "ttd_median_s": 29.0,
+      "false_alarms_per_hour": 1.1811884797666787,
+      "abstained_share": 0.062365946213496115,
+      "threshold": 4.330863949924531,
+      "threshold_val_fpr": 0.009727016002510198
+    },
+    "a2": {
+      "auroc": 0.839377212969203,
+      "auprc": 0.5869384591516733,
+      "event_recall": 0.7777777777777778,
+      "range_f1": 0.5982516856128515,
+      "window_fpr": 0.006728496090198217,
+      "window_fpr_excl_recovery": 0.0029780897681344395,
+      "ttd_median_s": 38.0,
+      "false_alarms_per_hour": 0.4582651391162029,
+      "abstained_share": 0.0618152085036795,
+      "threshold": 8.456647519537897,
+      "threshold_val_fpr": 0.009853687667960586
+    },
+    "a3": {
+      "auroc": 0.9277351767524893,
+      "auprc": 0.6572801803519773,
+      "event_recall": 0.6666666666666666,
+      "range_f1": 0.36907351526388565,
+      "window_fpr": 0.0071288102261553585,
+      "window_fpr_excl_recovery": 0.006043125944238429,
+      "ttd_median_s": 31.0,
+      "false_alarms_per_hour": 0.6194690265486725,
+      "abstained_share": 0.04334862385321103,
+      "threshold": 8.419477633624009,
+      "threshold_val_fpr": 0.009892594686263426
+    },
+    "a4": {
+      "auroc": 0.8558268866575389,
+      "auprc": 0.5826160242688714,
+      "event_recall": 0.75,
+      "range_f1": 0.5952706343316871,
+      "window_fpr": 0.0012473069509014627,
+      "window_fpr_excl_recovery": 0.0003722546221615585,
+      "ttd_median_s": 41.5,
+      "false_alarms_per_hour": 0.2041047737838757,
+      "abstained_share": 0.03591278324070113,
+      "threshold": 6.8603475349263565,
+      "threshold_val_fpr": 0.009892594686263426
+    }
+  },
+  "pooled_auroc_hist": 0.8803459270544108,
+  "validation": {
+    "metrics": {
+      "auroc": 0.928645054302025,
+      "auprc": 0.7395177598163418,
+      "event_recall": 0.9375,
+      "range_f1": 0.4929133859520182,
+      "window_fpr": 0.01585514140490193,
+      "window_fpr_excl_recovery": 0.010368809468603664,
+      "ttd_median_s": 38.125,
+      "false_alarms_per_hour": 0.9905097919397532,
+      "abstained_share": 0.07216014605088872
+    },
+    "pooled_auroc_hist": 0.9250766633536515,
+    "comparison": {
+      "reference": "results/X1/site_a__fedprox__epsinf/seed_41.json",
+      "exact": false,
+      "differences": {
+        "auprc": [
+          0.7395177598163418,
+          0.7401508605020444
+        ],
+        "auroc": [
+          0.928645054302025,
+          0.9276658779196617
+        ],
+        "false_alarms_per_hour": [
+          0.9905097919397532,
+          1.0695287960586717
+        ],
+        "range_f1": [
+          0.4929133859520182,
+          0.46752605112215834
+        ],
+        "window_fpr": [
+          0.01585514140490193,
+          0.016758377682023987
+        ],
+        "window_fpr_excl_recovery": [
+          0.010368809468603664,
+          0.011147620554313176
+        ]
+      },
+      "auroc_abs_difference": 0.0009791763823633337,
+      "privacy_identical": false,
+      "accepted": false
+    }
+  },
+  "scoring": {
+    "aggregation": "mean",
+    "smooth": 1,
+    "top_k": 3,
+    "shift": "r3"
+  },
+  "evaluation": {
+    "threshold_from": "val_normal (per node)",
+    "evaluated_on": "test",
+    "target_window_fpr": 0.01,
+    "event_tolerance_s": 60,
+    "protocol": "docs/adr/0019-g4-final-test-protocol-week14.md \u00a74"
+  },
+  "access_run_id": "site_a__fedprox__epsinf__seed41__20261021T023939",
+  "federation": {
+    "run_id": "site_a__fedprox__epsinf__seed41__20261021T023939",
+    "strategy": "fedprox",
+    "rounds": 50,
+    "seconds": 100.2
+  },
+  "scores_file": {
+    "path": "seed_41.scores.npz",
+    "sha256": "038225ee3f483bb8ab21f7b86411e1e4e61cd66e8484e6fd3560293511615628"
+  }
+}

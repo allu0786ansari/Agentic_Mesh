@@ -1,0 +1,211 @@
+{
+  "schema_version": "1.0",
+  "kind": "result",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-20T21:07:53Z",
+    "git_sha": "af9218322c72cd4d5f5bb3aa3584b69da0ec732c",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.15",
+      "implementation": "CPython",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "wsl": true,
+      "cpu_count_logical": 4,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 5927,
+      "swap_total_mb": 4096,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "packages": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "torch": "2.14.1+cpu",
+        "opacus": "1.6.0",
+        "scikit-learn": "1.9.1",
+        "pandas": "3.0.6",
+        "flwr": "1.39.0"
+      },
+      "hostname_hash": "89a720d64995",
+      "pid": 13124
+    },
+    "manifest_sha256": "61d66c7bf074bbc08d80bd527bf9b1dbf1c747b1df3bd4101cb6a2a4f51ccfb5",
+    "checkpoint_sha256": "435116004a2fb4c08f866c5ee9a1472657fd8bff1a8a33d169eb552a5a376173",
+    "started_at": "2026-10-20T21:06:17Z",
+    "finished_at": "2026-10-20T21:07:53Z"
+  },
+  "experiment": "X1",
+  "config_id": "site_a__fedprox__epsinf",
+  "seed": 23,
+  "split": "test",
+  "metrics": {
+    "auroc": 0.884597613389686,
+    "auprc": 0.6301143369800897,
+    "event_recall": 0.7430555555555556,
+    "range_f1": 0.4995770624919348,
+    "window_fpr": 0.00772128872536299,
+    "window_fpr_excl_recovery": 0.004706296726425795,
+    "ttd_median_s": 34.875,
+    "false_alarms_per_hour": 0.5727408250100338,
+    "abstained_share": 0.050860640452771944
+  },
+  "privacy": {
+    "clients": {
+      "a1": {
+        "epsilon": "inf",
+        "private": false
+      },
+      "a2": {
+        "epsilon": "inf",
+        "private": false
+      },
+      "a3": {
+        "epsilon": "inf",
+        "private": false
+      },
+      "a4": {
+        "epsilon": "inf",
+        "private": false
+      }
+    },
+    "max_client_epsilon": "inf"
+  },
+  "site": "site_a",
+  "mode": "federated",
+  "model": "vae",
+  "private": false,
+  "target_epsilon": "inf",
+  "per_client": {
+    "a1": {
+      "auroc": 0.9103551078795864,
+      "auprc": 0.7051523642513262,
+      "event_recall": 0.7777777777777778,
+      "range_f1": 0.4052780302476226,
+      "window_fpr": 0.014035727305869486,
+      "window_fpr_excl_recovery": 0.007557762902180954,
+      "ttd_median_s": 29.0,
+      "false_alarms_per_hour": 1.049945315348159,
+      "abstained_share": 0.062365946213496115,
+      "threshold": 4.365275813875804,
+      "threshold_val_fpr": 0.009727016002510198
+    },
+    "a2": {
+      "auroc": 0.8433191061476418,
+      "auprc": 0.5867673182881815,
+      "event_recall": 0.7777777777777778,
+      "range_f1": 0.5987508022525002,
+      "window_fpr": 0.006364793598836152,
+      "window_fpr_excl_recovery": 0.002765369070410551,
+      "ttd_median_s": 38.0,
+      "false_alarms_per_hour": 0.4582651391162029,
+      "abstained_share": 0.0618152085036795,
+      "threshold": 8.872762079580314,
+      "threshold_val_fpr": 0.009853687667960586
+    },
+    "a3": {
+      "auroc": 0.9248461828526696,
+      "auprc": 0.6439780928258901,
+      "event_recall": 0.6666666666666666,
+      "range_f1": 0.3476354354495762,
+      "window_fpr": 0.009464110127826941,
+      "window_fpr_excl_recovery": 0.008377970059057821,
+      "ttd_median_s": 31.0,
+      "false_alarms_per_hour": 0.6194690265486725,
+      "abstained_share": 0.04334862385321103,
+      "threshold": 7.79328878948589,
+      "threshold_val_fpr": 0.009892594686263426
+    },
+    "a4": {
+      "auroc": 0.8598700566788464,
+      "auprc": 0.584559572554961,
+      "event_recall": 0.75,
+      "range_f1": 0.6466439820180404,
+      "window_fpr": 0.0010205238689193787,
+      "window_fpr_excl_recovery": 0.00012408487405385284,
+      "ttd_median_s": 41.5,
+      "false_alarms_per_hour": 0.16328381902710057,
+      "abstained_share": 0.03591278324070113,
+      "threshold": 6.9142819910041915,
+      "threshold_val_fpr": 0.009892594686263426
+    }
+  },
+  "pooled_auroc_hist": 0.8830990058438765,
+  "validation": {
+    "metrics": {
+      "auroc": 0.930296859386873,
+      "auprc": 0.7468041684015617,
+      "event_recall": 0.9375,
+      "range_f1": 0.49833497214913675,
+      "window_fpr": 0.013393660558445701,
+      "window_fpr_excl_recovery": 0.0075411350430259405,
+      "ttd_median_s": 39.375,
+      "false_alarms_per_hour": 1.0462395326594887,
+      "abstained_share": 0.07216014605088872
+    },
+    "pooled_auroc_hist": 0.9269526325473986,
+    "comparison": {
+      "reference": "results/X1/site_a__fedprox__epsinf/seed_23.json",
+      "exact": false,
+      "differences": {
+        "auprc": [
+          0.7468041684015617,
+          0.7488062414399697
+        ],
+        "auroc": [
+          0.930296859386873,
+          0.9291244168436333
+        ],
+        "false_alarms_per_hour": [
+          1.0462395326594887,
+          0.939982671760899
+        ],
+        "range_f1": [
+          0.49833497214913675,
+          0.49263167991932744
+        ],
+        "ttd_median_s": [
+          39.375,
+          38.875
+        ],
+        "window_fpr": [
+          0.013393660558445701,
+          0.014433939234599878
+        ],
+        "window_fpr_excl_recovery": [
+          0.0075411350430259405,
+          0.008424840889654096
+        ]
+      },
+      "auroc_abs_difference": 0.0011724425432396712,
+      "privacy_identical": false,
+      "accepted": false
+    }
+  },
+  "scoring": {
+    "aggregation": "mean",
+    "smooth": 1,
+    "top_k": 3,
+    "shift": "r3"
+  },
+  "evaluation": {
+    "threshold_from": "val_normal (per node)",
+    "evaluated_on": "test",
+    "target_window_fpr": 0.01,
+    "event_tolerance_s": 60,
+    "protocol": "docs/adr/0019-g4-final-test-protocol-week14.md \u00a74"
+  },
+  "access_run_id": "site_a__fedprox__epsinf__seed23__20261021T023617",
+  "federation": {
+    "run_id": "site_a__fedprox__epsinf__seed23__20261021T023617",
+    "strategy": "fedprox",
+    "rounds": 50,
+    "seconds": 95.7
+  },
+  "scores_file": {
+    "path": "seed_23.scores.npz",
+    "sha256": "cbd3d5b1c0978252f8bbc99266cb6d17eba0faf9bd461fee99470d66f7616832"
+  }
+}
