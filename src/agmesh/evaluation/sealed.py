@@ -31,6 +31,9 @@ from agmesh.common.provenance import OUTPUT_PATHS, git_state, sha256_file, utc_n
 
 TEST_ACCESS_LOG = Path("results/test_access.log")
 FROZEN_TAG = "g4-frozen"
+#: Phase 5 (ADR 0021): the final data may be read only after this tag.
+FINAL_TAG = "g5-frozen"
+PHASE5_CONFIG = Path("configs/datasets/phase5.yaml")
 
 
 class SealedTestError(PermissionError):
@@ -117,6 +120,57 @@ def authorise(access: FinalAccess | None, *, site: str, client: str) -> None:
         "client": client,
         "params_sha256": sha256_file(access.params_path) if access.params_path.is_file() else None,
         "frozen_sha": frozen,
+        **access.extra,
+    }
+    access.log_path.parent.mkdir(parents=True, exist_ok=True)
+    with access.log_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, sort_keys=True) + "\n")
+
+
+def sealed_paths(config: Path = PHASE5_CONFIG) -> list[Path]:
+    """The phase 5 final data (ADR 0021 §1), from ``configs/datasets/phase5.yaml``."""
+    import yaml
+
+    if not config.is_file():
+        return []
+    return [Path(p) for p in (yaml.safe_load(config.read_text(encoding="utf-8")) or {}).get(
+        "sealed", [])]  # fmt: skip
+
+
+def assert_not_sealed(
+    path: Path | str, access: FinalAccess | None = None, *, config: Path = PHASE5_CONFIG
+) -> None:
+    """Refuse to read a sealed phase 5 path unless the final run is authorised.
+
+    A path is sealed when it is inside one listed in the phase 5 config. It may be
+    read only with a :class:`FinalAccess` after the ``g5-frozen`` tag, with the same
+    commit rules as G4; the read is logged.
+    """
+    target = Path(path).resolve()
+    for sealed in sealed_paths(config):
+        if target == sealed.resolve() or sealed.resolve() in target.parents:
+            if access is None:
+                raise SealedTestError(
+                    f"{path} is sealed final data (ADR 0021): it can only be read by the "
+                    f"frozen pipeline after {FINAL_TAG!r}"
+                )
+            problem = frozen_problem(FINAL_TAG) if access.require_frozen else None
+            if problem is not None:
+                raise SealedTestError(problem)
+            authorise_record(access, site=str(sealed), client=target.name)
+            return
+
+
+def authorise_record(access: FinalAccess, *, site: str, client: str) -> None:
+    """Append one access entry (the checks are the caller's)."""
+    record = {
+        "ts": utc_now_iso(),
+        **git_state(),
+        "config_id": access.config_id,
+        "seed": access.seed,
+        "site": site,
+        "client": client,
+        "frozen_sha": frozen_sha(FINAL_TAG),
         **access.extra,
     }
     access.log_path.parent.mkdir(parents=True, exist_ok=True)

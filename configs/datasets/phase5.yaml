@@ -1,0 +1,58 @@
+# Phase 5 datasets (ADR 0021): roles and expected checksums.
+# HAI checksums are the Git LFS object IDs of icsdataset/hai @ 2a814ce (SHA-256 of the
+# file contents), so a download can be verified without opening it. CIC Modbus 2023's
+# compromised scenarios have no published checksums; they are recorded on download.
+
+hai:
+  source: https://github.com/icsdataset/hai
+  commit: 2a814ce
+  documentation: hai_dataset_technical_details.pdf (v4.0, 31 May 2023)
+  releases:
+    hai-22.04:
+      role: development
+      dir: data/raw/hai/hai-22.04
+      files:
+        test1.csv: {sha256: 19627f5dac40c3a5039e7468cfd6c6e4ccd37a85055671e8c349b6bce5f50ed1, bytes: 50536532}
+        test2.csv: {sha256: b2ba5d6665deee1c86870a3970417b51a3e640a2cc18b9f8de2d6d8a21979923, bytes: 46616720}
+        test3.csv: {sha256: f253f1c78a4a4654d843f8f670a24caa7a72ac91e4418b4505009822b3c55940, bytes: 35066591}
+        test4.csv: {sha256: 2d2e99ed3364d75d27ab84f0a6523496f7295decf363c90b8a1b9b84e1070376, bytes: 72931406}
+        train1.csv: {sha256: 63383690ffc5344ba68a019c7000854a4d341a22d743ac035f5207072a197b33, bytes: 53190281}
+        train2.csv: {sha256: f496991bbef4a6ef5881505aa242fe05cc500b4d5c4cea0d2cf1cf79e4e99285, bytes: 114199064}
+        train3.csv: {sha256: 4910c49dc07cce238e05c449972a30b7588139ef92d36067f32aadd820e63de7, bytes: 69953332}
+        train4.csv: {sha256: 81a1c3a8e1726c92c9253602b8628b72d0508a9c260ff21109433ad2b82687bf, bytes: 47917707}
+        train5.csv: {sha256: 298468467991e73689b61f3cd3975ca21685ef8ba5b5ced4d6a7874f304d9cf7, bytes: 131777589}
+        train6.csv: {sha256: 717b37b7b88b40885cb6994c9fe00d08a941ec0c3c73801e378f84e846ae35d4, bytes: 143438209}
+    hai-23.05:
+      role: final
+      dir: data/raw/hai/hai-23.05
+      files:
+        hai-test1.csv: {sha256: 78c7f1d4de1f2ab9ccc2f8c719f80f831033543adb0c81d0d78f84f40838d4be, bytes: 31255559}
+        hai-test2.csv: {sha256: b2b8dd295aefd87e39260fe43cb4c73ee86d6264b0ac4b0761e7efb0c2b545c3, bytes: 132946575}
+        hai-train1.csv: {sha256: 53007b0ba604fbf338e7ac2e08cd81d874b5d1388f3aecb213ddcba5bf2bec4a, bytes: 162418984}
+        hai-train2.csv: {sha256: 0e520e82bf78a661ab19ce4967f3c766bd809820f457a9c90c365102d4534c56, bytes: 169121615}
+        hai-train3.csv: {sha256: bfcec2dc05adea103e7491546b0e28268faaa26d3cc717d10f4595c94b81e85d, bytes: 72774793}
+        hai-train4.csv: {sha256: 56658c83657d42a65db982b864362e0d0ffeb96d1f7b357d5e76e3a5c522d940, bytes: 114494940}
+        label-test1.csv: {sha256: eaf69edb9c5834bc393afd7bf658b5e408d34fd7bfc3261f80516765fb818fbc, bytes: 1242017}
+        label-test2.csv: {sha256: 8090c44981176e39b0f01a7126a80248ac0b93355c00f9db4d4e2f2106452b92, bytes: 4500018}
+        summary_label1.txt: {sha256: 9d8fb32ee1e816c88f93c8d661f90a7736802582d3572a1e1ebd953783353da6, bytes: 1591}
+        summary_label2.txt: {sha256: b564024a105981415a81dd1b338a48ad7ad5be511849884232540f1a6550e5c1, bytes: 2911}
+
+modbus2023:
+  source: http://cicresearch.ca/CICDataset/CICModbusDataset2023/
+  scenarios:
+    external:
+      role: development (already used; its test split was opened at G4)
+      dir: data/raw/modbus2023/attack
+    compromised-ied:
+      role: development
+      attacker: IED1B (node b2)
+      dir: data/raw/modbus2023/compromised-ied
+    compromised-scada:
+      role: final
+      attacker: SCADA HMI (node b3)
+      dir: data/raw/modbus2023/compromised-scada
+
+#: Paths whose contents may be read only by the frozen pipeline after g5-frozen.
+sealed:
+  - data/raw/hai/hai-23.05
+  - data/raw/modbus2023/compromised-scada

@@ -11,7 +11,7 @@ PY := $(UV) run python
         edge-model edge latency setup-kb kb kb-sources retrieval-queries retrieval-eval mesh llm-calibrate \
 	certs stack-up stack-down approvals-api security-tests g3 grid partitions-iid stats figures x3-models x4-export chaos x3 x4 robustness x5 \
 	x7-training x7-watch x7-report reproduce baselines-final x3-final edge-final mesh-final \
-	x4-final pt6-final x5-final grid-final completion
+	x4-final pt6-final x5-final grid-final completion phase5-verify phase5-record
 
 help:
 	@echo "setup             install core + dev + ml (torch CPU) dependencies"
@@ -76,6 +76,8 @@ help:
 	@echo "x5-final          G4: latency on the test runs -> results/test/X5"
 	@echo "grid-final        G4: the X1/X2 matrix on test, once per run (HOURS=...)"
 	@echo "completion        G4: checker completion tier CC1-CC8"
+	@echo "phase5-verify     Phase 5: verify HAI 22.04 / 23.05 downloads (hashes only)"
+	@echo "phase5-record     Phase 5: record checksums of the CIC compromised scenarios"
 	@echo "g3                Gate G3: ADR 0014 §9 rule over mesh runs, e.g. make g3 RUNS='results/mesh/<a> results/mesh/<b>'"
 	@echo "g2-pilot          Week 7: FedAvg and FedProx at eps 10, both sites, 50 rounds -> results/federated/g2_pilot/"
 	@echo "g2-tuning         Week 7: ADR 0008 DP lr x clip grid and FedProx mu grid -> results/federated/g2_*"
@@ -329,6 +331,12 @@ grid-final:
 
 completion:
 	$(PY) -m agmesh.evaluation.checker --tier completion
+
+phase5-verify:
+	$(PY) -m agmesh.data.phase5 verify
+
+phase5-record:
+	$(PY) -m agmesh.data.phase5 record
 
 g3:
 	$(PY) -m agmesh.evaluation.g3 --runs $(RUNS)
