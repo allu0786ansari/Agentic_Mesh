@@ -1,0 +1,1156 @@
+{
+  "schema_version": "1.0",
+  "kind": "X2.analysis",
+  "data_source": "runtime",
+  "provenance": {
+    "created_at": "2026-10-22T17:05:46Z",
+    "git_sha": "04173cd1db9be9a95005c7a4deeef4d160e27e62",
+    "git_branch": "main",
+    "git_dirty": false,
+    "git_dirty_paths": [],
+    "params_sha256": "b35b13526aa78446ca4fe8cd904ceba713685fdd2989d325aa38bbe66041017a",
+    "environment": {
+      "python": "3.12.13",
+      "implementation": "CPython",
+      "platform": "Linux-6.18.44-fc-v140-x86_64-with-glibc2.39",
+      "machine": "x86_64",
+      "wsl": false,
+      "cpu_count_logical": 2,
+      "cpu_count_physical": 2,
+      "memory_total_mb": 8028,
+      "swap_total_mb": 0,
+      "lockfile_sha256": "1d8f5b638f07ffaf776f8d9c56cc86fc331f1e8942c27af6d85938e8591c6a2e",
+      "packages": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "torch": "2.14.1",
+        "opacus": "1.6.0",
+        "scikit-learn": "1.9.1",
+        "pandas": "3.0.6",
+        "flwr": "1.39.0"
+      },
+      "hostname_hash": "5bce98f73f3e",
+      "pid": 1106
+    }
+  },
+  "experiment": "X2",
+  "split": "test",
+  "protocol": "docs/adr/0016-x1-x2-matrix-week12.md \u00a74",
+  "method": "two-stage stratified block bootstrap (ADR 0005), paired per site",
+  "resamples": 10000,
+  "status": "confirmatory (test)",
+  "tests": [
+    {
+      "family": "H1b",
+      "label": "FedProx vs FedAvg, homogeneous, site_a",
+      "a": "X1/site_a__fedprox__eps3",
+      "b": "X1/site_a__fedavg__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.8648304766344944,
+      "observed_b": 0.8651172209822775,
+      "observed_difference": -0.00028674434778308555,
+      "ci": [
+        -0.00048254074211658005,
+        -0.00012611339358912512
+      ],
+      "p_one_sided": 0.9998000199980002,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": -0.00028674434778297453,
+        "ci": [
+          -0.00045102683130111566,
+          -0.00011994339268539544
+        ],
+        "p_two_sided_bootstrap": 0.0,
+        "p_wilcoxon": 0.0625
+      },
+      "p_holm": 1.0
+    },
+    {
+      "family": "H1b",
+      "label": "FedProx vs FedAvg, heterogeneous, site_a",
+      "a": "X2/site_a__fedprox__eps3__het__drop0.2",
+      "b": "X2/site_a__fedavg__eps3__het__drop0.2",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.8684760430016111,
+      "observed_b": 0.8685822465783755,
+      "observed_difference": -0.00010620357676438541,
+      "ci": [
+        -0.00034075129389351535,
+        0.00012174400169907005
+      ],
+      "p_one_sided": 0.8215178482151785,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": -0.0001061993910683512,
+        "ci": [
+          -0.0001456261915007806,
+          -6.129909936440914e-05
+        ],
+        "p_two_sided_bootstrap": 0.0,
+        "p_wilcoxon": 0.0625
+      },
+      "p_holm": 1.0
+    },
+    {
+      "family": null,
+      "label": "heterogeneous vs homogeneous, fedavg, site_a",
+      "a": "X2/site_a__fedavg__eps3__het__drop0.2",
+      "b": "X1/site_a__fedavg__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.8685822465783755,
+      "observed_b": 0.8651172209822775,
+      "observed_difference": 0.0034650255960979592,
+      "ci": [
+        0.0001204738100482745,
+        0.00751857244262799
+      ],
+      "p_one_sided": 0.021097890210978902,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.003465040512423445,
+        "ci": [
+          0.0011635476023535763,
+          0.0057823764579589595
+        ],
+        "p_two_sided_bootstrap": 0.0,
+        "p_wilcoxon": 0.125
+      }
+    },
+    {
+      "family": null,
+      "label": "heterogeneous vs homogeneous, fedprox, site_a",
+      "a": "X2/site_a__fedprox__eps3__het__drop0.2",
+      "b": "X1/site_a__fedprox__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.8684760430016111,
+      "observed_b": 0.8648304766344944,
+      "observed_difference": 0.0036455663671166594,
+      "ci": [
+        0.00033793020703708215,
+        0.00764494557843941
+      ],
+      "p_one_sided": 0.015498450154984501,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.0036455854691380685,
+        "ci": [
+          0.001388468705832291,
+          0.006046168005465979
+        ],
+        "p_two_sided_bootstrap": 0.0,
+        "p_wilcoxon": 0.125
+      }
+    },
+    {
+      "family": "H1b",
+      "label": "FedProx vs FedAvg, homogeneous, site_b",
+      "a": "X1/site_b__fedprox__eps3",
+      "b": "X1/site_b__fedavg__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 1.0,
+      "observed_b": 1.0,
+      "observed_difference": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "p_one_sided": 1.0,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_two_sided_bootstrap": 1.0,
+        "p_wilcoxon": 1.0
+      },
+      "p_holm": 1.0
+    },
+    {
+      "family": "H1b",
+      "label": "FedProx vs FedAvg, heterogeneous, site_b",
+      "a": "X2/site_b__fedprox__eps3__het__drop0.2",
+      "b": "X2/site_b__fedavg__eps3__het__drop0.2",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 1.0,
+      "observed_b": 1.0,
+      "observed_difference": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "p_one_sided": 1.0,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_two_sided_bootstrap": 1.0,
+        "p_wilcoxon": 1.0
+      },
+      "p_holm": 1.0
+    },
+    {
+      "family": null,
+      "label": "heterogeneous vs homogeneous, fedavg, site_b",
+      "a": "X2/site_b__fedavg__eps3__het__drop0.2",
+      "b": "X1/site_b__fedavg__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 1.0,
+      "observed_b": 1.0,
+      "observed_difference": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "p_one_sided": 1.0,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_two_sided_bootstrap": 1.0,
+        "p_wilcoxon": 1.0
+      }
+    },
+    {
+      "family": null,
+      "label": "heterogeneous vs homogeneous, fedprox, site_b",
+      "a": "X2/site_b__fedprox__eps3__het__drop0.2",
+      "b": "X1/site_b__fedprox__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 1.0,
+      "observed_b": 1.0,
+      "observed_difference": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "p_one_sided": 1.0,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_two_sided_bootstrap": 1.0,
+        "p_wilcoxon": 1.0
+      }
+    },
+    {
+      "family": null,
+      "label": "IID vs non-IID, fedavg, site_a",
+      "a": "X2/site_a__fedavg__eps3__iid",
+      "b": "X1/site_a__fedavg__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "unpaired",
+      "observed_a": 0.8638265807565089,
+      "observed_b": 0.8651172209822775,
+      "observed_difference": -0.0012906402257686356,
+      "ci": [
+        -0.004260683780224189,
+        0.0023428341730874483
+      ],
+      "p_one_sided": 0.7582241775822418,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": -0.001290640225768458,
+        "ci": [
+          -0.003857479967007434,
+          0.0017537222809583587
+        ],
+        "p_two_sided_bootstrap": 0.372,
+        "p_wilcoxon": 0.4375
+      }
+    },
+    {
+      "family": null,
+      "label": "IID vs non-IID, fedprox, site_a",
+      "a": "X2/site_a__fedprox__eps3__iid",
+      "b": "X1/site_a__fedprox__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "unpaired",
+      "observed_a": 0.8636721372031346,
+      "observed_b": 0.8648304766344944,
+      "observed_difference": -0.0011583394313597895,
+      "ci": [
+        -0.004237752110953871,
+        0.0025698928228753797
+      ],
+      "p_one_sided": 0.7276272372762723,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": -0.001158339431360078,
+        "ci": [
+          -0.00385657273476252,
+          0.0018868823841830418
+        ],
+        "p_two_sided_bootstrap": 0.424,
+        "p_wilcoxon": 0.4375
+      }
+    },
+    {
+      "family": null,
+      "label": "mu 0.001 vs 0.01, homogeneous, site_a",
+      "a": "X2/site_a__fedprox__eps3__mu0.001",
+      "b": "X1/site_a__fedprox__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.865065792146195,
+      "observed_b": 0.8648304766344944,
+      "observed_difference": 0.000235315511700529,
+      "ci": [
+        9.337100941156084e-05,
+        0.00040411383030344855
+      ],
+      "p_one_sided": 0.0006999300069993001,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 0.00023531551170039578,
+        "ci": [
+          9.164884038439513e-05,
+          0.00037883837949783674
+        ],
+        "p_two_sided_bootstrap": 0.0,
+        "p_wilcoxon": 0.0625
+      }
+    },
+    {
+      "family": null,
+      "label": "mu 0.001 vs 0.01, heterogeneous, site_a",
+      "a": "X2/site_a__fedprox__eps3__het__drop0.2__mu0.001",
+      "b": "X2/site_a__fedprox__eps3__het__drop0.2",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.8685481608926675,
+      "observed_b": 0.8684760430016111,
+      "observed_difference": 7.211789105643351e-05,
+      "ci": [
+        -0.00014073861183178937,
+        0.0002905487694617098
+      ],
+      "p_one_sided": 0.24997500249975002,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": 7.20987890348912e-05,
+        "ci": [
+          8.354492015372195e-06,
+          0.00012645991398256838
+        ],
+        "p_two_sided_bootstrap": 0.014,
+        "p_wilcoxon": 0.125
+      }
+    },
+    {
+      "family": null,
+      "label": "mu 0.1 vs 0.01, homogeneous, site_a",
+      "a": "X2/site_a__fedprox__eps3__mu0.1",
+      "b": "X1/site_a__fedprox__eps3",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.863216605380509,
+      "observed_b": 0.8648304766344944,
+      "observed_difference": -0.0016138712539853772,
+      "ci": [
+        -0.0030284688617542603,
+        -0.0004047366326147748
+      ],
+      "p_one_sided": 0.9962003799620038,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": -0.0016138712539855327,
+        "ci": [
+          -0.0024019188993781083,
+          -0.0007252899695962655
+        ],
+        "p_two_sided_bootstrap": 0.0,
+        "p_wilcoxon": 0.0625
+      }
+    },
+    {
+      "family": null,
+      "label": "mu 0.1 vs 0.01, heterogeneous, site_a",
+      "a": "X2/site_a__fedprox__eps3__het__drop0.2__mu0.1",
+      "b": "X2/site_a__fedprox__eps3__het__drop0.2",
+      "metric": "auroc",
+      "claim": "greater",
+      "margin": 0.0,
+      "pairing": "paired",
+      "observed_a": 0.866121428655599,
+      "observed_b": 0.8684760430016111,
+      "observed_difference": -0.0023546143460120295,
+      "ci": [
+        -0.0048655048229390985,
+        -0.00040851368975432104
+      ],
+      "p_one_sided": 0.9922007799220078,
+      "resamples": 10000,
+      "seed_level": {
+        "seeds": 5,
+        "mean_difference": -0.002354610315778105,
+        "ci": [
+          -0.0037803136826251916,
+          -0.0009765474160972065
+        ],
+        "p_two_sided_bootstrap": 0.0,
+        "p_wilcoxon": 0.0625
+      }
+    }
+  ],
+  "configs": {
+    "X1/site_a__fedavg__eps3": {
+      "auroc": {
+        "observed": 0.8651172209822775,
+        "low": 0.8104704559608443,
+        "high": 0.9072831483785467,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.5248855244920789,
+        "low": 0.38849908895202806,
+        "high": 0.6379736386215485,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.6763888888888889,
+        "low": 0.5229166666666667,
+        "high": 0.8188020833333326,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.008249754727441749,
+        "low": 0.005358742303338145,
+        "high": 0.011537089350346969,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X1/site_a__fedprox__eps3": {
+      "auroc": {
+        "observed": 0.8648304766344944,
+        "low": 0.8101623332575795,
+        "high": 0.9070312065924295,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.5239630238368463,
+        "low": 0.3875452434479504,
+        "high": 0.6369583752531579,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.6763888888888889,
+        "low": 0.5229166666666667,
+        "high": 0.8188020833333326,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.008341461414205012,
+        "low": 0.005451331676169903,
+        "high": 0.011621574586070159,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X1/site_b__fedavg__eps3": {
+      "auroc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.010025436891445453,
+        "low": 0.008194749951805502,
+        "high": 0.012098527856695957,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X1/site_b__fedprox__eps3": {
+      "auroc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.010594411935236702,
+        "low": 0.008962492021511566,
+        "high": 0.012368251515083072,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedavg__eps3__het__drop0.2": {
+      "auroc": {
+        "observed": 0.8685822465783755,
+        "low": 0.8155756218596121,
+        "high": 0.9096022578772223,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.530110382447886,
+        "low": 0.3928875546631194,
+        "high": 0.6437765995208534,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.6645833333333334,
+        "low": 0.5097048611111112,
+        "high": 0.8104166666666666,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.008186496145880314,
+        "low": 0.00532412466672576,
+        "high": 0.011516402333709033,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedavg__eps3__iid": {
+      "auroc": {
+        "observed": 0.8638265807565089,
+        "low": 0.8102475194220788,
+        "high": 0.9056613434900584,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.5129602719162315,
+        "low": 0.3789553065713427,
+        "high": 0.6258921761954895,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.6708333333333334,
+        "low": 0.517361111111111,
+        "high": 0.8131944444444443,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.009043087478547845,
+        "low": 0.006201858450976422,
+        "high": 0.012183970235866398,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedprox__eps3__het__drop0.2": {
+      "auroc": {
+        "observed": 0.8684760430016111,
+        "low": 0.8155165540975959,
+        "high": 0.9095230525143402,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.5293945314008168,
+        "low": 0.3923874567763631,
+        "high": 0.6430756720117534,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.6645833333333334,
+        "low": 0.5097048611111112,
+        "high": 0.8104166666666666,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.008114519194331465,
+        "low": 0.00528294609192285,
+        "high": 0.011429814026634018,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedprox__eps3__het__drop0.2__mu0.001": {
+      "auroc": {
+        "observed": 0.8685481608926675,
+        "low": 0.8155432771830178,
+        "high": 0.9095871855036033,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.5300676313595334,
+        "low": 0.3929689834167343,
+        "high": 0.6436790732874657,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.6645833333333334,
+        "low": 0.5097048611111112,
+        "high": 0.8104166666666666,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.008186763733997052,
+        "low": 0.0053181498733253655,
+        "high": 0.011536022926823583,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedprox__eps3__het__drop0.2__mu0.1": {
+      "auroc": {
+        "observed": 0.866121428655599,
+        "low": 0.8120864053587422,
+        "high": 0.9076886816487526,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.5247186055903236,
+        "low": 0.38733649328153535,
+        "high": 0.6378797414304176,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.6645833333333334,
+        "low": 0.5097048611111112,
+        "high": 0.8104166666666666,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.008102353391197203,
+        "low": 0.005284490880275127,
+        "high": 0.011353172834261885,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedprox__eps3__iid": {
+      "auroc": {
+        "observed": 0.8636721372031346,
+        "low": 0.8100624128295116,
+        "high": 0.9055084765358165,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.5123722304744909,
+        "low": 0.37813303242586166,
+        "high": 0.6253984149711159,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.6763888888888889,
+        "low": 0.5229166666666667,
+        "high": 0.81875,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.009087603803795521,
+        "low": 0.006245236353244122,
+        "high": 0.012266436081771064,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedprox__eps3__mu0.001": {
+      "auroc": {
+        "observed": 0.865065792146195,
+        "low": 0.8104249782296621,
+        "high": 0.907225665929652,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.5247920086264825,
+        "low": 0.38832416156341876,
+        "high": 0.6377988854262989,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.6763888888888889,
+        "low": 0.5229166666666667,
+        "high": 0.8188020833333326,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.008308235993586538,
+        "low": 0.005425937767401245,
+        "high": 0.011596211249973945,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_a__fedprox__eps3__mu0.1": {
+      "auroc": {
+        "observed": 0.863216605380509,
+        "low": 0.8081057252078211,
+        "high": 0.9057742037388231,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 0.5182173213858896,
+        "low": 0.3827146511357614,
+        "high": 0.631554634728375,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 0.6763888888888889,
+        "low": 0.5229166666666667,
+        "high": 0.8188020833333326,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.008210747304595388,
+        "low": 0.005332826647307652,
+        "high": 0.011512520218973076,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_b__fedavg__eps3__het__drop0.2": {
+      "auroc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.010998337271390147,
+        "low": 0.008560004416395494,
+        "high": 0.014084777999627266,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    },
+    "X2/site_b__fedprox__eps3__het__drop0.2": {
+      "auroc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "auprc": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "event_recall": {
+        "observed": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      },
+      "window_fpr": {
+        "observed": 0.00945873191578709,
+        "low": 0.00723347280776192,
+        "high": 0.012012390518355285,
+        "seeds": [
+          11,
+          23,
+          37,
+          41,
+          53
+        ]
+      }
+    }
+  }
+}
