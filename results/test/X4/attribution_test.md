@@ -11,7 +11,7 @@ Protocol: docs/adr/0017-x3-x6-week13.md §4; docs/adr/0019-g4-final-test-protoco
 | llm_no_retrieval | site_a__llm_no_retrieval__test__20261020T211156 | 24/35 | 0 | 42.9% [25.7%, 60.0%] | 42.9% [25.7%, 60.0%] | 62.5% | 100.0% | 30/55 | 100.0% | 1 (T0836 100.0%) **constant** |
 | rule_only | site_a__rule_only__test__20261020T205023 | 24/35 | 0 | 48.6% [31.4%, 65.7%] | 48.6% [31.4%, 65.7%] | 70.8% | 100.0% | 30/55 | — | 2 (T1692.001 91.7%) |
 
-Majority-class baseline (T1692.001): 62.9% [45.7%, 77.1%]. Constant answers (all 50 events / these 15): T0806 20.0% / 22.9%; T0836 64.0% / 60.0%; T1692.001 64.0% / 62.9%; T1692.002 38.0% / 42.9%.
+Majority-class baseline (T1692.001): 62.9% [45.7%, 77.1%]. Constant answers (all 50 events / these 35): T0806 20.0% / 22.9%; T0836 64.0% / 60.0%; T1692.001 64.0% / 62.9%; T1692.002 38.0% / 42.9%.
 
 `full` - `retrieval_only`, top-3 (paired event bootstrap): +0.114 [-0.029, +0.257], p = 0.136.
 
