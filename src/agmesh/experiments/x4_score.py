@@ -565,7 +565,8 @@ def markdown(rep: dict[str, Any]) -> str:
             "",
             f"Majority-class baseline ({mc['technique']}): "
             f"{_pct(mc['top1']['estimate'])} [{_pct(mc['top1']['low'])}, "
-            f"{_pct(mc['top1']['high'])}]. Constant answers (all 50 events / these 15): "
+            f"{_pct(mc['top1']['high'])}]. Constant answers "
+            f"(all 50 events / these {len(a['events'])}): "
             + "; ".join(
                 f"{t} {_pct(v['all_50'])} / {_pct(v['these_events'])}"
                 for t, v in bl["constant_answer"].items()

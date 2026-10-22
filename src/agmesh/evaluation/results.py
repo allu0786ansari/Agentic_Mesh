@@ -15,7 +15,7 @@ from typing import Any, Literal
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from agmesh.common.artifacts import DataSource, write_artifact
+from agmesh.common.artifacts import DataSource, _json_default, _sanitise, write_artifact
 from agmesh.common.provenance import sha256_file, utc_now_iso
 
 RESULT_SCHEMA_VERSION = "1.0"
@@ -109,7 +109,10 @@ def compare_validation(
         if metrics.get("auroc") is not None and old.get("auroc") is not None
         else None
     )
-    same_privacy = (doc.get("privacy") or None) == (privacy or None) or (
+    # compare in the form the artifact stores (non-finite floats become strings), so a
+    # non-private run's ε = inf equals the reference's "inf"
+    mine = json.loads(json.dumps(_sanitise(privacy), default=_json_default)) if privacy else None
+    same_privacy = (doc.get("privacy") or None) == mine or (
         not doc.get("private", False) and privacy is None
     )
     return {

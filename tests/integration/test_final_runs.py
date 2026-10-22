@@ -172,3 +172,15 @@ def test_x3_test_run_reads_each_node_once_per_seed_and_reports_pt4(
     assert rep["per_seed"][0]["tau"]["best_node"] in ("b1", "b2", "b3")
     text = x3_fusion.test_markdown(rep)
     assert "PT4" in text and "H2b" in text
+
+
+def test_compare_validation_treats_a_stored_inf_epsilon_as_equal(tmp_path: Path) -> None:
+    ref = result_path(tmp_path, "X1", "c", 11)
+    ref.parent.mkdir(parents=True)
+    stored = {"clients": {"central": {"epsilon": "inf", "private": False}},
+              "max_client_epsilon": "inf"}  # fmt: skip
+    ref.write_text(json.dumps({"metrics": {"auroc": 0.9}, "privacy": stored}))
+    live = {"clients": {"central": {"epsilon": float("inf"), "private": False}},
+            "max_client_epsilon": float("inf")}  # fmt: skip
+    cmp = compare_validation(tmp_path, "X1", "c", 11, {"auroc": 0.9}, live)
+    assert cmp["privacy_identical"] and cmp["accepted"]

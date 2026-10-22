@@ -25,8 +25,15 @@ def _root(site_a_run: tuple[dict[str, Any], Path]) -> Path:
 
 
 def test_test_split_is_sealed(
-    params: Params, site_a_run: tuple[dict[str, Any], Path], tmp_path: Path
+    params: Params,
+    site_a_run: tuple[dict[str, Any], Path],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    from agmesh.evaluation import sealed
+
+    # independent of the repository's own tags: behave as if g4-frozen did not exist
+    monkeypatch.setattr(sealed, "frozen_sha", lambda *a, **k: None)
     root = _root(site_a_run)
     val = load_partition(params, "site_a", "a1", "val_attack", root=root)
     assert len(val.features) == len(val.labels.target) > 0

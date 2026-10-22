@@ -124,7 +124,15 @@ def test_mesh_killed_mid_session_resumes_from_sqlite(
         rig.bus.publish("alerts.site_b", a, a["alert_id"])
     cmd = [sys.executable, "-m", "tests.chaos.worker", str(db), str(stack.stack_yaml)]
     first = subprocess.Popen(cmd, cwd=Path.cwd())
-    time.sleep(1.6)
+    # kill it once it has finished at least one session (and before all), not after a
+    # fixed delay, so the test does not depend on the machine's load
+    deadline = time.monotonic() + 60.0
+    while time.monotonic() < deadline and first.poll() is None:
+        done = sum(1 for _ in rig.store.conn.execute(
+            "SELECT 1 FROM sessions WHERE status LIKE 'COMPLETED%'"))  # fmt: skip
+        if done >= 1:
+            break
+        time.sleep(0.05)
     first.kill()
     first.wait()
     interrupted = rig.store.count()

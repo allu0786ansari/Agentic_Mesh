@@ -1,6 +1,7 @@
 """Figures and the per-client privacy table, from artifacts only (ADR 0016 §6).
 
     python -m agmesh.experiments.figures          # make figures  -> results/figures/
+    python -m agmesh.experiments.figures --split test   # -> results/figures/test/
 
 **What it reads.** ``results/X1/analysis_val.json``, ``results/X2/analysis_val.json``
 (event-level CIs; ``make stats`` first) and the result artifacts. No number is
@@ -68,6 +69,15 @@ def _save(fig: Any, out: Path, name: str) -> list[Path]:
     return paths
 
 
+#: The split the figures are drawn from, and how they are labelled (set by ``main``).
+SPLIT = {"split": "val", "label": "validation",
+         "note": "Development evidence; claims are made on the test split after G4."}  # fmt: skip
+NOTES = {
+    "val": ("validation", "Development evidence; claims are made on the test split after G4."),
+    "test": ("test, after G4", "Test split, evaluated once after g4-frozen (ADR 0019)."),
+}
+
+
 def _ci(analysis: dict[str, Any], key: str, metric: str) -> dict[str, Any] | None:
     entry = (analysis.get("configs") or {}).get(key) or {}
     found: dict[str, Any] | None = entry.get(metric)
@@ -78,7 +88,7 @@ def _load(results: Path, exp: str, cid: str) -> list[dict[str, Any]]:
     docs = []
     for p in sorted((results / exp / cid).glob("seed_*.json")):
         d = json.loads(p.read_text(encoding="utf-8"))
-        if d.get("split") == "val":
+        if d.get("split") == SPLIT["split"]:
             docs.append(d)
     return docs
 
@@ -132,7 +142,7 @@ def privacy_utility(
         )  # fmt: skip
     ax.set_xticks(xs, [f"ε = {e}" if e != "inf" else "ε = ∞ (no DP)" for e in EPS])
     ax.set_ylabel(metric.upper(), color=INK, fontsize=10)
-    ax.set_title(f"{SITE[site]}: {metric.upper()} against privacy (validation, 5 seeds)",
+    ax.set_title(f"{SITE[site]}: {metric.upper()} against privacy ({SPLIT['label']}, 5 seeds)",
                  color=INK, fontsize=10.5, loc="left")  # fmt: skip
     series = [
         Line2D([], [], color=SERIES[k], linewidth=2, marker="o", markersize=8,
@@ -142,8 +152,8 @@ def privacy_utility(
     ax.legend(handles=series + ref_handles, frameon=False, fontsize=8, labelcolor=INK,
               loc="upper left", bbox_to_anchor=(1.01, 1.0), title="mean over 5 seeds",
               title_fontsize=8)  # fmt: skip
-    fig.text(0.0, -0.04, "Bars: 95% event-level CIs (ADR 0005). Development evidence; "
-             "claims are made on the test split after G4.", fontsize=7, color=INK2)  # fmt: skip
+    fig.text(0.0, -0.04, "Bars: 95% event-level CIs (ADR 0005). " + SPLIT["note"],
+             fontsize=7, color=INK2)  # fmt: skip
     return _save(fig, out, f"privacy_utility_{site}_{metric}")
 
 
@@ -201,7 +211,7 @@ def heterogeneity(x1: dict[str, Any], x2: dict[str, Any], out: Path, site: str) 
     floor = min([*lows, 1.0])
     ax.set_ylim(min(0.95, np.floor((floor - 0.01) * 50) / 50), 1.002)
     ax.set_ylabel("AUROC", color=INK, fontsize=10)
-    ax.set_title(f"{SITE[site]}: FedProx against FedAvg at ε = 3 (95% event-level CI)",
+    ax.set_title(f"{SITE[site]}: FedProx against FedAvg at ε = 3 ({SPLIT['label']}, 95% CI)",
                  color=INK, fontsize=10.5, loc="left")  # fmt: skip
     if ax.get_legend_handles_labels()[0]:
         ax.legend(frameon=False, fontsize=8.5, labelcolor=INK)
@@ -213,7 +223,7 @@ def privacy_table(results: Path, out: Path) -> list[Path]:
     for exp in ("X1", "X2"):
         for p in sorted((results / exp).glob("*/seed_*.json")):
             d = json.loads(p.read_text(encoding="utf-8"))
-            if d.get("split") != "val" or d.get("target_epsilon") in (None, "inf"):
+            if d.get("split") != SPLIT["split"] or d.get("target_epsilon") in (None, "inf"):
                 continue
             for client, v in ((d.get("privacy") or {}).get("clients") or {}).items():
                 plan = v.get("plan") or {}
@@ -258,20 +268,29 @@ def main(argv: list[str] | None = None) -> int:
     matplotlib.rcParams.update({"font.family": "DejaVu Sans", "svg.hashsalt": "agmesh"})
     parser = argparse.ArgumentParser(description="Figures from artifacts (ADR 0016 §6)")
     parser.add_argument("--results", type=Path, default=Path("results"))
-    parser.add_argument("--out", type=Path, default=Path("results/figures"))
+    parser.add_argument("--out", type=Path, default=None)
+    parser.add_argument("--split", choices=("val", "test"), default="val")
     args = parser.parse_args(argv)
-    args.out.mkdir(parents=True, exist_ok=True)
-    x1p, x2p = args.results / "X1" / "analysis_val.json", args.results / "X2" / "analysis_val.json"
+    label, note = NOTES[args.split]
+    SPLIT.update(split=args.split, label=label, note=note)
+    root = args.results / "test" if args.split == "test" else args.results
+    out = args.out or (
+        Path("results/figures/test") if args.split == "test" else Path("results/figures")
+    )
+    out.mkdir(parents=True, exist_ok=True)
+    x1p = root / "X1" / f"analysis_{args.split}.json"
+    x2p = root / "X2" / f"analysis_{args.split}.json"
     if not x1p.is_file() or not x2p.is_file():
-        raise SystemExit("run make stats first (results/X{1,2}/analysis_val.json)")
+        raise SystemExit(f"run the analyses first ({x1p}, {x2p})")
     x1, x2 = json.loads(x1p.read_text()), json.loads(x2p.read_text())
     written: list[Path] = []
     for site in ("site_a", "site_b"):
         for metric in ("auroc", "auprc"):
-            written += privacy_utility(args.results, x1, args.out, site, metric)
-        written += convergence(args.results, args.out, site)
-        written += heterogeneity(x1, x2, args.out, site)
-    written += privacy_table(args.results, args.out)
+            written += privacy_utility(root, x1, out, site, metric)
+        if args.split == "val":  # training curves are a validation quantity
+            written += convergence(root, out, site)
+        written += heterogeneity(x1, x2, out, site)
+    written += privacy_table(root, out)
     for p in written:
         print(p)
     return 0
