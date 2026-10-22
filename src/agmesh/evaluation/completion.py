@@ -32,6 +32,7 @@ from typing import Any
 
 from agmesh.common.artifacts import write_artifact
 from agmesh.common.config import load_params
+from agmesh.evaluation.results import compare_validation
 from agmesh.evaluation.sealed import TEST_ACCESS_LOG, frozen_sha, read_log
 
 NON_FINAL = {"ground_truth_site_a", "ground_truth_review_site_a"}
@@ -90,9 +91,20 @@ def completion(
                 f"{f.path}: {p}"
             )
         doc = _doc(Path(f.path)) or {}
-        cmp = (doc.get("validation") or {}).get("comparison") or {}
-        if cmp and not cmp.get("accepted"):
-            notes["CC2"].append(f"{f.path}: validation not within tolerance ({cmp})")
+        val = doc.get("validation") or {}
+        if val.get("metrics") is not None:
+            # recomputed from the artifacts with the corrected comparison (ADR 0020 §2);
+            # the verdict stored at run time mistook a stored "inf" for a difference
+            cmp = compare_validation(
+                Path("results"), doc["experiment"], doc["config_id"], doc["seed"],
+                val["metrics"], doc.get("privacy"),
+            )  # fmt: skip
+            if not cmp["accepted"]:
+                notes["CC2"].append(
+                    f"{f.path}: validation not within tolerance "
+                    f"(|dAUROC| {cmp['auroc_abs_difference']}, privacy identical "
+                    f"{cmp['privacy_identical']})"
+                )
 
     # CC2: the other test runs, and the tagged commit on every final entry
     tagged = frozen_sha()
